@@ -53,24 +53,30 @@ class AccessibilityProvider with ChangeNotifier {
   ColorFilter? get colorFilter {
     switch (_colorBlindMode) {
       case ColorBlindMode.protanopia:
+        // Correction for Protanopia (Red-Blind): Shift Red intensity into Blue channel
+        // This helps distinguish Red items (now appearing bluish/purple) from Green/Black.
         return const ColorFilter.matrix([
-          0.567, 0.433, 0.0, 0.0, 0.0,
-          0.558, 0.442, 0.0, 0.0, 0.0,
-          0.0, 0.242, 0.758, 0.0, 0.0,
+          1.0, 0.0, 0.0, 0.0, 0.0,
+          0.0, 1.0, 0.0, 0.0, 0.0,
+          0.7, 0.0, 1.0, 0.0, 0.0, // Inject Red into Blue
           0.0, 0.0, 0.0, 1.0, 0.0,
         ]);
       case ColorBlindMode.deuteranopia:
+        // Correction for Deuteranopia (Green-Blind): Shift Green intensity into Blue channel
+        // This helps distinguish Green items (now appearing bluish/cyan) from Red/Black.
         return const ColorFilter.matrix([
-          0.625, 0.375, 0.0, 0.0, 0.0,
-          0.7, 0.3, 0.0, 0.0, 0.0,
-          0.0, 0.3, 0.7, 0.0, 0.0,
+          1.0, 0.0, 0.0, 0.0, 0.0,
+          0.0, 1.0, 0.0, 0.0, 0.0,
+          0.0, 0.7, 1.0, 0.0, 0.0, // Inject Green into Blue
           0.0, 0.0, 0.0, 1.0, 0.0,
         ]);
       case ColorBlindMode.tritanopia:
+        // Correction for Tritanopia (Blue-Blind): Shift Blue intensity into Red channel
+        // This helps distinguish Blue items (now appearing reddish) from Yellow/Black.
         return const ColorFilter.matrix([
-          0.95, 0.05, 0.0, 0.0, 0.0,
-          0.0, 0.433, 0.567, 0.0, 0.0,
-          0.0, 0.475, 0.525, 0.0, 0.0,
+          1.0, 0.0, 0.7, 0.0, 0.0, // Inject Blue into Red
+          0.0, 1.0, 0.0, 0.0, 0.0,
+          0.0, 0.0, 1.0, 0.0, 0.0,
           0.0, 0.0, 0.0, 1.0, 0.0,
         ]);
       default:

@@ -71,9 +71,11 @@ class VoiceDashboardScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(
-            icon: Icon(Icons.history, color: theme.colorScheme.onSurface),
-            onPressed: () => Scaffold.of(context).openDrawer(),
+          Builder(
+            builder: (context) => IconButton(
+              icon: Icon(Icons.history, color: theme.colorScheme.onSurface),
+              onPressed: () => Scaffold.of(context).openDrawer(),
+            ),
           ),
           Text(
             lang.translate('voice_assistant'),
