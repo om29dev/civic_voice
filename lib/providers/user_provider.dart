@@ -3,6 +3,7 @@ import '../models/document_model.dart';
 import '../models/application_model.dart';
 import '../models/family_member_model.dart';
 import '../core/theme/app_theme.dart';
+import '../core/services/supabase_service.dart';
 
 enum UserType { guest, registered, premium }
 
@@ -27,6 +28,7 @@ class UserProfile {
   final String? occupation;
   final String? location;
   final bool ownsLand;
+  final Map<String, dynamic> preferences;
 
   UserProfile({
     required this.name,
@@ -47,6 +49,7 @@ class UserProfile {
     this.occupation,
     this.location,
     this.ownsLand = false,
+    this.preferences = const {'theme_mode': 'system', 'language': 'en'},
   });
 
   // Guest user factory
@@ -121,6 +124,7 @@ class UserProfile {
     String? occupation,
     String? location,
     bool? ownsLand,
+    Map<String, dynamic>? preferences,
   }) {
     return UserProfile(
       name: name ?? this.name,
@@ -141,6 +145,7 @@ class UserProfile {
       occupation: occupation ?? this.occupation,
       location: location ?? this.location,
       ownsLand: ownsLand ?? this.ownsLand,
+      preferences: preferences ?? this.preferences,
     );
   }
 }
@@ -206,6 +211,23 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Fetch user profile from Supabase
+  Future<void> fetchUserProfile(String userId) async {
+    try {
+      final data = await SupabaseService.from('profiles').select().eq('id', userId).single();
+      
+      // Initialize with fetched data
+      login(
+        name: data['name'] ?? 'User',
+        email: data['email'] ?? '',
+        phone: data['phone'] ?? '',
+        isVerified: false, // Or fetch this if we add it to DB
+      );
+    } catch (e) {
+      debugPrint('Error fetching profile: $e');
+    }
+  }
+
   // Add application
   void addApplication(UserApplication app) {
     final List<UserApplication> updatedApps = List.from(_currentUser.applications)..add(app);
@@ -262,6 +284,36 @@ class UserProvider extends ChangeNotifier {
       ownsLand: ownsLand,
     );
     notifyListeners();
+    _syncToSupabase();
+  }
+
+  Future<void> _syncToSupabase() async {
+    if (!SupabaseService.isLoggedIn) return;
+    
+    try {
+      await SupabaseService.from('profiles').upsert({
+        'id': SupabaseService.userId,
+        'name': _currentUser.name,
+        'email': _currentUser.email,
+        'phone': _currentUser.phone,
+        'age': _currentUser.age,
+        'annual_income': _currentUser.annualIncome,
+        'occupation': _currentUser.occupation,
+        'location': _currentUser.location,
+        'owns_land': _currentUser.ownsLand,
+        'preferences': _currentUser.preferences,
+        'updated_at': DateTime.now().toIso8601String(),
+      });
+    } catch (e) {
+      debugPrint('Supabase profile sync error: $e');
+    }
+  }
+
+  void updatePreference(String key, dynamic value) {
+    final Map<String, dynamic> updatedPrefs = Map.from(_currentUser.preferences)..[key] = value;
+    _currentUser = _currentUser.copyWith(preferences: updatedPrefs);
+    notifyListeners();
+    _syncToSupabase();
   }
 
   // Add document

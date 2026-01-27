@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../../widgets/glass/glass_card.dart';
-import '../../../widgets/animated/particle_background.dart';
-import '../../../providers/language_provider.dart';
-import '../../../models/service_model_new.dart';
-import 'service_detail_screen_new.dart';
+import 'package:civic_voice_interface/core/theme/app_theme.dart';
+import 'package:civic_voice_interface/widgets/glass/glass_card.dart';
+import 'package:civic_voice_interface/widgets/animated/particle_background.dart';
+import 'package:civic_voice_interface/providers/language_provider.dart';
+import 'package:civic_voice_interface/models/service_model_new.dart';
+import 'package:civic_voice_interface/features/services/screens/service_detail_screen_new.dart';
 
 class AllServicesScreen extends StatefulWidget {
   const AllServicesScreen({super.key});

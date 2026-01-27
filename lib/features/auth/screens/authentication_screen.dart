@@ -2,10 +2,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../../widgets/glass/glass_card.dart';
-import '../../../widgets/animated/particle_background.dart';
-import '../../../providers/language_provider.dart';
+import 'package:civic_voice_interface/core/theme/app_theme.dart';
+import 'package:civic_voice_interface/widgets/glass/glass_card.dart';
+import 'package:civic_voice_interface/widgets/animated/particle_background.dart';
+import 'package:civic_voice_interface/providers/language_provider.dart';
 
 class AuthenticationScreen extends StatefulWidget {
   const AuthenticationScreen({super.key});

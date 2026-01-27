@@ -28,11 +28,14 @@ class GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       margin: margin,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(borderRadius),
-        boxShadow: boxShadow ?? AppTheme.cardShadow,
+        boxShadow: boxShadow,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(borderRadius),
@@ -42,15 +45,15 @@ class GlassCard extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: gradientColors ?? [
-                  Colors.white.withOpacity(0.1),
-                  Colors.white.withOpacity(0.05),
+                  (isDark ? Colors.white : Colors.black).withOpacity(0.05),
+                  (isDark ? Colors.white : Colors.black).withOpacity(0.02),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(borderRadius),
               border: border ?? Border.all(
-                color: AppTheme.glassBorder,
+                color: (isDark ? Colors.white : Colors.black).withOpacity(0.1),
                 width: 1,
               ),
             ),
@@ -59,8 +62,8 @@ class GlassCard extends StatelessWidget {
               child: InkWell(
                 onTap: onTap,
                 borderRadius: BorderRadius.circular(borderRadius),
-                splashColor: AppTheme.electricBlue.withOpacity(0.1),
-                highlightColor: AppTheme.electricBlue.withOpacity(0.05),
+                splashColor: theme.colorScheme.primary.withOpacity(0.1),
+                highlightColor: theme.colorScheme.primary.withOpacity(0.05),
                 child: Padding(
                   padding: padding ?? const EdgeInsets.all(20),
                   child: child,
@@ -110,7 +113,7 @@ class _AnimatedGlassCardState extends State<AnimatedGlassCard>
       duration: widget.duration,
     );
 
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.02).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
 
@@ -127,6 +130,7 @@ class _AnimatedGlassCardState extends State<AnimatedGlassCard>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return MouseRegion(
       onEnter: (_) => _controller.forward(),
       onExit: (_) => _controller.reverse(),
@@ -147,9 +151,9 @@ class _AnimatedGlassCardState extends State<AnimatedGlassCard>
                   borderRadius: BorderRadius.circular(widget.borderRadius),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.electricBlue.withOpacity(0.3 * _glowAnimation.value),
-                      blurRadius: 30 + (20 * _glowAnimation.value),
-                      spreadRadius: 5 * _glowAnimation.value,
+                      color: theme.colorScheme.primary.withOpacity(0.1 * _glowAnimation.value),
+                      blurRadius: 20 * _glowAnimation.value,
+                      spreadRadius: 2 * _glowAnimation.value,
                     ),
                   ],
                 ),

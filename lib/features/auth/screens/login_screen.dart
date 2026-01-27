@@ -2,10 +2,12 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../../widgets/glass/glass_card.dart';
-import '../../../widgets/animated/particle_background.dart';
-import '../../../providers/language_provider.dart';
+import 'package:civic_voice_interface/core/theme/app_theme.dart';
+import 'package:civic_voice_interface/widgets/glass/glass_card.dart';
+import 'package:civic_voice_interface/widgets/animated/particle_background.dart';
+import 'package:civic_voice_interface/providers/language_provider.dart';
+import 'package:civic_voice_interface/providers/auth_provider.dart';
+import 'package:civic_voice_interface/providers/user_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -66,17 +68,50 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
-  void _handleLogin() {
+  Future<void> _handleLogin() async {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      final lang = Provider.of<LanguageProvider>(context, listen: false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(lang.translate('enter_email_password'))),
+      );
+      return;
+    }
+    
     setState(() => _isLoading = true);
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() => _isLoading = false);
+    
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final success = await authProvider.login(
+      _emailController.text.trim(),
+      _passwordController.text,
+    );
+    
+    if (mounted) {
+      setState(() => _isLoading = false);
+      
+      if (success) {
+        if (!mounted) return;
+        
+        // Fetch profile data from Supabase to populate UserProvider
+        final userProvider = Provider.of<UserProvider>(context, listen: false);
+        if (authProvider.userId != null) {
+          await userProvider.fetchUserProfile(authProvider.userId!);
+        }
+        
         Navigator.pushReplacementNamed(context, '/dashboard');
+      } else {
+        final lang = Provider.of<LanguageProvider>(context, listen: false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(authProvider.errorMessage ?? lang.translate('login_failed'))),
+        );
       }
-    });
+    }
   }
 
   void _handleGuestLogin() {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    authProvider.continueAsGuest();
+    userProvider.loginAsGuest();
     Navigator.pushReplacementNamed(context, '/dashboard');
   }
 
@@ -184,6 +219,7 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildLoginCard() {
+    final lang = Provider.of<LanguageProvider>(context);
     return AnimatedGlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -192,7 +228,7 @@ class _LoginScreenState extends State<LoginScreen>
           ShaderMask(
             shaderCallback: (bounds) => AppTheme.accentGradient.createShader(bounds),
             child: Text(
-              'Welcome Back',
+              lang.translate('welcome_back'),
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 28,
@@ -205,7 +241,7 @@ class _LoginScreenState extends State<LoginScreen>
           const SizedBox(height: 12),
           
           Text(
-            'Login to access your civic services',
+            lang.translate('login_subtitle'),
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 14,
@@ -218,7 +254,7 @@ class _LoginScreenState extends State<LoginScreen>
           // Email Input
           _buildInputField(
             controller: _emailController,
-            hint: 'Email or Phone',
+            hint: lang.translate('email_or_phone'),
             icon: Icons.person_outline,
             keyboardType: TextInputType.emailAddress,
           ),
@@ -228,7 +264,7 @@ class _LoginScreenState extends State<LoginScreen>
           // Password Input
           _buildInputField(
             controller: _passwordController,
-            hint: 'Password',
+            hint: lang.translate('password'),
             icon: Icons.lock_outline,
             obscureText: _obscurePassword,
             suffixIcon: IconButton(
@@ -248,7 +284,7 @@ class _LoginScreenState extends State<LoginScreen>
             child: TextButton(
               onPressed: () {},
               child: Text(
-                'Forgot Password?',
+                lang.translate('forgot_password'),
                 style: GoogleFonts.inter(
                   fontSize: 13,
                   color: AppTheme.electricBlue,
@@ -263,7 +299,7 @@ class _LoginScreenState extends State<LoginScreen>
           _buildGlowingButton(
             onPressed: _handleLogin,
             isLoading: _isLoading,
-            text: 'Login',
+            text: lang.translate('login'),
           ),
           
           const SizedBox(height: 16),
@@ -275,7 +311,7 @@ class _LoginScreenState extends State<LoginScreen>
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  'OR',
+                  lang.translate('or'),
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     color: AppTheme.pureWhite.withOpacity(0.5),
@@ -294,7 +330,7 @@ class _LoginScreenState extends State<LoginScreen>
               Expanded(
                 child: _buildSocialButton(
                   icon: Icons.g_mobiledata,
-                  label: 'Google',
+                  label: lang.translate('google'),
                   onPressed: () {},
                 ),
               ),
@@ -302,7 +338,7 @@ class _LoginScreenState extends State<LoginScreen>
               Expanded(
                 child: _buildSocialButton(
                   icon: Icons.phone_android,
-                  label: 'OTP',
+                  label: lang.translate('otp'),
                   onPressed: () {
                     Navigator.pushNamed(context, '/otp-auth');
                   },
@@ -381,11 +417,12 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildRegisterLink() {
+    final lang = Provider.of<LanguageProvider>(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          "Don't have an account? ",
+          lang.translate('no_account'),
           style: GoogleFonts.inter(
             fontSize: 14,
             color: AppTheme.pureWhite.withOpacity(0.7),
@@ -396,7 +433,7 @@ class _LoginScreenState extends State<LoginScreen>
             Navigator.pushNamed(context, '/register');
           },
           child: Text(
-            'Register',
+            lang.translate('register'),
             style: GoogleFonts.inter(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -409,6 +446,7 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildGuestLogin() {
+    final lang = Provider.of<LanguageProvider>(context);
     return GlassCard(
       padding: const EdgeInsets.all(16),
       child: Row(
@@ -424,7 +462,7 @@ class _LoginScreenState extends State<LoginScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Continue as Guest',
+                  lang.translate('continue_as_guest'),
                   style: GoogleFonts.inter(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -432,7 +470,7 @@ class _LoginScreenState extends State<LoginScreen>
                   ),
                 ),
                 Text(
-                  'Limited features available',
+                  lang.translate('limited_features'),
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     color: AppTheme.pureWhite.withOpacity(0.6),
@@ -466,7 +504,7 @@ class _LoginScreenState extends State<LoginScreen>
     return Column(
       children: [
         Text(
-          'Select Language',
+          langProvider.translate('select_language'),
           style: GoogleFonts.inter(
             fontSize: 14,
             color: AppTheme.pureWhite.withOpacity(0.7),
@@ -498,12 +536,13 @@ class _LoginScreenState extends State<LoginScreen>
     required bool isLoading,
     required String text,
   }) {
-    return _GlowingButton(
-      onPressed: onPressed,
-      isLoading: isLoading,
-      child: Text(
-        isLoading ? 'Logging in...' : text,
-        style: GoogleFonts.poppins(
+      final lang = Provider.of<LanguageProvider>(context);
+      return _GlowingButton(
+        onPressed: onPressed,
+        isLoading: isLoading,
+        child: Text(
+          isLoading ? lang.translate('logging_in') : text,
+          style: GoogleFonts.poppins(
           fontSize: 16,
           fontWeight: FontWeight.w600,
           color: AppTheme.deepSpaceBlue,

@@ -88,6 +88,11 @@ class NotesScreen extends StatelessWidget {
                                 ),
                               ),
                             ),
+                            if (note.audioPath != null)
+                              IconButton(
+                                icon: const Icon(Icons.play_circle_fill, color: AppTheme.electricBlue, size: 32),
+                                onPressed: () => notesProvider.playNote(note.audioPath!),
+                              ),
                             if (note.reminderTime != null)
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -140,6 +145,20 @@ class NotesScreen extends StatelessWidget {
                 );
               },
             ),
+      floatingActionButton: FloatingActionButton.large(
+        onPressed: () async {
+          if (notesProvider.isRecording) {
+            final path = await notesProvider.stopRecording();
+            if (path != null) {
+              notesProvider.addNote('Voice Note', 'Audio recorded at ${DateFormat('HH:mm').format(DateTime.now())}', audioPath: path);
+            }
+          } else {
+            await notesProvider.startRecording();
+          }
+        },
+        backgroundColor: notesProvider.isRecording ? AppTheme.error : AppTheme.electricBlue,
+        child: Icon(notesProvider.isRecording ? Icons.stop : Icons.mic),
+      ),
     );
   }
 }

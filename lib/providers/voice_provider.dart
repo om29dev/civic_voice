@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:civic_voice_interface/core/services/translation_service.dart';
+import 'package:civic_voice_interface/core/constants/app_strings.dart';
 
 
 enum VoiceState { idle, listening, processing, responding, error }
@@ -25,6 +26,9 @@ class VoiceProvider extends ChangeNotifier {
   bool get isListening => _state == VoiceState.listening;
   bool get isProcessing => _state == VoiceState.processing;
   bool get isResponding => _state == VoiceState.responding;
+  
+  String get currentLocaleId => _currentLocaleId;
+  String get languageCode => _currentLocaleId.split('-').first;
 
   VoiceProvider() {
     initVoice();
@@ -40,12 +44,12 @@ class VoiceProvider extends ChangeNotifier {
   Future<bool> initVoice() async {
     try {
       _isInitialized = await _speech.initialize(
-        onError: (val) => _handleError('Speech Error: ${val.errorMsg}'),
+        onError: (val) => _handleError('${AppStrings.get('speech_error', languageCode)}: ${val.errorMsg}'),
         onStatus: (val) => print('Speech Status: $val'),
       );
       
       if (!_isInitialized) {
-        _handleError('Speech recognition not available on this device');
+        _handleError(AppStrings.get('speech_not_available', languageCode));
       } else {
         _state = VoiceState.idle;
         _errorMessage = "";
@@ -56,7 +60,7 @@ class VoiceProvider extends ChangeNotifier {
       await _tts.setSpeechRate(0.5);
       return _isInitialized;
     } catch (e) {
-      _handleError('Failed to initialize voice engine');
+      _handleError(AppStrings.get('init_failed', languageCode));
       return false;
     }
   }
@@ -66,7 +70,7 @@ class VoiceProvider extends ChangeNotifier {
     if (!_isInitialized) {
       bool success = await initVoice();
       if (!success) {
-        _handleError('Microphone permission or service unavailable');
+        _handleError(AppStrings.get('mic_permission_error', languageCode));
         return;
       }
     }
@@ -109,7 +113,7 @@ class VoiceProvider extends ChangeNotifier {
           pauseFor: const Duration(seconds: 3),
         );
       } catch (e) {
-        _handleError('Microphone not available or permission denied');
+        _handleError(AppStrings.get('mic_unavailable', languageCode));
       }
     }
   }

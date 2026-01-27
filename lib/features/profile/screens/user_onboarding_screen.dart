@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../widgets/glass/glass_card.dart';
 import '../../../widgets/animated/particle_background.dart';
 import '../../../providers/user_provider.dart';
+import '../../../providers/language_provider.dart';
 
 class UserOnboardingScreen extends StatefulWidget {
   const UserOnboardingScreen({super.key});
@@ -18,25 +19,26 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
   
   int _age = 18;
   double _income = 0;
-  String _occupation = 'Student';
-  String _location = 'Urban';
+  String _occupation = 'student';
+  String _location = 'urban';
   bool _ownsLand = false;
 
   final List<String> _occupations = [
-    'Student',
-    'Self-Employed',
-    'Farmer',
-    'Govt Employee',
-    'Private Sector',
-    'Retired',
-    'Unemployed'
+    'student',
+    'self_employed',
+    'farmer',
+    'govt_employee',
+    'private_sector',
+    'retired',
+    'unemployed'
   ];
 
-  final List<String> _locations = ['Urban', 'Semi-Urban', 'Rural'];
+  final List<String> _locations = ['urban', 'semi_urban', 'rural'];
 
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
+    final lang = Provider.of<LanguageProvider>(context);
 
     return Scaffold(
       backgroundColor: AppTheme.deepSpaceBlue,
@@ -56,9 +58,9 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 20),
+                     const SizedBox(height: 20),
                     Text(
-                      'Tell us about yourself',
+                      lang.translate('tell_us_about_yourself'),
                       style: GoogleFonts.poppins(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -67,7 +69,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Help us personalize your civic experience and find the best schemes for you.',
+                      lang.translate('personalize_civic_msg'),
                       style: GoogleFonts.inter(
                         fontSize: 14,
                         color: AppTheme.pureWhite.withOpacity(0.7),
@@ -76,7 +78,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                     const SizedBox(height: 40),
 
                     // Age Slider
-                    _buildStepTitle('How old are you?'),
+                    _buildStepTitle(lang.translate('how_old_are_you')),
                     GlassCard(
                       child: Column(
                         children: [
@@ -105,7 +107,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                     const SizedBox(height: 24),
 
                     // Income Slider
-                    _buildStepTitle('What is your annual family income?'),
+                    _buildStepTitle(lang.translate('what_is_your_income')),
                     GlassCard(
                       child: Column(
                         children: [
@@ -129,7 +131,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                             },
                           ),
                           Text(
-                            'Slider moves in increments of 10k',
+                            lang.translate('slider_increment_note'),
                             style: GoogleFonts.inter(
                               fontSize: 12,
                               color: AppTheme.pureWhite.withOpacity(0.4),
@@ -141,7 +143,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                     const SizedBox(height: 24),
 
                     // Occupation Dropdown
-                    _buildStepTitle('What is your occupation?'),
+                    _buildStepTitle(lang.translate('what_is_your_occupation')),
                     GlassCard(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       child: DropdownButtonHideUnderline(
@@ -154,10 +156,10 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                           onChanged: (value) {
                             if (value != null) setState(() => _occupation = value);
                           },
-                          items: _occupations.map((String value) {
+                           items: _occupations.map((String value) {
                             return DropdownMenuItem<String>(
                               value: value,
-                              child: Text(value),
+                              child: Text(lang.translate(value)),
                             );
                           }).toList(),
                         ),
@@ -166,7 +168,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                     const SizedBox(height: 24),
 
                     // Location
-                    _buildStepTitle('Where do you live?'),
+                    _buildStepTitle(lang.translate('where_do_you_live')),
                     Row(
                       children: _locations.map((loc) {
                         final isSelected = _location == loc;
@@ -187,7 +189,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                               ),
                               child: Center(
                                 child: Text(
-                                  loc,
+                                  lang.translate(loc),
                                   style: GoogleFonts.inter(
                                     fontSize: 14,
                                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -213,7 +215,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Do you own agricultural land?',
+                                  lang.translate('own_land_q'),
                                   style: GoogleFonts.inter(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
@@ -221,7 +223,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                                   ),
                                 ),
                                 Text(
-                                  'Required for some farmer schemes',
+                                  lang.translate('farmer_scheme_note'),
                                   style: GoogleFonts.inter(
                                     fontSize: 12,
                                     color: AppTheme.pureWhite.withOpacity(0.5),
@@ -264,8 +266,8 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                           elevation: 8,
                           shadowColor: AppTheme.electricBlue.withOpacity(0.5),
                         ),
-                        child: Text(
-                          'Save Profile',
+                         child: Text(
+                          lang.translate('save_profile'),
                           style: GoogleFonts.poppins(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,

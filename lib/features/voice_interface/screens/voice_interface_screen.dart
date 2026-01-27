@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../../widgets/glass/glass_card.dart';
-import '../../../widgets/animated/voice_waveform.dart';
-import '../../../widgets/animated/particle_background.dart';
+import 'package:civic_voice_interface/core/theme/app_theme.dart';
+import 'package:civic_voice_interface/widgets/glass/glass_card.dart';
+import 'package:civic_voice_interface/widgets/animated/voice_waveform.dart';
+import 'package:civic_voice_interface/widgets/animated/particle_background.dart';
 
 class VoiceInterfaceScreen extends StatefulWidget {
   const VoiceInterfaceScreen({super.key});

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../../models/scheme_model.dart';
-import '../../../providers/voice_provider.dart';
+import 'package:civic_voice_interface/core/constants/app_colors.dart';
+import 'package:civic_voice_interface/core/theme/app_theme.dart';
+import 'package:civic_voice_interface/models/scheme_model.dart';
+import 'package:civic_voice_interface/providers/user_provider.dart';
+import 'package:civic_voice_interface/providers/language_provider.dart';
+import 'package:civic_voice_interface/providers/voice_provider.dart';
+import 'package:civic_voice_interface/models/application_model.dart';
+import 'package:intl/intl.dart';
 
 class SchemeDetailScreen extends StatefulWidget {
   final GovernmentScheme scheme;
@@ -303,7 +307,88 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
           ],
         ),
       ),
+      bottomNavigationBar: _buildApplyButton(context),
     );
+  }
+
+  Widget _buildApplyButton(BuildContext context) {
+    final lang = Provider.of<LanguageProvider>(context);
+    final userProvider = Provider.of<UserProvider>(context);
+    
+    // Check if already applied
+    final isApplied = userProvider.currentUser.applications.any(
+      (app) => app.schemeId == widget.scheme.id
+    );
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      child: ElevatedButton(
+        onPressed: isApplied ? null : () => _applyForScheme(context),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isApplied ? Colors.grey : AppColors.primary,
+          foregroundColor: AppColors.background,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 5,
+        ),
+        child: Text(
+          isApplied 
+            ? lang.translate('already_applied') 
+            : lang.translate('apply_now'),
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _applyForScheme(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final lang = Provider.of<LanguageProvider>(context, listen: false);
+
+    // 1. Create Application Model
+    final newApp = UserApplication(
+      id: 'app_${DateTime.now().millisecondsSinceEpoch}',
+      schemeId: widget.scheme.id,
+      schemeName: widget.scheme.names['en'] ?? widget.scheme.id,
+      status: ApplicationStatus.submitted,
+      submissionDate: DateTime.now(),
+      currentStep: 'Initial Submission',
+      nextStep: 'Document Verification',
+      timeline: [
+        ApplicationEvent(
+          title: 'Submitted',
+          description: 'Application successfully submitted via CVI.',
+          timestamp: DateTime.now(),
+        ),
+      ],
+    );
+
+    // 2. Add to Provider
+    userProvider.addApplication(newApp);
+
+    // 3. Feedback
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(lang.translate('application_submitted')),
+        backgroundColor: AppColors.success,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+
+    setState(() {}); // Refresh button state
   }
 
   Widget _buildSection(String title, IconData icon, Widget content) {

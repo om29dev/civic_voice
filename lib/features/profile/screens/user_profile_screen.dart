@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/services/notification_service.dart';
+import '../../../core/services/supabase_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../widgets/glass/glass_card.dart';
 import '../../../widgets/animated/particle_background.dart';
 import '../../../providers/language_provider.dart';
@@ -46,7 +49,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Profile',
+          Provider.of<LanguageProvider>(context).translate('profile'),
           style: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.w600,
@@ -85,12 +88,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   
                   // Demographic Info (If complete)
                   if (user.isProfileComplete) ...[
-                    _buildSection('Demographic Information', [
-                      _buildInfoItem(Icons.cake, 'Age', '${user.age} years'),
-                      _buildInfoItem(Icons.currency_rupee, 'Annual Income', '₹${user.annualIncome?.toStringAsFixed(0)}'),
-                      _buildInfoItem(Icons.work, 'Occupation', user.occupation ?? 'Not specified'),
-                      _buildInfoItem(Icons.location_on, 'Location', user.location ?? 'Not specified'),
-                      _buildInfoItem(Icons.landscape, 'Land Ownership', user.ownsLand ? 'Yes' : 'No'),
+                    _buildSection(langProvider.translate('demographic_info'), [
+                      _buildInfoItem(Icons.cake, langProvider.translate('age'), '${user.age} ${langProvider.languageCode == 'hi' ? 'वर्ष' : 'years'}'),
+                      _buildInfoItem(Icons.currency_rupee, langProvider.translate('annual_income'), '₹${user.annualIncome?.toStringAsFixed(0)}'),
+                      _buildInfoItem(Icons.work, langProvider.translate('occupation'), user.occupation ?? 'Not specified'),
+                      _buildInfoItem(Icons.location_on, langProvider.translate('location'), user.location ?? 'Not specified'),
+                      _buildInfoItem(Icons.landscape, langProvider.translate('land_ownership'), user.ownsLand ? 'Yes' : 'No'),
                     ]),
                     const SizedBox(height: 24),
                   ] else ...[
@@ -103,44 +106,48 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   const SizedBox(height: 32),
                   
                   // Settings Section
-                  _buildSection('Account Settings', [
-                    _buildMenuItem(Icons.person, 'Personal Information', () {
+                  _buildSection(langProvider.translate('account_settings'), [
+                    _buildMenuItem(Icons.person, langProvider.translate('personal_info'), () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const PersonalInformationScreen()),
                       );
                     }),
-                    _buildMenuItem(Icons.security, 'Security & Privacy', () {}),
-                    _buildMenuItem(Icons.notifications, 'Notifications', () {}, trailing: Switch(
+                    _buildMenuItem(Icons.security, langProvider.translate('security_privacy'), () {
+                      _showChangePasswordDialog(context);
+                    }),
+                    _buildMenuItem(Icons.notifications, langProvider.translate('notifications'), () async {
+                      await NotificationService().showTestNotification();
+                    }, trailing: Switch(
                       value: _notificationsEnabled,
                       onChanged: (value) => setState(() => _notificationsEnabled = value),
                       activeColor: AppTheme.electricBlue,
                     )),
-                    _buildMenuItem(Icons.mic, 'Voice Notes (Feature 9)', () {
+                    _buildMenuItem(Icons.mic, langProvider.translate('voice_notes'), () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const NotesScreen()),
                       );
                     }),
-                    _buildMenuItem(Icons.people, 'Family Members (Feature 4)', () {
+                    _buildMenuItem(Icons.people, langProvider.translate('family_members'), () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const FamilyDashboardScreen()),
                       );
                     }),
-                    _buildMenuItem(Icons.confirmation_number, 'Smart Queue (Feature 13)', () {
+                    _buildMenuItem(Icons.confirmation_number, langProvider.translate('smart_queue'), () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const VirtualQueueScreen()),
                       );
                     }),
-                    _buildMenuItem(Icons.emoji_events, 'Civic Progress (Feature 7)', () {
+                    _buildMenuItem(Icons.emoji_events, langProvider.translate('civic_progress'), () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const GamificationScreen()),
                       );
                     }),
-                    _buildMenuItem(Icons.verified, 'Community Trust (Feature 10)', () {
+                    _buildMenuItem(Icons.verified, langProvider.translate('community_trust'), () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const CommunityVerificationScreen()),
@@ -171,9 +178,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   const SizedBox(height: 24),
                   
                   // Preferences Section
-                  _buildSection('Preferences', [
+                  _buildSection(langProvider.translate('preferences'), [
                     _buildLanguageMenuItem(context, langProvider),
-                    _buildMenuItem(Icons.dark_mode, 'Dark Mode', () {}, trailing: Switch(
+                    _buildMenuItem(Icons.dark_mode, langProvider.translate('dark_mode'), () {}, trailing: Switch(
                       value: _darkModeEnabled,
                       onChanged: (value) => setState(() => _darkModeEnabled = value),
                       activeColor: AppTheme.electricBlue,
@@ -183,8 +190,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   
                   // Accessibility Section (Feature 11)
                   Consumer<AccessibilityProvider>(
-                    builder: (context, acc, _) => _buildSection('Accessibility (Feature 11)', [
-                      _buildMenuItem(Icons.contrast, 'High Contrast Mode', () {}, trailing: Switch(
+                    builder: (context, acc, _) => _buildSection(langProvider.translate('accessibility_feature'), [
+                      _buildMenuItem(Icons.contrast, langProvider.translate('high_contrast'), () {}, trailing: Switch(
                         value: acc.isHighContrast,
                         onChanged: (value) => acc.toggleHighContrast(value),
                         activeColor: AppTheme.electricBlue,
@@ -195,7 +202,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Text Size: ${(acc.textScaleFactor * 100).toInt()}%',
+                              '${langProvider.translate('text_size')}: ${(acc.textScaleFactor * 100).toInt()}%',
                               style: GoogleFonts.inter(color: AppTheme.pureWhite),
                             ),
                             Slider(
@@ -210,7 +217,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           ],
                         ),
                       ),
-                      _buildMenuItem(Icons.palette, 'Color Blindness', () {
+                      _buildMenuItem(Icons.palette, langProvider.translate('color_blindness'), () {
                          _showColorBlindDialog(context, acc);
                       }, trailing: Text(
                         acc.colorBlindMode.toString().split('.').last.toUpperCase(),
@@ -221,10 +228,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   const SizedBox(height: 24),
 
                   // Support Section
-                  _buildSection('Support', [
-                    _buildMenuItem(Icons.help, 'Help & FAQ', () {}),
-                    _buildMenuItem(Icons.feedback, 'Send Feedback', () {}),
-                    _buildMenuItem(Icons.info, 'About CVI', () {}),
+                  _buildSection(langProvider.translate('support'), [
+                    _buildMenuItem(Icons.help, langProvider.translate('help_faq'), () {}),
+                    _buildMenuItem(Icons.feedback, langProvider.translate('send_feedback'), () {}),
+                    _buildMenuItem(Icons.info, langProvider.translate('about_cvi'), () {}),
                   ]),
                   const SizedBox(height: 32),
                   
@@ -285,6 +292,16 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             ),
           ),
           const SizedBox(height: 8),
+          if (user.phone.isNotEmpty) ...[
+            Text(
+              user.phone,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: AppTheme.pureWhite.withOpacity(0.7),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
@@ -300,12 +317,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   color: user.isVerified ? AppTheme.success : AppTheme.warning,
                 ),
                 const SizedBox(width: 6),
-                Text(
-                  user.isVerified ? 'Verified User' : 'Unverified Account',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: user.isVerified ? AppTheme.success : AppTheme.warning,
+                Flexible(
+                  child: Text(
+                    user.isVerified ? 'Verified User' : 'Unverified Account',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: user.isVerified ? AppTheme.success : AppTheme.warning,
+                    ),
                   ),
                 ),
               ],
@@ -317,6 +336,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   Widget _buildIncompleteProfileBanner(BuildContext context) {
+    final lang = Provider.of<LanguageProvider>(context);
     return GlassCard(
       gradientColors: [AppTheme.warning.withOpacity(0.1), AppTheme.warning.withOpacity(0.05)],
       child: Column(
@@ -324,7 +344,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           const Icon(Icons.info_outline, color: AppTheme.warning, size: 32),
           const SizedBox(height: 12),
           Text(
-            'Incomplete Profile',
+            lang.translate('incomplete_profile'),
             style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -333,7 +353,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Add your details to get personalized scheme recommendations.',
+            lang.translate('add_details_prompt'),
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 13,
@@ -355,7 +375,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text('Complete Profile'),
+            child: Text(lang.translate('complete_profile')),
           ),
         ],
       ),
@@ -466,23 +486,31 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, color: AppTheme.neonCyan, size: 20),
           const SizedBox(width: 16),
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              color: AppTheme.pureWhite.withOpacity(0.6),
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: AppTheme.pureWhite.withOpacity(0.6),
+              ),
             ),
           ),
-          const Spacer(),
-          Text(
-            value,
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.pureWhite,
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 3,
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.pureWhite,
+              ),
             ),
           ),
         ],
@@ -493,7 +521,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Widget _buildLanguageMenuItem(BuildContext context, LanguageProvider langProvider) {
     return _buildMenuItem(
       Icons.language,
-      'Language',
+      langProvider.translate('language'),
       () => _showLanguageDialog(context, langProvider),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
@@ -520,7 +548,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         backgroundColor: AppTheme.deepSpaceBlue,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
-          'Select Language',
+          langProvider.translate('select_language'),
           style: GoogleFonts.poppins(color: AppTheme.pureWhite),
         ),
         content: Column(
@@ -557,6 +585,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   Widget _buildLogoutButton(BuildContext context, UserProvider userProvider) {
+    final lang = Provider.of<LanguageProvider>(context);
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
@@ -566,7 +595,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         },
         icon: const Icon(Icons.logout, size: 20),
         label: Text(
-          'Logout',
+          lang.translate('logout'),
           style: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -585,13 +614,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   void _showColorBlindDialog(BuildContext context, AccessibilityProvider acc) {
+    final lang = Provider.of<LanguageProvider>(context, listen: false);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.deepSpaceBlue,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
-          'Select Filter',
+          lang.translate('select_filter'),
           style: GoogleFonts.poppins(color: AppTheme.pureWhite),
         ),
         content: Column(
@@ -615,6 +645,123 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
              );
           }).toList(),
         ),
+      ),
+    );
+  }
+
+  void _showChangePasswordDialog(BuildContext context) {
+    final langProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final currentPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.deepSpaceBlue,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          langProvider.translate('change_password'),
+          style: GoogleFonts.poppins(color: AppTheme.pureWhite),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: currentPasswordController,
+                obscureText: true,
+                style: const TextStyle(color: AppTheme.pureWhite),
+                decoration: InputDecoration(
+                  labelText: langProvider.translate('current_password'),
+                  labelStyle: TextStyle(color: AppTheme.pureWhite.withOpacity(0.7)),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppTheme.glassBorder),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppTheme.electricBlue),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: newPasswordController,
+                obscureText: true,
+                style: const TextStyle(color: AppTheme.pureWhite),
+                decoration: InputDecoration(
+                  labelText: langProvider.translate('new_password'),
+                  labelStyle: TextStyle(color: AppTheme.pureWhite.withOpacity(0.7)),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppTheme.glassBorder),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppTheme.electricBlue),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: confirmPasswordController,
+                obscureText: true,
+                style: const TextStyle(color: AppTheme.pureWhite),
+                decoration: InputDecoration(
+                  labelText: langProvider.translate('confirm_password'),
+                  labelStyle: TextStyle(color: AppTheme.pureWhite.withOpacity(0.7)),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppTheme.glassBorder),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppTheme.electricBlue),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(langProvider.translate('cancel'), style: const TextStyle(color: AppTheme.pureWhite)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.electricBlue,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () async {
+              if (newPasswordController.text != confirmPasswordController.text) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(langProvider.translate('passwords_mismatch'))),
+                );
+                return;
+              }
+              try {
+                await SupabaseService.client.auth.updateUser(
+                  UserAttributes(password: newPasswordController.text),
+                );
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(langProvider.translate('password_changed'))),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('${langProvider.translate('error')}: $e')),
+                  );
+                }
+              }
+            },
+            child: Text(langProvider.translate('save'), style: const TextStyle(color: AppTheme.deepSpaceBlue)),
+          ),
+        ],
       ),
     );
   }

@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../../widgets/glass/glass_card.dart';
-import '../../../core/services/emergency_service.dart';
+import 'package:provider/provider.dart';
+import 'package:civic_voice_interface/core/theme/app_theme.dart';
+import 'package:civic_voice_interface/providers/language_provider.dart';
+import 'package:civic_voice_interface/widgets/glass/glass_card.dart';
+import 'package:civic_voice_interface/core/services/emergency_service.dart';
 
 class EmergencyScreen extends StatefulWidget {
   const EmergencyScreen({super.key});
@@ -46,6 +48,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final lang = Provider.of<LanguageProvider>(context);
     return Scaffold(
       backgroundColor: const Color(0xFF1A0505), // Dark red tint
       appBar: AppBar(
@@ -56,7 +59,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'EMERGENCY MODE',
+          lang.translate('emergency_mode'),
           style: GoogleFonts.poppins(
             color: Colors.redAccent,
             fontWeight: FontWeight.bold,
@@ -102,7 +105,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                     children: [
                       const Icon(Icons.sos, size: 64, color: Colors.white),
                       Text(
-                        'TAP FOR 112',
+                        lang.translate('tap_for_112'),
                         style: GoogleFonts.inter(
                           color: Colors.white.withOpacity(0.8),
                           fontSize: 12,
@@ -130,7 +133,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                       const Icon(Icons.my_location, color: Colors.redAccent),
                       const SizedBox(width: 8),
                       Text(
-                        'YOUR COORDINATES',
+                        lang.translate('your_coordinates'),
                         style: GoogleFonts.inter(
                           color: Colors.redAccent,
                           fontWeight: FontWeight.w600,
@@ -163,7 +166,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Share these with rescue teams',
+                          'Share these with rescue teams', // Could translate
                           style: GoogleFonts.inter(
                             color: Colors.white54,
                             fontSize: 12,
@@ -173,7 +176,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                     )
                   else
                     Text(
-                      'Location Unavailable',
+                      lang.translate('location_unavailable'),
                       style: GoogleFonts.inter(color: Colors.white54),
                     ),
                 ],
@@ -183,7 +186,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
             
             // Disaster Guides
             Text(
-              'Offline Guides',
+              lang.translate('offline_guides'),
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,

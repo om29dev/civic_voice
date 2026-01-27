@@ -10,6 +10,7 @@ import '../../../widgets/animated/animated_hero_greeting.dart';
 import '../../../providers/voice_provider.dart';
 import '../../../providers/conversation_provider.dart';
 import '../../../providers/language_provider.dart';
+import 'package:civic_voice_interface/providers/theme_provider.dart';
 import '../../../models/service_model_new.dart';
 import '../../voice_interface/screens/voice_dashboard_screen.dart';
 import '../../services/screens/service_detail_screen_new.dart';
@@ -20,8 +21,12 @@ import '../../profile/screens/user_onboarding_screen.dart';
 import '../../../providers/user_provider.dart';
 import '../../services/screens/virtual_queue_screen.dart';
 import '../../profile/screens/family_dashboard_screen.dart';
+import '../../services/screens/track_application_screen.dart';
 import '../../services/screens/emergency_screen.dart';
 import '../../community/screens/community_verification_screen.dart';
+import 'package:civic_voice_interface/models/application_model.dart';
+import 'package:civic_voice_interface/core/services/scheme_knowledge_base.dart';
+import 'package:intl/intl.dart';
 
 class PremiumDashboardScreen extends StatefulWidget {
   const PremiumDashboardScreen({super.key});
@@ -157,12 +162,14 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
     final user = userProvider.currentUser;
     final convoProvider = Provider.of<ConversationProvider>(context);
     final langProvider = Provider.of<LanguageProvider>(context);
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final theme = Theme.of(context);
     
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Row(
         children: [
-          // Avatar with halo effect - Clickable
+          // Avatar with subtle halo
           GestureDetector(
             onTap: () {
               Navigator.push(
@@ -172,103 +179,69 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
                 ),
               );
             },
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.electricBlue.withOpacity(0.5),
-                    blurRadius: 20,
-                    spreadRadius: 5,
-                  ),
-                ],
-              ),
-              child: CircleAvatar(
-                radius: 30,
-                backgroundColor: AppTheme.glassBackground,
-                child: Text(
-                  user.name.isNotEmpty 
-                      ? user.name.substring(0, user.name.contains(' ') ? 2 : 1).toUpperCase()
-                      : 'U',
-                  style: GoogleFonts.poppins(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.electricBlue,
-                  ),
+            child: CircleAvatar(
+              radius: 30,
+              backgroundColor: theme.colorScheme.surface,
+              child: Text(
+                user.name.isNotEmpty 
+                    ? user.name.substring(0, user.name.contains(' ') ? 2 : 1).toUpperCase()
+                    : 'U',
+                style: GoogleFonts.poppins(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
                 ),
               ),
             ),
           ),
           const SizedBox(width: 16),
           
-          // Greeting with typing animation
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Welcome back,',
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    color: AppTheme.pureWhite.withOpacity(0.7),
+                  '${langProvider.translate('welcome_back')},',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurface.withOpacity(0.6),
                   ),
                 ),
                 const SizedBox(height: 4),
-                ShaderMask(
-                  shaderCallback: (bounds) => AppTheme.accentGradient.createShader(bounds),
-                  child: Text(
-                    user.name.split(' ')[0],
-                    style: GoogleFonts.poppins(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.pureWhite,
-                    ),
-                  ),
-                ),
                 Text(
-                  langProvider.languageName,
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: AppTheme.neonCyan,
-                  ),
+                  user.name.split(' ')[0],
+                  style: theme.textTheme.headlineMedium,
                 ),
               ],
             ),
           ),
           
-          // Notification bell with badge
+          // Theme Toggle
+          IconButton(
+            onPressed: () => themeProvider.toggleTheme(),
+            icon: Icon(
+              themeProvider.isDarkMode ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+          
+          // Notification bell
           Stack(
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppTheme.glassBackground,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppTheme.glassBorder,
-                    width: 1,
-                  ),
-                ),
-                child: const Icon(
-                  Icons.notifications_outlined,
-                  color: AppTheme.pureWhite,
-                  size: 24,
-                ),
+              IconButton(
+                onPressed: () {},
+                icon: Icon(Icons.notifications_outlined, color: theme.colorScheme.onSurface),
               ),
               if (convoProvider.messages.isNotEmpty)
                 Positioned(
                   right: 8,
                   top: 8,
                   child: Container(
-                    width: 12,
-                    height: 12,
+                    width: 10,
+                    height: 10,
                     decoration: BoxDecoration(
                       color: AppTheme.error,
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        color: AppTheme.deepSpaceBlue,
-                        width: 2,
-                      ),
+                      border: Border.all(color: theme.scaffoldBackgroundColor, width: 2),
                     ),
                   ),
                 ),
@@ -287,12 +260,13 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
     final totalMessages = convoProvider.messages.length;
     final userMessages = convoProvider.messages.where((m) => m.isUser).length;
     
+    final theme = Theme.of(context);
     final stats = [
       {
         'icon': Icons.assignment_outlined,
         'value': '${user.applicationsCount}',
-        'label': lang.translate('queries'), // Changed label to match icon better or kept original
-        'color': AppTheme.electricBlue
+        'label': lang.translate('queries'),
+        'color': theme.colorScheme.primary
       },
       {
         'icon': Icons.check_circle_outline,
@@ -309,8 +283,8 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
       {
         'icon': Icons.trending_up,
         'value': '${totalMessages > 0 ? 95 : 0}%',
-        'label': lang.translate('avg_time'), // Simplified label for visual consistency
-        'color': AppTheme.neonCyan
+        'label': lang.translate('avg_time'),
+        'color': theme.colorScheme.secondary
       },
     ];
 
@@ -352,55 +326,60 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Text(
-            'High-Priority Services',
-            style: GoogleFonts.poppins(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.pureWhite,
+          child: Consumer<LanguageProvider>(
+            builder: (context, lang, _) => Text(
+              lang.translate('high_priority_schemes'),
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.pureWhite,
+              ),
             ),
           ),
         ),
-        GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 2,
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-          childAspectRatio: 1.5,
-          children: [
-            _buildActionItem(
-              'Smart Queue',
-              Icons.confirmation_number,
-              AppTheme.electricBlue,
-              () => Navigator.push(context, MaterialPageRoute(builder: (_) => const VirtualQueueScreen())),
-            ),
-             _buildActionItem(
-              'Family Hub',
-              Icons.people,
-              AppTheme.success,
-              () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FamilyDashboardScreen())),
-            ),
-            _buildActionItem(
-              'SOS Emergency',
-              Icons.sos,
-              AppTheme.error,
-              () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EmergencyScreen())),
-            ),
-            _buildActionItem(
-              'Trust Score',
-              Icons.verified,
-              AppTheme.neonCyan,
-              () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CommunityVerificationScreen())),
-            ),
-          ],
+        Consumer<LanguageProvider>(
+          builder: (context, lang, _) => GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            childAspectRatio: 1.5,
+            children: [
+              _buildActionItem(
+                lang.translate('smart_queue'),
+                Icons.confirmation_number,
+                AppTheme.electricBlue,
+                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const VirtualQueueScreen())),
+              ),
+               _buildActionItem(
+                lang.translate('family_hub'),
+                Icons.people,
+                AppTheme.success,
+                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FamilyDashboardScreen())),
+              ),
+              _buildActionItem(
+                lang.translate('sos_emergency'),
+                Icons.sos,
+                AppTheme.error,
+                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EmergencyScreen())),
+              ),
+              _buildActionItem(
+                lang.translate('trust_score'),
+                Icons.verified,
+                AppTheme.neonCyan,
+                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CommunityVerificationScreen())),
+              ),
+            ],
+          ),
         ),
       ],
     );
   }
 
   Widget _buildActionItem(String label, IconData icon, Color color, VoidCallback onTap) {
+    final theme = Theme.of(context);
     return AnimatedGlassCard(
       onTap: onTap,
       padding: const EdgeInsets.all(12),
@@ -411,11 +390,10 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
           const SizedBox(height: 8),
           Text(
             label,
-            style: GoogleFonts.inter(
-              color: AppTheme.pureWhite,
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
-            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.labelLarge?.copyWith(fontSize: 12),
           ),
         ],
       ),
@@ -423,6 +401,7 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
   }
 
   Widget _buildQuickServices() {
+    final theme = Theme.of(context);
 // ... existing _buildQuickServices code ...
     final allServices = ServiceModel.getAllServices();
     final quickServices = allServices.take(6).toList();
@@ -432,35 +411,32 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Quick Services',
-                style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.pureWhite,
+          child: Consumer<LanguageProvider>(
+            builder: (context, lang, _) => Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  lang.translate('quick_services'),
+                  style: theme.textTheme.headlineSmall,
                 ),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const AllServicesScreen(),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AllServicesScreen(),
+                      ),
+                    );
+                  },
+                  child: Text(
+                    lang.translate('view_all'),
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: theme.colorScheme.primary,
                     ),
-                  );
-                },
-                child: Text(
-                  'View All',
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    color: AppTheme.electricBlue,
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         SizedBox(
@@ -497,6 +473,7 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
   }
 
   Widget _buildSchemesButton() {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: AnimatedGlassCard(
@@ -514,42 +491,39 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppTheme.neonCyan.withOpacity(0.3),
-                      AppTheme.neonCyan.withOpacity(0.1),
-                    ],
-                  ),
+                  color: theme.colorScheme.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.account_balance,
-                  color: AppTheme.neonCyan,
+                  color: theme.colorScheme.primary,
                   size: 32,
                 ),
               ),
               const SizedBox(width: 20),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Government Schemes',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.pureWhite,
+                child: Consumer<LanguageProvider>(
+                  builder: (context, lang, _) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        lang.translate('government_schemes'),
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.pureWhite,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Browse schemes by category',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        color: AppTheme.pureWhite.withOpacity(0.6),
+                      const SizedBox(height: 4),
+                      Text(
+                        lang.translate('browse_schemes'),
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: AppTheme.pureWhite.withOpacity(0.6),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               Icon(
@@ -564,6 +538,8 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
   }
 
   Widget _buildConversationPreview() {
+    final theme = Theme.of(context);
+    final langProvider = Provider.of<LanguageProvider>(context);
     final convoProvider = Provider.of<ConversationProvider>(context);
     final recentMessages = convoProvider.messages.take(2).toList();
 
@@ -581,28 +557,25 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
                   size: 24,
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  'Recent Conversation',
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.pureWhite,
+                Consumer<LanguageProvider>(
+                  builder: (context, lang, _) => Text(
+                    lang.translate('recent_conversation'),
+                    style: theme.textTheme.titleLarge,
                   ),
                 ),
                 const Spacer(),
                 if (recentMessages.isNotEmpty)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: AppTheme.success.withOpacity(0.2),
+                      color: AppTheme.success.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      '${convoProvider.messages.length} messages',
-                      style: GoogleFonts.inter(
+                      '${convoProvider.messages.length} ${langProvider.translate('messages')}',
+                      style: theme.textTheme.labelLarge?.copyWith(
                         fontSize: 12,
                         color: AppTheme.success,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -616,11 +589,11 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
                     Icon(
                       Icons.chat_outlined,
                       size: 48,
-                      color: AppTheme.pureWhite.withOpacity(0.3),
+                      color: theme.colorScheme.onSurface.withOpacity(0.3),
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'No conversations yet',
+                      Provider.of<LanguageProvider>(context).translate('no_conversations_yet'),
                       style: GoogleFonts.inter(
                         fontSize: 14,
                         color: AppTheme.pureWhite.withOpacity(0.5),
@@ -628,7 +601,7 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Start by asking CVI a question',
+                      Provider.of<LanguageProvider>(context).translate('start_asking'),
                       style: GoogleFonts.inter(
                         fontSize: 12,
                         color: AppTheme.pureWhite.withOpacity(0.4),
@@ -665,19 +638,23 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.mic, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      recentMessages.isEmpty ? 'Start Conversation' : 'Continue Conversation',
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                child: Consumer<LanguageProvider>(
+                  builder: (context, lang, _) => Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.mic, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        recentMessages.isEmpty 
+                            ? lang.translate('start_conversation') 
+                            : lang.translate('continue_conversation'),
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -688,29 +665,9 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
   }
 
   Widget _buildRecentActivity() {
-    final activities = [
-      {
-        'title': 'Ration Card Application',
-        'status': 'In Progress',
-        'time': '2 hours ago',
-        'icon': Icons.receipt_long,
-        'color': AppTheme.warning,
-      },
-      {
-        'title': 'Birth Certificate Request',
-        'status': 'Completed',
-        'time': '1 day ago',
-        'icon': Icons.child_care,
-        'color': AppTheme.success,
-      },
-      {
-        'title': 'Land Records Verified',
-        'status': 'Completed',
-        'time': '3 days ago',
-        'icon': Icons.landscape,
-        'color': AppTheme.success,
-      },
-    ];
+    final userProvider = Provider.of<UserProvider>(context);
+    final lang = Provider.of<LanguageProvider>(context);
+    final apps = userProvider.currentUser.applications.reversed.toList();
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -721,7 +678,7 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Recent Activity',
+                lang.translate('recent_activity'),
                 style: GoogleFonts.poppins(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -729,9 +686,9 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
                 ),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {}, // View all applications
                 child: Text(
-                  'View All',
+                  lang.translate('view_all'),
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     color: AppTheme.electricBlue,
@@ -741,74 +698,124 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
             ],
           ),
           const SizedBox(height: 16),
-          ...activities.map((activity) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: AnimatedGlassCard(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: (activity['color'] as Color).withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          activity['icon'] as IconData,
-                          color: activity['color'] as Color,
-                          size: 24,
-                        ),
+          if (apps.isEmpty)
+             _buildEmptyActivity(lang)
+          else
+            ...apps.take(3).map((app) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: AnimatedGlassCard(
+                padding: const EdgeInsets.all(16),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => TrackApplicationScreen(application: app),
+                    ),
+                  );
+                },
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: _getStatusColor(context, app.status).withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              activity['title'] as String,
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: AppTheme.pureWhite,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              activity['time'] as String,
-                              style: GoogleFonts.inter(
-                                fontSize: 12,
-                                color: AppTheme.pureWhite.withOpacity(0.6),
-                              ),
-                            ),
-                          ],
-                        ),
+                      child: Icon(
+                        _getStatusIcon(context, app.status),
+                        color: _getStatusColor(context, app.status),
+                        size: 24,
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: (activity['color'] as Color).withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          activity['status'] as String,
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: activity['color'] as Color,
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            app.schemeName,
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.pureWhite,
+                            ),
                           ),
+                          const SizedBox(height: 4),
+                          Text(
+                            DateFormat('MMM dd, yyyy').format(app.submissionDate),
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: AppTheme.pureWhite.withOpacity(0.6),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: _getStatusColor(context, app.status).withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        lang.translate(app.status.name),
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: _getStatusColor(context, app.status),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              )),
+              ),
+            )),
         ],
       ),
     );
   }
 
+  Widget _buildEmptyActivity(LanguageProvider lang) {
+     return Center(
+       child: Padding(
+         padding: const EdgeInsets.symmetric(vertical: 20),
+         child: Column(
+           children: [
+             Icon(Icons.history, color: AppTheme.pureWhite.withOpacity(0.3), size: 40),
+             const SizedBox(height: 10),
+             Text(
+               lang.translate('no_activity_yet'),
+               style: GoogleFonts.inter(color: AppTheme.pureWhite.withOpacity(0.5)),
+             ),
+           ],
+         ),
+       ),
+     );
+  }
+
+  Color _getStatusColor(BuildContext context, ApplicationStatus status) {
+    switch (status) {
+      case ApplicationStatus.approved: return AppTheme.success;
+      case ApplicationStatus.rejected: return AppTheme.error;
+      case ApplicationStatus.submitted: return AppTheme.warning;
+      case ApplicationStatus.verified: return Theme.of(context).colorScheme.primary;
+      default: return Theme.of(context).colorScheme.onSurface;
+    }
+  }
+
+  IconData _getStatusIcon(BuildContext context, ApplicationStatus status) {
+    switch (status) {
+      case ApplicationStatus.approved: return Icons.check_circle_rounded;
+      case ApplicationStatus.rejected: return Icons.cancel_rounded;
+      case ApplicationStatus.submitted: return Icons.send_rounded;
+      case ApplicationStatus.verified: return Icons.verified_user_rounded;
+      default: return Icons.info_rounded;
+    }
+  }
+
   Widget _buildRecommendations() {
     final userProvider = Provider.of<UserProvider>(context);
+    final lang = Provider.of<LanguageProvider>(context);
     final user = userProvider.currentUser;
     
     if (!user.isProfileComplete) {
@@ -823,7 +830,7 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
                    const Icon(Icons.tips_and_updates_outlined, color: AppTheme.neonCyan),
                    const SizedBox(width: 12),
                    Text(
-                     'Personalization Tip',
+                     lang.translate('personalization_tip'),
                      style: GoogleFonts.poppins(
                        fontWeight: FontWeight.bold,
                        color: AppTheme.pureWhite,
@@ -833,7 +840,7 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
               ),
               const SizedBox(height: 12),
               Text(
-                'Complete your profile to see schemes and services recommended specifically for your eligibility.',
+                lang.translate('complete_profile_tip'),
                 style: GoogleFonts.inter(
                   fontSize: 13,
                   color: AppTheme.pureWhite.withOpacity(0.7),
@@ -852,7 +859,7 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
                   side: const BorderSide(color: AppTheme.neonCyan),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text('Setup My Profile'),
+                child: Text(lang.translate('setup_my_profile')),
               ),
             ],
           ),
@@ -882,12 +889,14 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-          child: Text(
-            'Recommended for You',
-            style: GoogleFonts.poppins(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.pureWhite,
+          child: Consumer<LanguageProvider>(
+            builder: (context, lang, _) => Text(
+              lang.translate('recommended_for_you'),
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.pureWhite,
+              ),
             ),
           ),
         ),
@@ -986,53 +995,39 @@ class _StatCardState extends State<_StatCard> with SingleTickerProviderStateMixi
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return AnimatedBuilder(
       animation: _pulseAnimation,
       builder: (context, child) {
         return Transform.scale(
           scale: _pulseAnimation.value,
           child: AnimatedGlassCard(
-            padding: const EdgeInsets.all(16), // Reduced from default 20
+            padding: const EdgeInsets.all(16),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12), // Reduced from 16
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        widget.color.withOpacity(0.3),
-                        widget.color.withOpacity(0.1),
-                      ],
-                    ),
+                    color: widget.color.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     widget.icon,
                     color: widget.color,
-                    size: 28, // Reduced from 32
+                    size: 28,
                   ),
                 ),
-                const SizedBox(height: 10), // Reduced from 12
-                ShaderMask(
-                  shaderCallback: (bounds) => LinearGradient(
-                    colors: [widget.color, widget.color.withOpacity(0.7)],
-                  ).createShader(bounds),
-                  child: Text(
-                    widget.value,
-                    style: GoogleFonts.poppins(
-                      fontSize: 24, // Reduced from 28
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.pureWhite,
-                    ),
-                  ),
+                const SizedBox(height: 10),
+                Text(
+                  widget.value,
+                  style: theme.textTheme.displaySmall?.copyWith(fontSize: 24, color: widget.color),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   widget.label,
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: AppTheme.pureWhite.withOpacity(0.7),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurface.withOpacity(0.6),
                   ),
                 ),
               ],
@@ -1061,6 +1056,7 @@ class _ServiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return AnimatedGlassCard(
       padding: const EdgeInsets.all(20),
       onTap: onTap,
@@ -1073,12 +1069,7 @@ class _ServiceCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    color.withOpacity(0.3),
-                    color.withOpacity(0.1),
-                  ],
-                ),
+                color: color.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -1090,19 +1081,17 @@ class _ServiceCard extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               title,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.pureWhite,
-              ),
+              style: theme.textTheme.labelLarge,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             if (description.isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(
                 description,
-                style: GoogleFonts.inter(
+                style: theme.textTheme.bodyMedium?.copyWith(
                   fontSize: 11,
-                  color: AppTheme.pureWhite.withOpacity(0.6),
+                  color: theme.colorScheme.onSurface.withOpacity(0.6),
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -1126,17 +1115,16 @@ class _MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         constraints: const BoxConstraints(maxWidth: 280),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: isUser
-                ? [AppTheme.electricBlue.withOpacity(0.3), AppTheme.electricBlue.withOpacity(0.1)]
-                : [AppTheme.gradientStart.withOpacity(0.3), AppTheme.gradientEnd.withOpacity(0.1)],
-          ),
+          color: isUser
+              ? theme.colorScheme.primary.withOpacity(0.15)
+              : theme.colorScheme.surface,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
@@ -1144,14 +1132,16 @@ class _MessageBubble extends StatelessWidget {
             bottomRight: Radius.circular(isUser ? 4 : 16),
           ),
           border: Border.all(
-            color: isUser ? AppTheme.electricBlue.withOpacity(0.3) : AppTheme.gradientStart.withOpacity(0.3),
+            color: isUser
+                ? theme.colorScheme.primary.withOpacity(0.3)
+                : theme.dividerColor,
           ),
         ),
         child: Text(
           message,
-          style: GoogleFonts.inter(
-            fontSize: 14,
-            color: AppTheme.pureWhite,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: isUser ? theme.colorScheme.primary : theme.colorScheme.onSurface,
+            fontWeight: isUser ? FontWeight.w600 : FontWeight.normal,
             height: 1.4,
           ),
         ),
@@ -1196,6 +1186,7 @@ class _PulsingVoiceFABState extends State<_PulsingVoiceFAB>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
@@ -1206,9 +1197,9 @@ class _PulsingVoiceFABState extends State<_PulsingVoiceFAB>
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.electricBlue.withOpacity(0.6 * _glowAnimation.value),
-                  blurRadius: 40,
-                  spreadRadius: 10,
+                  color: theme.colorScheme.primary.withOpacity(0.3 * _glowAnimation.value),
+                  blurRadius: 30,
+                  spreadRadius: 5,
                 ),
               ],
             ),
@@ -1221,15 +1212,17 @@ class _PulsingVoiceFABState extends State<_PulsingVoiceFAB>
                   ),
                 );
               },
-              backgroundColor: AppTheme.electricBlue,
-              elevation: 20,
+              backgroundColor: theme.colorScheme.primary,
+              foregroundColor: theme.colorScheme.onPrimary,
+              elevation: 4,
               icon: const Icon(Icons.mic, size: 28),
-              label: Text(
-                'Ask CVI',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.deepSpaceBlue,
+              label: Consumer<LanguageProvider>(
+                builder: (context, lang, _) => Text(
+                  lang.translate('ask_cvi'),
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: theme.colorScheme.onPrimary,
+                    fontSize: 16,
+                  ),
                 ),
               ),
             ),

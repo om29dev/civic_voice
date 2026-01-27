@@ -11,6 +11,7 @@ import '../../../models/document_model.dart';
 import '../../../core/services/document_inference_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../providers/language_provider.dart';
 
 class DocumentsScreen extends StatefulWidget {
   const DocumentsScreen({super.key});
@@ -59,21 +60,22 @@ class _DocumentsScreenState extends State<DocumentsScreen>
         final userProvider = Provider.of<UserProvider>(context, listen: false);
         
         // Show processing indicator
+        final lang = Provider.of<LanguageProvider>(context, listen: false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Row(
               children: [
-                SizedBox(
+                const SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.pureWhite),
                 ),
-                SizedBox(width: 16),
-                Text('AI scanning in progress...'),
+                const SizedBox(width: 16),
+                Text(lang.translate('ai_scanning')),
               ],
             ),
             backgroundColor: AppTheme.electricBlue,
-            duration: Duration(seconds: 2),
+            duration: const Duration(seconds: 2),
           ),
         );
 
@@ -111,8 +113,9 @@ class _DocumentsScreenState extends State<DocumentsScreen>
         _tabController.animateTo(0);
       }
     } catch (e) {
+      final lang = Provider.of<LanguageProvider>(context, listen: false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Scanning failed: $e'), backgroundColor: AppTheme.error),
+        SnackBar(content: Text('${lang.translate('scanning_failed')}: $e'), backgroundColor: AppTheme.error),
       );
     }
   }
@@ -158,9 +161,10 @@ class _DocumentsScreenState extends State<DocumentsScreen>
 
         userProvider.addDocument(newDoc);
         
+        final lang = Provider.of<LanguageProvider>(context, listen: false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Document "${platformFile.name}" uploaded successfully!'),
+            content: Text(lang.translate('upload_success')),
             backgroundColor: AppTheme.success,
             behavior: SnackBarBehavior.floating,
           ),
@@ -169,9 +173,10 @@ class _DocumentsScreenState extends State<DocumentsScreen>
         _tabController.animateTo(0);
       }
     } catch (e) {
+      final lang = Provider.of<LanguageProvider>(context, listen: false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error selecting file: $e'),
+          content: Text('${lang.translate('file_error')}: $e'),
           backgroundColor: AppTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
@@ -226,6 +231,7 @@ class _DocumentsScreenState extends State<DocumentsScreen>
   }
 
   Widget _buildHeader(int docCount) {
+    final lang = Provider.of<LanguageProvider>(context);
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Row(
@@ -255,7 +261,7 @@ class _DocumentsScreenState extends State<DocumentsScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'My Documents',
+                  lang.translate('my_documents'),
                   style: GoogleFonts.poppins(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -263,7 +269,7 @@ class _DocumentsScreenState extends State<DocumentsScreen>
                   ),
                 ),
                 Text(
-                  '$docCount documents stored',
+                  '$docCount ${lang.translate('documents_stored')}',
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     color: AppTheme.pureWhite.withOpacity(0.7),
@@ -282,6 +288,7 @@ class _DocumentsScreenState extends State<DocumentsScreen>
   }
 
   Widget _buildTabBar() {
+    final lang = Provider.of<LanguageProvider>(context);
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24),
       decoration: BoxDecoration(
@@ -298,10 +305,10 @@ class _DocumentsScreenState extends State<DocumentsScreen>
         labelColor: AppTheme.pureWhite,
         unselectedLabelColor: AppTheme.pureWhite.withOpacity(0.5),
         labelStyle: GoogleFonts.inter(fontWeight: FontWeight.w600),
-        tabs: const [
-          Tab(text: 'All Documents'),
-          Tab(text: 'Upload'),
-          Tab(text: 'Archived'),
+        tabs: [
+          Tab(text: lang.translate('all_documents')),
+          Tab(text: lang.translate('upload')),
+          Tab(text: lang.translate('archived')),
         ],
       ),
     );
@@ -355,6 +362,7 @@ class _DocumentsScreenState extends State<DocumentsScreen>
         : documents.where((doc) => doc.category == _selectedCategory).toList();
 
     if (filteredDocs.isEmpty) {
+      final lang = Provider.of<LanguageProvider>(context);
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -362,7 +370,7 @@ class _DocumentsScreenState extends State<DocumentsScreen>
             Icon(Icons.description_outlined, size: 64, color: AppTheme.pureWhite.withOpacity(0.3)),
             const SizedBox(height: 16),
             Text(
-              'No documents found',
+              lang.translate('no_documents_found'),
               style: GoogleFonts.poppins(color: AppTheme.pureWhite.withOpacity(0.5)),
             ),
           ],
@@ -383,6 +391,7 @@ class _DocumentsScreenState extends State<DocumentsScreen>
   }
 
   Widget _buildUploadSection(BuildContext context) {
+    final lang = Provider.of<LanguageProvider>(context);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -409,7 +418,7 @@ class _DocumentsScreenState extends State<DocumentsScreen>
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Upload Documents',
+                  lang.translate('upload_documents'),
                   style: GoogleFonts.poppins(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -418,7 +427,7 @@ class _DocumentsScreenState extends State<DocumentsScreen>
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Upload your certificates, identity proof,\nor property documents securely.',
+                  lang.translate('drag_drop'), // Assuming this key covers the description or adding a new one
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     color: AppTheme.pureWhite.withOpacity(0.7),
@@ -429,7 +438,7 @@ class _DocumentsScreenState extends State<DocumentsScreen>
                 ElevatedButton.icon(
                   onPressed: () => _scanDocument(context),
                   icon: const Icon(Icons.camera_alt),
-                  label: const Text('Scan with AI'),
+                  label: Text(lang.translate('scan_ai')),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.electricBlue,
                     foregroundColor: AppTheme.deepSpaceBlue,
@@ -443,7 +452,7 @@ class _DocumentsScreenState extends State<DocumentsScreen>
                 OutlinedButton.icon(
                   onPressed: () => _pickAndUploadFile(context),
                   icon: const Icon(Icons.add_photo_alternate),
-                  label: const Text('Choose Files'),
+                  label: Text(lang.translate('choose_files')),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.pureWhite,
                     side: BorderSide(color: AppTheme.glassBorder),
@@ -462,13 +471,14 @@ class _DocumentsScreenState extends State<DocumentsScreen>
   }
 
   Widget _buildSupportedFormats() {
+    final lang = Provider.of<LanguageProvider>(context);
     final formats = ['PDF', 'JPG', 'PNG', 'DOC', 'DOCX'];
     return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Supported Formats',
+            lang.translate('supported_formats'),
             style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -504,6 +514,7 @@ class _DocumentsScreenState extends State<DocumentsScreen>
   }
 
   Widget _buildArchivedList() {
+    final lang = Provider.of<LanguageProvider>(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -518,7 +529,7 @@ class _DocumentsScreenState extends State<DocumentsScreen>
               ),
               const SizedBox(height: 16),
               Text(
-                'No Archived Documents',
+                lang.translate('no_archived_docs'),
                 style: GoogleFonts.poppins(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
@@ -527,7 +538,7 @@ class _DocumentsScreenState extends State<DocumentsScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                'Archived documents will appear here',
+                lang.translate('archived_hint'),
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   color: AppTheme.pureWhite.withOpacity(0.6),
@@ -569,6 +580,7 @@ class _DocumentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final lang = Provider.of<LanguageProvider>(context);
     final dateStr = DateFormat('MMM dd, yyyy').format(document.uploadDate);
     
     return GlassCard(
@@ -654,13 +666,13 @@ class _DocumentCard extends StatelessWidget {
               }
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'view',
-                child: Text('View', style: TextStyle(color: Colors.white)),
+                child: Text(lang.translate('view'), style: const TextStyle(color: Colors.white)),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'delete',
-                child: Text('Delete', style: TextStyle(color: AppTheme.error)),
+                child: Text(lang.translate('delete'), style: const TextStyle(color: AppTheme.error)),
               ),
             ],
           ),

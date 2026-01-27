@@ -102,7 +102,7 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 200,
+      constraints: const BoxConstraints(minHeight: 200),
       margin: const EdgeInsets.all(24),
       child: AnimatedBuilder(
         animation: Listenable.merge([
@@ -133,31 +133,34 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
               ),
               
               // Main content
-              Row(
-                children: [
-                  // Animated Avatar
-                  Expanded(
-                    flex: 2,
-                    child: Transform.translate(
-                      offset: Offset(0, _bounceAnimation.value),
-                      child: _buildAnimatedAvatar(),
-                    ),
-                  ),
-                  
-                  const SizedBox(width: 20),
-                  
-                  // Greeting Text
-                  Expanded(
-                    flex: 3,
-                    child: SlideTransition(
-                      position: _textSlideAnimation,
-                      child: FadeTransition(
-                        opacity: _textFadeAnimation,
-                        child: _buildGreetingText(),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                child: Row(
+                  children: [
+                    // Animated Avatar
+                    Expanded(
+                      flex: 2,
+                      child: Transform.translate(
+                        offset: Offset(0, _bounceAnimation.value),
+                        child: _buildAnimatedAvatar(),
                       ),
                     ),
-                  ),
-                ],
+                    
+                    const SizedBox(width: 20),
+                    
+                    // Greeting Text
+                    Expanded(
+                      flex: 3,
+                      child: SlideTransition(
+                        position: _textSlideAnimation,
+                        child: FadeTransition(
+                          opacity: _textFadeAnimation,
+                          child: _buildGreetingText(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               
               // Floating particles

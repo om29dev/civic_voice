@@ -1,16 +1,31 @@
 import 'package:flutter/material.dart';
-import '../core/constants/app_strings.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:civic_voice_interface/core/constants/app_strings.dart';
 
 enum AppLanguage { english, hindi, marathi, tamil }
 
 class LanguageProvider extends ChangeNotifier {
+  static const String _langKey = 'app_language';
   AppLanguage _currentLanguage = AppLanguage.english;
 
   AppLanguage get currentLanguage => _currentLanguage;
 
-  void setLanguage(AppLanguage language) {
+  LanguageProvider() {
+    _loadLanguage();
+  }
+
+  Future<void> _loadLanguage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final index = prefs.getInt(_langKey) ?? 0;
+    _currentLanguage = AppLanguage.values[index];
+    notifyListeners();
+  }
+
+  Future<void> setLanguage(AppLanguage language) async {
     _currentLanguage = language;
     notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_langKey, language.index);
   }
 
   String get languageCode {

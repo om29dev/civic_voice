@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../../widgets/glass/glass_card.dart';
-import '../../../widgets/animated/particle_background.dart';
-import '../../../models/service_model_new.dart';
-import '../../../models/scheme_model.dart';
-import '../../../models/application_model.dart';
-import '../../../providers/user_provider.dart';
-import '../../../core/services/scheme_knowledge_base.dart';
+import 'package:civic_voice_interface/core/theme/app_theme.dart';
+import 'package:civic_voice_interface/widgets/glass/glass_card.dart';
+import 'package:civic_voice_interface/widgets/animated/particle_background.dart';
+import 'package:civic_voice_interface/providers/language_provider.dart';
+import 'package:civic_voice_interface/models/service_model_new.dart';
+import 'package:civic_voice_interface/models/scheme_model.dart';
+import 'package:civic_voice_interface/models/application_model.dart';
+import 'package:civic_voice_interface/providers/user_provider.dart';
+import 'package:civic_voice_interface/core/services/scheme_knowledge_base.dart';
 
 class ServiceDetailScreen extends StatelessWidget {
   final ServiceModel service;
@@ -26,6 +27,7 @@ class ServiceDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
+    final lang = Provider.of<LanguageProvider>(context);
     final user = userProvider.currentUser;
     
     final scheme = SchemeKnowledgeBase.getSchemeById(service.id);
@@ -41,6 +43,12 @@ class ServiceDetailScreen extends StatelessWidget {
       if (service.id == 'aadhaar' || service.id == 'pan' || service.id == 'passport' || service.id == 'birth') isEligible = true;
     }
 
+    // Translate title and description
+    String serviceKey = service.title.toLowerCase().replaceAll(' ', '_');
+    String translatedTitle = lang.translate(serviceKey);
+    String translatedDesc = lang.translate('${serviceKey}_desc');
+    if (translatedDesc == '${serviceKey}_desc') translatedDesc = service.description;
+
     return Scaffold(
       backgroundColor: AppTheme.deepSpaceBlue,
       extendBodyBehindAppBar: true,
@@ -52,7 +60,7 @@ class ServiceDetailScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          service.title,
+          translatedTitle,
           style: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.w600,
@@ -76,18 +84,18 @@ class ServiceDetailScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Hero Section
-                  _buildHeroSection(isEligible),
+                  _buildHeroSection(isEligible, translatedTitle, lang),
                   const SizedBox(height: 32),
                   
                   // Official Website Button
-                  _buildOfficialWebsiteButton(),
+                  _buildOfficialWebsiteButton(lang),
                   const SizedBox(height: 32),
                   
                   // Description
                   _buildSection(
-                    'About',
+                    lang.translate('about_service'),
                     Text(
-                      service.description,
+                      translatedDesc,
                       style: GoogleFonts.inter(
                         fontSize: 16,
                         color: AppTheme.pureWhite.withOpacity(0.8),
@@ -99,7 +107,7 @@ class ServiceDetailScreen extends StatelessWidget {
                   
                   // Processing Time
                   _buildInfoCard(
-                    'Processing Time',
+                    lang.translate('processing_time'),
                     service.processingTime,
                     Icons.access_time,
                     AppTheme.electricBlue,
@@ -108,8 +116,8 @@ class ServiceDetailScreen extends StatelessWidget {
                   
                   // Online Availability
                   _buildInfoCard(
-                    'Online Application',
-                    service.isOnlineAvailable ? 'Available' : 'Not Available',
+                    lang.translate('online_application'),
+                    service.isOnlineAvailable ? lang.translate('available') : lang.translate('not_available'),
                     Icons.computer,
                     service.isOnlineAvailable ? AppTheme.success : AppTheme.error,
                   ),
@@ -118,18 +126,18 @@ class ServiceDetailScreen extends StatelessWidget {
                   // Process Map (New Section)
                   if (scheme != null && scheme.steps.isNotEmpty) ...[
                     _buildSection(
-                      'Interactive Process Map',
-                      _buildProcessMap(context, scheme.steps),
+                      lang.translate('interactive_process_map'),
+                      _buildProcessMap(context, scheme.steps, lang),
                     ),
                     const SizedBox(height: 32),
                   ],
-
+                  
                   // Required Documents
                   _buildSection(
-                    'Required Documents',
+                    lang.translate('required_documents'),
                     Column(
                       children: service.requiredDocuments
-                          .map((doc) => _buildListItem(doc, Icons.description))
+                          .map((doc) => _buildListItemByText(doc, Icons.description, lang))
                           .toList(),
                     ),
                   ),
@@ -137,17 +145,17 @@ class ServiceDetailScreen extends StatelessWidget {
                   
                   // Eligibility Criteria
                   _buildSection(
-                    'Eligibility Criteria',
+                    lang.translate('eligibility_criteria'),
                     Column(
                       children: service.eligibilityCriteria
-                          .map((criteria) => _buildListItem(criteria, Icons.check_circle))
+                          .map((criteria) => _buildListItemByText(criteria, Icons.check_circle, lang))
                           .toList(),
                     ),
                   ),
                   const SizedBox(height: 32),
                   
                   // Action Buttons
-                  _buildActionButtons(context),
+                  _buildActionButtons(context, lang),
                 ],
               ),
             ),
@@ -157,7 +165,7 @@ class ServiceDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeroSection(bool isEligible) {
+  Widget _buildHeroSection(bool isEligible, String title, LanguageProvider lang) {
     return GlassCard(
       child: Row(
         children: [
@@ -184,7 +192,7 @@ class ServiceDetailScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  service.title,
+                  title,
                   style: GoogleFonts.poppins(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -201,7 +209,7 @@ class ServiceDetailScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        service.category,
+                        lang.translate(service.category.toLowerCase()),
                         style: GoogleFonts.inter(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -218,7 +226,7 @@ class ServiceDetailScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          'ELIGIBLE',
+                          lang.translate('eligible'),
                           style: GoogleFonts.inter(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -237,14 +245,14 @@ class ServiceDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildOfficialWebsiteButton() {
+  Widget _buildOfficialWebsiteButton(LanguageProvider lang) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
         onPressed: () => _launchURL(service.officialWebsite),
         icon: const Icon(Icons.open_in_new, size: 20),
         label: Text(
-          'Visit Official Website',
+          lang.translate('visit_official_website'),
           style: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -321,7 +329,8 @@ class ServiceDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProcessMap(BuildContext context, List<SchemeStep> steps) {
+  Widget _buildProcessMap(BuildContext context, List<SchemeStep> steps, LanguageProvider lang) {
+    final languageCode = lang.languageCode;
     return Column(
       children: steps.map((step) {
         final isLast = step == steps.last;
@@ -368,7 +377,7 @@ class ServiceDetailScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        step.title['en'] ?? '',
+                        step.title[languageCode] ?? step.title['en'] ?? '',
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -377,7 +386,7 @@ class ServiceDetailScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        step.instruction['en'] ?? '',
+                        step.instruction[languageCode] ?? step.instruction['en'] ?? '',
                         style: GoogleFonts.inter(
                           fontSize: 14,
                           color: AppTheme.pureWhite.withOpacity(0.7),
@@ -390,11 +399,11 @@ class ServiceDetailScreen extends StatelessWidget {
                           runSpacing: 8,
                           children: [
                             if (step.estimatedTime != null)
-                              _buildStepTag(Icons.timer_outlined, step.estimatedTime!['en']!),
+                              _buildStepTag(Icons.timer_outlined, step.estimatedTime![languageCode] ?? step.estimatedTime!['en']!),
                             if (step.location != null)
-                              _buildStepTag(Icons.location_on_outlined, step.location!['en']!),
+                              _buildStepTag(Icons.location_on_outlined, step.location![languageCode] ?? step.location!['en']!),
                             if (step.officeHours != null)
-                              _buildStepTag(Icons.access_time, step.officeHours!['en']!),
+                              _buildStepTag(Icons.access_time, step.officeHours![languageCode] ?? step.officeHours!['en']!),
                           ],
                         ),
                       ],
@@ -406,7 +415,7 @@ class ServiceDetailScreen extends StatelessWidget {
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
-                                'Requires: ${step.prerequisites!.join(", ")}',
+                                '${lang.translate('requires')}: ${step.prerequisites!.join(", ")}',
                                 style: GoogleFonts.inter(
                                   fontSize: 12,
                                   color: AppTheme.warning.withOpacity(0.7),
@@ -422,7 +431,7 @@ class ServiceDetailScreen extends StatelessWidget {
                         TextButton.icon(
                           onPressed: () => _launchURL(step.formUrl!),
                           icon: const Icon(Icons.file_download_outlined, size: 16),
-                          label: const Text('Download Official Form'),
+                          label: Text(lang.translate('download_official_form')),
                           style: TextButton.styleFrom(
                             foregroundColor: AppTheme.neonCyan,
                             padding: EdgeInsets.zero,
@@ -468,7 +477,13 @@ class ServiceDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildListItem(String text, IconData icon) {
+  Widget _buildListItemByText(String text, IconData icon, LanguageProvider lang) {
+    // Attempt to translate the text if it's a known key
+    String translatedText = lang.translate(text.toLowerCase().replaceAll(' ', '_'));
+    if (translatedText == text.toLowerCase().replaceAll(' ', '_')) {
+      translatedText = text;
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -482,7 +497,7 @@ class ServiceDetailScreen extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              text,
+              translatedText,
               style: GoogleFonts.inter(
                 fontSize: 15,
                 color: AppTheme.pureWhite.withOpacity(0.8),
@@ -495,7 +510,7 @@ class ServiceDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context) {
+  Widget _buildActionButtons(BuildContext context, LanguageProvider lang) {
     return Column(
       children: [
         SizedBox(
@@ -507,7 +522,7 @@ class ServiceDetailScreen extends StatelessWidget {
             },
             icon: const Icon(Icons.assignment, size: 20),
             label: Text(
-              'Apply Now',
+              lang.translate('apply_now'),
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -532,7 +547,7 @@ class ServiceDetailScreen extends StatelessWidget {
             },
             icon: const Icon(Icons.track_changes, size: 20),
             label: Text(
-              'Track Application',
+              lang.translate('track_application'),
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,

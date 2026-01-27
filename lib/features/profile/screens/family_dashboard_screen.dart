@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../widgets/glass/glass_card.dart';
 import '../../../providers/user_provider.dart';
+import '../../../providers/language_provider.dart';
 import '../../../models/family_member_model.dart';
 
 class FamilyDashboardScreen extends StatefulWidget {
@@ -17,6 +18,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
+    final lang = Provider.of<LanguageProvider>(context);
     final members = userProvider.currentUser.familyMembers;
 
     return Scaffold(
@@ -29,7 +31,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Family Dashboard',
+          lang.translate('family_dashboard'),
           style: GoogleFonts.poppins(
             color: AppTheme.pureWhite,
             fontWeight: FontWeight.w600,
@@ -38,25 +40,25 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add, color: AppTheme.electricBlue),
-            onPressed: () => _showAddMemberDialog(context, userProvider),
+            onPressed: () => _showAddMemberDialog(context, userProvider, lang),
           ),
         ],
       ),
       body: members.isEmpty
-          ? _buildEmptyState()
+          ? _buildEmptyState(lang)
           : ListView.separated(
               padding: const EdgeInsets.all(20),
               itemCount: members.length,
               separatorBuilder: (_, __) => const SizedBox(height: 16),
               itemBuilder: (context, index) {
                 final member = members[index];
-                return _buildMemberCard(context, userProvider, member);
+                return _buildMemberCard(context, userProvider, member, lang);
               },
             ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(LanguageProvider lang) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -64,7 +66,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
           Icon(Icons.family_restroom, size: 64, color: AppTheme.pureWhite.withOpacity(0.3)),
           const SizedBox(height: 16),
           Text(
-            'No family members yet',
+            lang.translate('no_family_members'),
             style: GoogleFonts.poppins(
               color: AppTheme.pureWhite.withOpacity(0.5),
               fontSize: 18,
@@ -72,7 +74,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Add members to find schemes for them',
+            lang.translate('add_members_msg'),
             style: GoogleFonts.inter(
               color: AppTheme.pureWhite.withOpacity(0.3),
               fontSize: 14,
@@ -83,7 +85,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
     );
   }
 
-  Widget _buildMemberCard(BuildContext context, UserProvider provider, FamilyMember member) {
+  Widget _buildMemberCard(BuildContext context, UserProvider provider, FamilyMember member, LanguageProvider lang) {
     return Dismissible(
       key: Key(member.id),
       onDismissed: (_) => provider.removeFamilyMember(member.id),
@@ -122,7 +124,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
                     ),
                   ),
                   Text(
-                    '${member.relation} • ${member.age} yrs',
+                    '${lang.translate(member.relation.toLowerCase())} • ${member.age} yrs',
                     style: GoogleFonts.inter(
                       color: AppTheme.pureWhite.withOpacity(0.6),
                       fontSize: 13,
@@ -139,7 +141,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  'Dependent',
+                  lang.translate('dependent'),
                   style: GoogleFonts.inter(
                     color: AppTheme.success,
                     fontSize: 10,
@@ -153,10 +155,10 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
     );
   }
 
-  void _showAddMemberDialog(BuildContext context, UserProvider provider) {
+  void _showAddMemberDialog(BuildContext context, UserProvider provider, LanguageProvider lang) {
     final nameController = TextEditingController();
     final ageController = TextEditingController();
-    String relation = 'Spouse';
+    String relation = 'spouse';
     bool isDependent = false;
 
     showDialog(
@@ -166,34 +168,34 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
           backgroundColor: AppTheme.deepSpaceBlue,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Text(
-            'Add Member',
+            lang.translate('add_member'),
             style: GoogleFonts.poppins(color: AppTheme.pureWhite),
           ),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildTextField(nameController, 'Name'),
+                _buildTextField(nameController, lang.translate('full_name')),
                 const SizedBox(height: 12),
-                _buildTextField(ageController, 'Age', isNumber: true),
+                _buildTextField(ageController, lang.translate('age'), isNumber: true),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: relation,
                   dropdownColor: AppTheme.deepSpaceBlue,
                   style: GoogleFonts.inter(color: AppTheme.pureWhite),
                   decoration: InputDecoration(
-                    labelText: 'Relation',
+                    labelText: lang.translate('relation'),
                     filled: true,
                     fillColor: AppTheme.glassBackground,
                   ),
-                  items: ['Spouse', 'Child', 'Father', 'Mother', 'Sibling']
-                      .map((r) => DropdownMenuItem(value: r, child: Text(r)))
+                  items: ['spouse', 'child', 'father', 'mother', 'sibling']
+                      .map((r) => DropdownMenuItem(value: r, child: Text(lang.translate(r))))
                       .toList(),
                   onChanged: (val) => setState(() => relation = val!),
                 ),
                 const SizedBox(height: 12),
                 SwitchListTile(
-                  title: Text('Dependent?', style: GoogleFonts.inter(color: AppTheme.pureWhite)),
+                  title: Text(lang.translate('dependent') + '?', style: GoogleFonts.inter(color: AppTheme.pureWhite)),
                   value: isDependent,
                   activeColor: AppTheme.electricBlue,
                   onChanged: (val) => setState(() => isDependent = val),
@@ -204,7 +206,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text(lang.translate('cancel')),
             ),
             ElevatedButton(
               onPressed: () {
@@ -221,7 +223,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
                 }
               },
               style: ElevatedButton.styleFrom(backgroundColor: AppTheme.electricBlue),
-              child: const Text('Add'),
+              child: Text(lang.translate('add')),
             ),
           ],
         ),

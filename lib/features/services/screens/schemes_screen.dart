@@ -6,6 +6,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/services/scheme_knowledge_base.dart';
 import '../../../models/scheme_model.dart';
 import '../../../providers/user_provider.dart';
+import '../../../providers/language_provider.dart';
 import 'scheme_detail_screen.dart';
 
 class SchemesScreen extends StatelessWidget {
@@ -13,6 +14,7 @@ class SchemesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final lang = Provider.of<LanguageProvider>(context);
     final categorySchemes = SchemeKnowledgeBase.getSchemesByCategories();
     final categoryNames = SchemeKnowledgeBase.getCategoryNames();
     final userProvider = Provider.of<UserProvider>(context);
@@ -24,7 +26,7 @@ class SchemesScreen extends StatelessWidget {
         backgroundColor: AppColors.background,
         elevation: 0,
         title: Text(
-          'Government Schemes',
+          lang.translate('government_schemes'),
           style: GoogleFonts.poppins(
             color: AppColors.white,
             fontWeight: FontWeight.bold,
@@ -49,7 +51,7 @@ class SchemesScreen extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Complete your profile to unlock eligibility checking!',
+                        lang.translate('unlock_eligibility_msg'),
                         style: GoogleFonts.inter(color: AppColors.white, fontSize: 13),
                       ),
                     ),
@@ -77,7 +79,7 @@ class SchemesScreen extends StatelessWidget {
                           Icon(_getCategoryIcon(category), color: AppColors.primary, size: 24),
                           const SizedBox(width: 12),
                           Text(
-                            categoryNames[category]!,
+                            lang.translate(category),
                             style: GoogleFonts.poppins(
                               color: AppColors.white,
                               fontSize: 20,
@@ -89,7 +91,7 @@ class SchemesScreen extends StatelessWidget {
                     ),
 
                     // Schemes in this category
-                    ...schemes.map((scheme) => _buildSchemeCard(context, scheme, user)).toList(),
+                    ...schemes.map((scheme) => _buildSchemeCard(context, scheme, user, lang)).toList(),
                     
                     const SizedBox(height: 10),
                   ],
@@ -102,8 +104,9 @@ class SchemesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSchemeCard(BuildContext context, GovernmentScheme scheme, UserProfile user) {
+  Widget _buildSchemeCard(BuildContext context, GovernmentScheme scheme, UserProfile user, LanguageProvider lang) {
     final isEligible = user.isProfileComplete && scheme.isEligible(user);
+    final languageCode = lang.languageCode;
 
     return GestureDetector(
       onTap: () {
@@ -152,7 +155,7 @@ class SchemesScreen extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          scheme.names['en']!,
+                          scheme.names[languageCode] ?? scheme.names['en']!,
                           style: GoogleFonts.poppins(
                             color: AppColors.white,
                             fontSize: 16,
@@ -168,7 +171,7 @@ class SchemesScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            'ELIGIBLE',
+                            lang.translate('eligible'),
                             style: GoogleFonts.inter(
                               color: AppColors.success,
                               fontSize: 10,

@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../providers/auth_provider.dart';
-import '../../../providers/language_provider.dart';
+import 'package:civic_voice_interface/core/constants/app_colors.dart';
+import 'package:civic_voice_interface/providers/auth_provider.dart';
+import 'package:civic_voice_interface/providers/language_provider.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});

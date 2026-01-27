@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/app_colors.dart';
 import 'providers/voice_provider.dart';
+import 'providers/theme_provider.dart';
 import 'providers/conversation_provider.dart';
 import 'providers/language_provider.dart';
 import 'providers/user_provider.dart';
@@ -16,15 +17,19 @@ import 'providers/notes_provider.dart';
 import 'providers/gamification_provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'providers/community_provider.dart';
+import 'providers/auth_provider.dart';
+import 'core/services/supabase_service.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
   try {
-    WidgetsFlutterBinding.ensureInitialized();
     await dotenv.load(fileName: ".env");
+    await SupabaseService.initialize();
   } catch (e) {
-    debugPrint("Error loading .env: $e");
-    // Proceed even if .env fails to load, the engine will handle missing keys
+    debugPrint("Initialization error: $e");
   }
+  
   runApp(const CivicVoiceApp());
 }
 
@@ -43,9 +48,11 @@ class CivicVoiceApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => NotesProvider()),
         ChangeNotifierProvider(create: (_) => GamificationProvider()),
         ChangeNotifierProvider(create: (_) => CommunityProvider()),
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
-      child: Consumer2<LanguageProvider, AccessibilityProvider>(
-        builder: (context, langProvider, accProvider, child) {
+      child: Consumer3<LanguageProvider, AccessibilityProvider, ThemeProvider>(
+        builder: (context, langProvider, accProvider, themeProvider, child) {
           // Link providers
           final voiceProvider = Provider.of<VoiceProvider>(context, listen: false);
           final convoProvider = Provider.of<ConversationProvider>(context, listen: false);
@@ -57,11 +64,9 @@ class CivicVoiceApp extends StatelessWidget {
           return MaterialApp(
             title: 'Civic Voice Interface',
             debugShowCheckedModeBanner: false,
-            theme: AppTheme.getTheme(accProvider.isHighContrast).copyWith(
-              scaffoldBackgroundColor: accProvider.isHighContrast 
-                  ? Colors.black 
-                  : AppColors.background,
-            ),
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeProvider.themeMode,
             builder: (context, child) {
               // Apply Accessibility Overrides
               final data = MediaQuery.of(context);

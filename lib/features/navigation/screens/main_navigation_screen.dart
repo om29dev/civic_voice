@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../providers/language_provider.dart';
+import '../../../providers/auth_provider.dart';
+import '../../../providers/user_provider.dart';
 import '../../dashboard/screens/premium_dashboard_screen.dart';
 import '../../services/screens/all_services_screen.dart';
 import '../../documents/screens/documents_screen.dart';
@@ -79,6 +81,16 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
         ),
       ),
     );
+
+    // Fetch user profile if logged in but data is missing (e.g. app restart)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      
+      if (authProvider.isAuthenticated && userProvider.isGuest && authProvider.userId != null) {
+        userProvider.fetchUserProfile(authProvider.userId!);
+      }
+    });
   }
 
   @override

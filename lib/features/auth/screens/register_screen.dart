@@ -2,11 +2,12 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../../widgets/glass/glass_card.dart';
-import '../../../widgets/animated/particle_background.dart';
-import '../../../providers/language_provider.dart';
-import '../../../providers/user_provider.dart';
+import 'package:civic_voice_interface/core/theme/app_theme.dart';
+import 'package:civic_voice_interface/widgets/glass/glass_card.dart';
+import 'package:civic_voice_interface/widgets/animated/particle_background.dart';
+import 'package:civic_voice_interface/providers/language_provider.dart';
+import 'package:civic_voice_interface/providers/user_provider.dart';
+import 'package:civic_voice_interface/providers/auth_provider.dart';
 
 
 class RegisterScreen extends StatefulWidget {
@@ -38,11 +39,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  void _handleRegister() {
+  Future<void> _handleRegister() async {
     if (!_agreeToTerms) {
+      final lang = Provider.of<LanguageProvider>(context, listen: false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Please agree to Terms & Conditions'),
+          content: Text(lang.translate('agree_terms')),
+          backgroundColor: AppTheme.error,
+        ),
+      );
+      return;
+    }
+    
+    if (_passwordController.text != _confirmPasswordController.text) {
+      final lang = Provider.of<LanguageProvider>(context, listen: false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(lang.translate('passwords_mismatch')),
           backgroundColor: AppTheme.error,
         ),
       );
@@ -51,20 +64,43 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     setState(() => _isLoading = true);
     
-    // Actually log in the user in global state
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    userProvider.login(
-      name: _nameController.text.trim(),
-      email: _emailController.text.trim(),
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final success = await authProvider.signup(
+      _nameController.text.trim(),
+      _emailController.text.trim(),
+      _passwordController.text,
       phone: _phoneController.text.trim(),
     );
+    
+    if (mounted) {
+      setState(() => _isLoading = false);
+      
+      if (success) {
+        final userProvider = Provider.of<UserProvider>(context, listen: false);
+        
+        // Fetch the newly created profile to ensure all data is synced
+        if (authProvider.userId != null) {
+          await userProvider.fetchUserProfile(authProvider.userId!);
+        } else {
+           // Fallback to manual login if userId is null (shouldn't happen)
+           userProvider.login(
+            name: _nameController.text.trim(),
+            email: _emailController.text.trim(),
+            phone: _phoneController.text.trim(),
+          );
+        }
 
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() => _isLoading = false);
         Navigator.pushReplacementNamed(context, '/dashboard');
+      } else {
+        final lang = Provider.of<LanguageProvider>(context, listen: false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(authProvider.errorMessage ?? lang.translate('registration_failed')),
+            backgroundColor: AppTheme.error,
+          ),
+        );
       }
-    });
+    }
   }
 
   @override

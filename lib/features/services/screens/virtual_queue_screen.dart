@@ -7,6 +7,8 @@ import '../../../core/services/queue_service.dart';
 import '../../../models/queue_token_model.dart';
 import 'package:intl/intl.dart';
 
+import '../../../providers/language_provider.dart';
+
 class VirtualQueueScreen extends StatefulWidget {
   const VirtualQueueScreen({super.key});
 
@@ -36,9 +38,9 @@ class _VirtualQueueScreenState extends State<VirtualQueueScreen> {
       _activeToken = null;
     });
   }
-
   @override
   Widget build(BuildContext context) {
+    final lang = Provider.of<LanguageProvider>(context);
     return Scaffold(
       backgroundColor: AppTheme.deepSpaceBlue,
       appBar: AppBar(
@@ -49,7 +51,7 @@ class _VirtualQueueScreenState extends State<VirtualQueueScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Smart Queue',
+          lang.translate('smart_queue'),
           style: GoogleFonts.poppins(
             color: AppTheme.pureWhite,
             fontWeight: FontWeight.w600,
@@ -60,14 +62,14 @@ class _VirtualQueueScreenState extends State<VirtualQueueScreen> {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            if (_activeToken == null) _buildBookingView() else _buildTokenView(),
+            if (_activeToken == null) _buildBookingView(lang) else _buildTokenView(lang),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildBookingView() {
+  Widget _buildBookingView(LanguageProvider lang) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -75,7 +77,7 @@ class _VirtualQueueScreenState extends State<VirtualQueueScreen> {
         Icon(Icons.confirmation_number_outlined, size: 80, color: AppTheme.electricBlue.withOpacity(0.5)),
         const SizedBox(height: 24),
         Text(
-          'Skip the Line',
+          lang.translate('skip_the_line'),
           style: GoogleFonts.poppins(
             fontSize: 28,
             fontWeight: FontWeight.bold,
@@ -84,7 +86,7 @@ class _VirtualQueueScreenState extends State<VirtualQueueScreen> {
         ),
         const SizedBox(height: 12),
         Text(
-          'Book a virtual token and arrive only when your turn is near.',
+          'Book a virtual token and arrive only when your turn is near.', // Maybe translate this later if key exists
           textAlign: TextAlign.center,
           style: GoogleFonts.inter(
             fontSize: 16,
@@ -102,7 +104,7 @@ class _VirtualQueueScreenState extends State<VirtualQueueScreen> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             ),
             child: Text(
-              'Get Token',
+              lang.translate('get_token'),
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -115,7 +117,7 @@ class _VirtualQueueScreenState extends State<VirtualQueueScreen> {
     );
   }
 
-  Widget _buildTokenView() {
+  Widget _buildTokenView(LanguageProvider lang) {
     final token = _activeToken!;
     return Column(
       children: [
@@ -124,7 +126,7 @@ class _VirtualQueueScreenState extends State<VirtualQueueScreen> {
           child: Column(
              children: [
                Text(
-                 'YOUR TOKEN',
+                 lang.translate('your_token'),
                  style: GoogleFonts.inter(
                    color: AppTheme.pureWhite.withOpacity(0.6),
                    letterSpacing: 2,
@@ -144,8 +146,8 @@ class _VirtualQueueScreenState extends State<VirtualQueueScreen> {
                Row(
                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                  children: [
-                   _buildInfoItem('Serving', '#${token.currentServing}'),
-                   _buildInfoItem('Wait Time', '${token.waitTimeMinutes} min'),
+                   _buildInfoItem(lang.translate('serving'), '#${token.currentServing}'),
+                   _buildInfoItem(lang.translate('wait_time'), '${token.waitTimeMinutes} min'),
                  ],
                ),
                const SizedBox(height: 24),
@@ -167,7 +169,7 @@ class _VirtualQueueScreenState extends State<VirtualQueueScreen> {
             onPressed: _cancelToken,
             icon: const Icon(Icons.cancel, color: AppTheme.error),
             label: Text(
-              'Cancel Token',
+              lang.translate('cancel_token'),
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,

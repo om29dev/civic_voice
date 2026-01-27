@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../../widgets/glass/glass_card.dart';
-import '../../../providers/community_provider.dart';
+import 'package:civic_voice_interface/core/theme/app_theme.dart';
+import 'package:civic_voice_interface/widgets/glass/glass_card.dart';
+import 'package:civic_voice_interface/providers/community_provider.dart';
 import 'package:intl/intl.dart';
+
+import 'package:civic_voice_interface/providers/language_provider.dart';
 
 class CommunityVerificationScreen extends StatelessWidget {
   const CommunityVerificationScreen({super.key});
@@ -12,6 +14,7 @@ class CommunityVerificationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final communityProvider = Provider.of<CommunityProvider>(context);
+    final lang = Provider.of<LanguageProvider>(context);
     final requests = communityProvider.requests;
 
     return Scaffold(
@@ -24,7 +27,7 @@ class CommunityVerificationScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Community Trust',
+          lang.translate('community_trust'),
           style: GoogleFonts.poppins(
             color: AppTheme.pureWhite,
             fontWeight: FontWeight.w600,
@@ -36,10 +39,10 @@ class CommunityVerificationScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildExplanationCard(),
+            _buildExplanationCard(lang),
             const SizedBox(height: 32),
             Text(
-              'Pending Verifications',
+              lang.translate('pending_verifications'),
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -63,7 +66,7 @@ class CommunityVerificationScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildExplanationCard() {
+  Widget _buildExplanationCard(LanguageProvider lang) {
     return GlassCard(
       gradientColors: [AppTheme.electricBlue.withOpacity(0.1), AppTheme.electricBlue.withOpacity(0.05)],
       child: Column(
@@ -71,7 +74,7 @@ class CommunityVerificationScreen extends StatelessWidget {
           const Icon(Icons.verified_user, size: 48, color: AppTheme.electricBlue),
           const SizedBox(height: 12),
           Text(
-            'Vouch for Neighbors',
+            lang.translate('vouch_explanation').split('.')[0], // "Vouch for Neighbors" usually part of explanation or header
             style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -80,7 +83,7 @@ class CommunityVerificationScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Help trusted community members get access to services by acting as a witness. Your "Vouch" counts as a digital signature.',
+            lang.translate('vouch_explanation'),
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 14,
@@ -188,7 +191,7 @@ class CommunityVerificationScreen extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: () => provider.endorseRequest(req.id),
                 icon: const Icon(Icons.thumb_up, size: 16),
-                label: const Text('Vouch for this person'),
+                label: Text(Provider.of<LanguageProvider>(context, listen: false).translate('vouch')),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.electricBlue,
                   foregroundColor: AppTheme.deepSpaceBlue,
@@ -207,7 +210,7 @@ class CommunityVerificationScreen extends StatelessWidget {
                 border: Border.all(color: AppTheme.success.withOpacity(0.3)),
               ),
               child: Text(
-                'Verification Complete',
+                Provider.of<LanguageProvider>(context, listen: false).translate('verification_complete'),
                 style: GoogleFonts.inter(
                   color: AppTheme.success,
                   fontWeight: FontWeight.w600,

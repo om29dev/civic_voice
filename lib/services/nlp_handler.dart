@@ -54,11 +54,11 @@ class NLPHandler {
                
       case 'eligibility':
         return "To be eligible for ${service?.title}:\n"
-               "${service?.eligibility.map((e) => "✓ $e").join('\n')}";
+               "${service?.eligibilityRules.map((e) => "✓ ${e.question}").join('\n')}";
                
       case 'steps':
         return "Here's the process for ${service?.title}:\n"
-               "${service?.steps.map((s) => "${s.stepNumber}. ${s.description}").join('\n')}";
+               "${service?.steps.map((s) => "${s.order}. ${s.title}").join('\n')}";
                
       default:
         return "I can help you with government services like pension, "
