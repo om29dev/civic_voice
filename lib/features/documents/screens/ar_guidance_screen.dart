@@ -24,6 +24,10 @@ class _ARGuidanceScreenState extends State<ARGuidanceScreen> {
   }
 
   Future<void> _simulateAnalysis() async {
+    if (widget.imagePath.isEmpty) {
+      if (mounted) setState(() => _isAnalyzing = false);
+      return;
+    }
     // Mocking AI analysis for signature zones
     await Future.delayed(const Duration(seconds: 2));
     if (mounted) {
@@ -57,10 +61,31 @@ class _ARGuidanceScreenState extends State<ARGuidanceScreen> {
         fit: StackFit.expand,
         children: [
           // Image
-          Image.file(
-            File(widget.imagePath),
-            fit: BoxFit.contain,
-          ),
+          // Image
+          widget.imagePath.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.document_scanner, size: 64, color: Colors.white54),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No Document Selected',
+                        style: GoogleFonts.poppins(color: Colors.white, fontSize: 18),
+                      ),
+                    ],
+                  ),
+                )
+              : Image.file(
+                  File(widget.imagePath),
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => Center(
+                    child: Text(
+                      'Could not load image',
+                      style: GoogleFonts.inter(color: Colors.white54),
+                    ),
+                  ),
+                ),
 
           // AR Overlay (Zones)
           if (!_isAnalyzing)

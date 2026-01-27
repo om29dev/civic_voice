@@ -30,34 +30,27 @@ class VoiceDashboardScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       drawer: _buildHistoryDrawer(context, convo),
-      body: Stack(
-        children: [
-          // 1. Subtle Premium Background
-          const Positioned.fill(child: _PremiumBackground()),
-          
-          SafeArea(
-            child: Column(
-              children: [
-                _buildHeader(context),
-                
-                // 2. Abstract Morphing AI Core
-                Expanded(
-                  flex: 2,
-                  child: _AICoreVisualizer(state: voice.state),
-                ),
-
-                // 3. Shimmering Conversation Hub
-                Expanded(
-                  flex: 3,
-                  child: _ConversationConsole(convo: convo),
-                ),
-
-                // 4. Interaction Controls (Glass FAB Overlay)
-                _buildInteractionDeck(context, voice, convo),
-              ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(context),
+            
+            // 2. Minimalistic AI Indicator
+            Expanded(
+              flex: 2,
+              child: _AICoreVisualizer(state: voice.state),
             ),
-          ),
-        ],
+
+            // 3. Conversation List
+            Expanded(
+              flex: 3,
+              child: _ConversationConsole(convo: convo),
+            ),
+
+            // 4. Input Area
+            _buildInteractionDeck(context, voice, convo),
+          ],
+        ),
       ),
     );
   }
@@ -92,20 +85,13 @@ class VoiceDashboardScreen extends StatelessWidget {
 
   Widget _buildInteractionDeck(BuildContext context, VoiceProvider voice, ConversationProvider convo) {
     final theme = Theme.of(context);
-    final lang = Provider.of<LanguageProvider>(context);
     final textController = TextEditingController();
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor.withOpacity(0.95),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, -5),
-          ),
-        ],
+        color: theme.scaffoldBackgroundColor,
+        border: Border(top: BorderSide(color: theme.dividerColor)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -113,31 +99,28 @@ class VoiceDashboardScreen extends StatelessWidget {
           if (voice.errorMessage.isNotEmpty)
             _buildErrorTip(voice.errorMessage),
           
-          const SizedBox(height: 10),
           Row(
             children: [
-              // New Chat Button
               IconButton(
                 onPressed: () => convo.clearMessages(),
-                icon: Icon(Icons.add_circle_outline, color: theme.colorScheme.primary),
+                icon: Icon(Icons.add, color: theme.colorScheme.primary),
                 tooltip: 'New Chat',
               ),
-              
-              // Text Input Field
               Expanded(
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(24),
                     border: Border.all(color: theme.dividerColor),
                   ),
                   child: TextField(
                     controller: textController,
                     decoration: InputDecoration(
-                      hintText: 'Type or ask orally...',
+                      hintText: 'Type or ask...',
                       border: InputBorder.none,
-                      hintStyle: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.4)),
+                      hintStyle: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     onSubmitted: (text) {
                       if (text.trim().isNotEmpty) {
@@ -148,9 +131,7 @@ class VoiceDashboardScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
-              
-              // Trigger Oral Interaction
+              const SizedBox(width: 8),
               GestureDetector(
                 onTap: () async {
                   if (voice.state == VoiceState.error) {
@@ -304,9 +285,9 @@ class _AICoreVisualizerState extends State<_AICoreVisualizer> with SingleTickerP
     
     switch (widget.state) {
       case VoiceState.listening: coreColor = theme.colorScheme.primary; scale = 1.1; break;
-      case VoiceState.processing: coreColor = AppTheme.warning; scale = 1.05; break;
+      case VoiceState.processing: coreColor = theme.colorScheme.tertiary; scale = 1.05; break; // Use tertiary if available, or secondary
       case VoiceState.responding: coreColor = theme.colorScheme.secondary; scale = 1.2; break;
-      case VoiceState.error: coreColor = AppTheme.error; scale = 1.0; break;
+      case VoiceState.error: coreColor = theme.colorScheme.error; scale = 1.0; break;
       default: coreColor = theme.colorScheme.onSurface.withOpacity(0.1);
     }
 
@@ -373,25 +354,9 @@ class _CorePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
-class _PremiumBackground extends StatelessWidget {
-  const _PremiumBackground();
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      decoration: BoxDecoration(
-        gradient: RadialGradient(
-          center: const Alignment(0, -0.3),
-          radius: 1.5,
-          colors: isDark 
-              ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
-              : [const Color(0xFFF1F5F9), const Color(0xFFE2E8F0)],
-        ),
-      ),
-    );
-  }
-}
 
+
+// Minimalistic Conversation Console
 class _ConversationConsole extends StatelessWidget {
   final ConversationProvider convo;
   const _ConversationConsole({required this.convo});
@@ -399,7 +364,7 @@ class _ConversationConsole extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      padding: const EdgeInsets.all(30),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       reverse: true,
       physics: const BouncingScrollPhysics(),
       itemCount: convo.messages.length,
@@ -410,7 +375,7 @@ class _ConversationConsole extends StatelessWidget {
     );
   }
 
-  Widget _buildMessageBubble(BuildContext context, Message msg) { // Changed type to Message
+  Widget _buildMessageBubble(BuildContext context, Message msg) {
     final isUser = msg.isUser;
     final theme = Theme.of(context);
     
@@ -421,38 +386,32 @@ class _ConversationConsole extends StatelessWidget {
         children: [
           Container(
             margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             constraints: const BoxConstraints(maxWidth: 300),
             decoration: BoxDecoration(
               color: isUser 
                   ? theme.colorScheme.primary 
-                  : theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: isUser ? [] : [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+                  : theme.colorScheme.surfaceVariant.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
               msg.text,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: isUser ? Colors.white : theme.colorScheme.onSurface,
-                height: 1.5,
+                color: isUser ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface,
+                height: 1.4,
               ),
             ),
-          ).animate().slideX(begin: isUser ? 0.2 : -0.2, end: 0, duration: 400.ms, curve: Curves.easeOut).fadeIn(),
+          ),
           
           if (msg.action != null)
             _buildActionCard(context, msg.action!),
             
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
         ],
       ),
     );
   }
+
 
   Widget _buildActionCard(BuildContext context, Map<String, dynamic> action) {
     final theme = Theme.of(context);
@@ -503,6 +462,6 @@ class _ConversationConsole extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         ),
       ),
-    ).animate().fadeIn().slideY(begin: 0.2, end: 0);
+    );
   }
 }

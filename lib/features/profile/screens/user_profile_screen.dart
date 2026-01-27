@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/services/supabase_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../widgets/glass/glass_card.dart';
 import '../../../widgets/animated/particle_background.dart';
 import '../../../providers/language_provider.dart';
@@ -159,20 +160,23 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         MaterialPageRoute(builder: (context) => const EmergencyScreen()),
                       );
                     }, trailing: const Icon(Icons.arrow_forward_ios, color: AppTheme.error, size: 16)),
-                    _buildMenuItem(Icons.view_in_ar, 'AR Document Guidance (F12)', () {
-                       // Warning: This requires a valid file path to work perfectly.
-                       // For demo, we might need to pick a file first or use a placeholder asset if available.
-                       // I'll launch a picker or just show a dialog explanation for the prototype.
-                       // Actually, let's just push screen with a dummy path and let it fail gracefully or show black.
-                       // Better: Show a picker dialog.
-                       ScaffoldMessenger.of(context).showSnackBar(
-                         const SnackBar(content: Text('Select a document to scan...')),
-                       );
-                       // Quick mock: We will just push it with a placeholder that won't load image but shows UI.
-                       Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const ARGuidanceScreen(imagePath: '')),
-                      );
+                    _buildMenuItem(Icons.view_in_ar, 'AR Document Guidance (F12)', () async {
+                      final ImagePicker picker = ImagePicker();
+                      try {
+                        final XFile? photo = await picker.pickImage(source: ImageSource.camera);
+                        if (photo != null && context.mounted) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => ARGuidanceScreen(imagePath: photo.path)),
+                          );
+                        }
+                      } catch (e) {
+                         if (context.mounted) {
+                           ScaffoldMessenger.of(context).showSnackBar(
+                             SnackBar(content: Text('Error accessing camera: $e')),
+                           );
+                         }
+                      }
                     }),
                   ]),
                   const SizedBox(height: 24),
