@@ -11,13 +11,26 @@ import 'voice_provider.dart';
 import 'notes_provider.dart';
 
 class ConversationProvider extends ChangeNotifier {
-  final List<Message> _messages = [];
+  List<ChatSession> _sessions = [];
+  String? _currentSessionId;
+  
   ReasoningEngine _reasoningEngine = ReasoningEngine();
   final List<Map<String, String>> _conversationHistory = [];
   VoiceProvider? _voiceProvider;
   NotesProvider? _notesProvider;
-
-  List<Message> get messages => _messages;
+  
+  // Getters
+  List<ChatSession> get sessions => List.unmodifiable(_sessions);
+  String? get currentSessionId => _currentSessionId;
+  
+  List<Message> get messages {
+    if (_currentSessionId == null) return [];
+    try {
+      return _sessions.firstWhere((s) => s.id == _currentSessionId).messages;
+    } catch (_) {
+      return [];
+    }
+  }
 
   ConversationProvider() {
     _loadHistory();
@@ -26,21 +39,25 @@ class ConversationProvider extends ChangeNotifier {
   Future<void> _loadHistory() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final String? messagesJson = prefs.getString('chat_messages');
-      if (messagesJson != null) {
-        final List<dynamic> decoded = jsonDecode(messagesJson);
-        _messages.clear();
-        _messages.addAll(decoded.map((m) => Message.fromJson(m)).toList());
-        notifyListeners();
+      
+      // Load Sessions
+      final String? sessionsJson = prefs.getString('chat_sessions');
+      if (sessionsJson != null) {
+        final List<dynamic> decoded = jsonDecode(sessionsJson);
+        _sessions = decoded.map((s) => ChatSession.fromJson(s)).toList();
+        
+        // Sort by date (newest first)
+        _sessions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      }
+
+      // Restore last session if available
+      if (_sessions.isNotEmpty) {
+        _currentSessionId = _sessions.first.id;
+      } else {
+        startNewChat();
       }
       
-      final String? historyJson = prefs.getString('chat_history');
-      if (historyJson != null) {
-        _conversationHistory.clear();
-        _conversationHistory.addAll(List<Map<String, String>>.from(
-          jsonDecode(historyJson).map((item) => Map<String, String>.from(item))
-        ));
-      }
+      notifyListeners();
     } catch (e) {
       debugPrint("Error loading history: $e");
     }
@@ -49,10 +66,87 @@ class ConversationProvider extends ChangeNotifier {
   Future<void> _saveHistory() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('chat_messages', jsonEncode(_messages.map((m) => m.toJson()).toList()));
-      await prefs.setString('chat_history', jsonEncode(_conversationHistory));
+      await prefs.setString('chat_sessions', jsonEncode(_sessions.map((s) => s.toJson()).toList()));
     } catch (e) {
       debugPrint("Error saving history: $e");
+    }
+  }
+  
+  void startNewChat() {
+    _currentSessionId = null;
+    _currentActiveScheme = null;
+    _collectedData = {};
+    _missingField = null;
+    _conversationHistory.clear();
+    notifyListeners();
+  }
+
+  void loadSession(String sessionId) {
+    if (_sessions.any((s) => s.id == sessionId)) {
+      _currentSessionId = sessionId;
+      _currentActiveScheme = null;
+      _collectedData = {};
+      
+      // Restore AI context
+      try {
+        final session = _sessions.firstWhere((s) => s.id == sessionId);
+        _updateConversationHistoryFromSession(session);
+      } catch (_) {}
+      
+      notifyListeners();
+    }
+  }
+
+  void deleteSession(String sessionId) {
+    _sessions.removeWhere((s) => s.id == sessionId);
+    if (_currentSessionId == sessionId) {
+      _currentSessionId = null;
+      startNewChat();
+    } else {
+      _saveHistory();
+      notifyListeners();
+    }
+  }
+
+  // ... (providers update methods are fine, keep them or let them be)
+  // Wait, I am replacing a block that includes startNewChat... to clearConversation.
+  // The block in the file (Step 61) is split. lines 70-103 and 463-486.
+  // I should do two replaces or one big one? The file is large. Two replaces is safer.
+  
+  // Actually, I can just replace the implementation of the methods I see in the file.
+  // But wait, the previous `replace_file_content` call (Step 56) INSERTED `startNewChat`, `loadSession`, `deleteSession` around line 55 (before `sendMessage`).
+  // AND there was `startNewChat` at line 70 in original text?
+  // No, in Step 56 I *replaced* lines 55 (end of _saveHistory) to.. wait.
+  // In Step 56 I replaced `_saveHistory`'s closing brace? No.
+  // Effectively I appended the new methods after `_saveHistory` and BEFORE `updateVoiceProvider`.
+  // So lines 70-103 in View (Step 61) ARE the new methods I inserted.
+  // AND `clearMessages` / `deleteMessage` / `clearConversation` are at the BOTTOM (lines 463+).
+  
+  // So I have to fix:
+  // 1. `startNewChat` at line 70 (remove `_messages.clear`).
+  // 2. `deleteMessage` and `clearConversation` at bottom.
+
+  // Let's fix startNewChat first.
+
+
+  void loadSession(String sessionId) {
+    if (_sessions.any((s) => s.id == sessionId)) {
+      _currentSessionId = sessionId;
+      // Reset State Machine when switching chats (optional, but safer)
+      _currentActiveScheme = null;
+      _collectedData = {};
+      notifyListeners();
+    }
+  }
+
+  void deleteSession(String sessionId) {
+    _sessions.removeWhere((s) => s.id == sessionId);
+    if (_currentSessionId == sessionId) {
+      _currentSessionId = null;
+      startNewChat();
+    } else {
+      _saveHistory();
+      notifyListeners();
     }
   }
 
@@ -65,13 +159,44 @@ class ConversationProvider extends ChangeNotifier {
   }
 
   void sendMessage(String text, {bool isUser = true}) async {
+    // 1. Ensure Session Exists
+    ChatSession? session;
+    if (_currentSessionId == null) {
+      // Create new session
+      final newId = DateTime.now().millisecondsSinceEpoch.toString();
+      session = ChatSession(
+        id: newId, 
+        title: text.length > 30 ? '${text.substring(0, 30)}...' : text, // Auto-title
+        createdAt: DateTime.now(), 
+        messages: []
+      );
+      _sessions.insert(0, session); // Add to top
+      _currentSessionId = newId;
+    } else {
+      try {
+        session = _sessions.firstWhere((s) => s.id == _currentSessionId);
+      } catch (_) {
+        // Fallback if ID is invalid
+        startNewChat();
+        sendMessage(text, isUser: isUser);
+        return;
+      }
+    }
+
     final message = Message(
       text: text, 
       isUser: isUser, 
       timestamp: DateTime.now()
     );
-    _messages.add(message);
+    
+    session.messages.add(message);
+    
+    // Sort sessions to move active one to top?
+    // _sessions.remove(session);
+    // _sessions.insert(0, session);
+    
     notifyListeners();
+    _saveHistory();
 
     // Sync user message to Supabase
     if (isUser && SupabaseService.isLoggedIn) {
@@ -79,15 +204,30 @@ class ConversationProvider extends ChangeNotifier {
     }
 
     if (isUser) {
+      // Pass the *full* history of this session to the AI?
+      // reasoningEngine expects List<Map<String,String>> history.
+      // We should construct it from the session messages.
+      _updateConversationHistoryFromSession(session);
+      
       await _processUserMessage(text);
     }
-    _saveHistory();
+  }
+  
+  void _updateConversationHistoryFromSession(ChatSession session) {
+    _conversationHistory.clear();
+    for (var msg in session.messages) {
+      _conversationHistory.add({
+        'role': msg.isUser ? 'user' : 'assistant',
+        'content': msg.text
+      });
+    }
   }
 
   Future<void> _syncMessageToSupabase(Message msg) async {
     try {
       await SupabaseService.from('messages').insert({
         'user_id': SupabaseService.userId,
+        'session_id': _currentSessionId, // Add session ID support if DB has it, else it might just log flat
         'text': msg.text,
         'is_user': msg.isUser,
         'timestamp': msg.timestamp.toIso8601String(),
@@ -353,7 +493,23 @@ class ConversationProvider extends ChangeNotifier {
       action: detectedAction,
     );
     
-    _messages.add(message);
+    // Add to current session
+    if (_currentSessionId != null) {
+       try {
+         final session = _sessions.firstWhere((s) => s.id == _currentSessionId);
+         session.messages.add(message);
+       } catch (_) {}
+    } else {
+       // Should not happen if flow is correct, but safe fallback:
+       // If system speaks without user context (e.g. welcome), create session?
+       // For now, ignore or create temp session? 
+       // Let's create session if null, assuming auto-start.
+       final newId = DateTime.now().millisecondsSinceEpoch.toString();
+       final session = ChatSession(id: newId, title: "New Chat", createdAt: DateTime.now(), messages: [message]);
+       _sessions.insert(0, session);
+       _currentSessionId = newId;
+    }
+
     notifyListeners();
     
     if (_voiceProvider != null) {
@@ -373,27 +529,26 @@ class ConversationProvider extends ChangeNotifier {
   }
 
   void deleteMessage(int index) {
-    if (index >= 0 && index < _messages.length) {
-      _messages.removeAt(index);
-      notifyListeners();
-      _saveHistory();
+    if (_currentSessionId != null) {
+      try {
+        final session = _sessions.firstWhere((s) => s.id == _currentSessionId);
+        if (index >= 0 && index < session.messages.length) {
+          session.messages.removeAt(index);
+          notifyListeners();
+          _saveHistory();
+        }
+      } catch (_) {}
     }
   }
 
   void clearConversation() async {
-    _messages.clear();
-    _conversationHistory.clear();
-    _currentActiveScheme = null;
-    _collectedData = {};
-    notifyListeners();
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('chat_messages');
-      await prefs.remove('chat_history');
-    } catch (_) {}
+    _sessions.clear();
+    startNewChat();
+    _saveHistory();
   }
 
   void setLanguage(String code) {
     _reasoningEngine = ReasoningEngine(languageCode: code);
   }
+}
 }

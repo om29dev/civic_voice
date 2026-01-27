@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:civic_voice_interface/core/theme/app_theme.dart';
 import 'package:civic_voice_interface/widgets/glass/glass_card.dart';
 import 'package:civic_voice_interface/widgets/animated/voice_waveform.dart';
 import 'package:civic_voice_interface/widgets/animated/particle_background.dart';
+import 'package:civic_voice_interface/providers/conversation_provider.dart';
+import 'package:civic_voice_interface/providers/voice_provider.dart';
+import 'package:civic_voice_interface/models/conversation_model.dart'; // Ensure this model is available
+
+import 'package:intl/intl.dart';
 
 class VoiceInterfaceScreen extends StatefulWidget {
   const VoiceInterfaceScreen({super.key});
@@ -14,21 +20,16 @@ class VoiceInterfaceScreen extends StatefulWidget {
 
 class _VoiceInterfaceScreenState extends State<VoiceInterfaceScreen>
     with TickerProviderStateMixin {
-  bool _isListening = false;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late AnimationController _avatarController;
   late AnimationController _gridController;
   late Animation<double> _avatarAnimation;
 
-  final List<Map<String, dynamic>> _messages = [
-    {'text': 'How do I apply for a ration card?', 'isUser': true},
-    {'text': 'I can help you with that! You\'ll need your Aadhaar card, address proof, and income certificate. Would you like me to guide you through the process?', 'isUser': false},
-  ];
-
   final List<String> _quickResponses = [
-    'Yes, please',
-    'What documents?',
-    'Show offices',
-    'Start over',
+    'How do I apply?',
+    'Eligibility rules',
+    'Required documents',
+    'Nearest center',
   ];
 
   @override
@@ -57,17 +58,41 @@ class _VoiceInterfaceScreenState extends State<VoiceInterfaceScreen>
     super.dispose();
   }
 
-  void _toggleListening() {
-    setState(() {
-      _isListening = !_isListening;
-    });
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Link VoiceProvider to ConversationProvider for TTS output
+    final voice = Provider.of<VoiceProvider>(context, listen: false);
+    final convo = Provider.of<ConversationProvider>(context, listen: false);
+    convo.updateVoiceProvider(voice);
+  }
+
+  void _toggleListening(VoiceProvider voice, ConversationProvider convo) {
+    if (voice.isListening) {
+      voice.stopSilently();
+    } else {
+      voice.startListening(
+        onFinalResult: (text) {
+          if (text.isNotEmpty) {
+             convo.sendMessage(text);
+          }
+        },
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Consume Providers
+    final voiceProvider = Provider.of<VoiceProvider>(context);
+    final conversationProvider = Provider.of<ConversationProvider>(context);
+    final isListening = voiceProvider.isListening;
+
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: AppTheme.deepSpaceBlue,
       extendBodyBehindAppBar: true,
+      drawer: _buildHistoryDrawer(context, conversationProvider),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -85,8 +110,14 @@ class _VoiceInterfaceScreenState extends State<VoiceInterfaceScreen>
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings_outlined, color: AppTheme.pureWhite),
-            onPressed: () {},
+            icon: const Icon(Icons.history, color: AppTheme.pureWhite),
+            tooltip: 'Chat History',
+            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+          ),
+          IconButton(
+            icon: const Icon(Icons.add_circle_outline, color: AppTheme.pureWhite),
+            tooltip: 'New Chat',
+            onPressed: () => conversationProvider.startNewChat(),
           ),
         ],
       ),
@@ -118,27 +149,27 @@ class _VoiceInterfaceScreenState extends State<VoiceInterfaceScreen>
                 const SizedBox(height: 20),
                 
                 // Animated Avatar
-                _buildAnimatedAvatar(),
+                _buildAnimatedAvatar(isListening),
                 
                 const SizedBox(height: 30),
                 
                 // Voice Waveform Visualizer
-                _buildWaveformVisualizer(),
+                _buildWaveformVisualizer(isListening),
                 
                 const SizedBox(height: 30),
                 
                 // Conversation Bubbles
                 Expanded(
-                  child: _buildConversationList(),
+                  child: _buildConversationList(conversationProvider.messages),
                 ),
                 
                 // Quick Responses
-                _buildQuickResponses(),
+                _buildQuickResponses(conversationProvider),
                 
                 const SizedBox(height: 20),
                 
                 // Voice Control Button
-                _buildVoiceControlButton(),
+                _buildVoiceControlButton(voiceProvider, conversationProvider, isListening),
                 
                 const SizedBox(height: 20),
               ],
@@ -149,7 +180,7 @@ class _VoiceInterfaceScreenState extends State<VoiceInterfaceScreen>
     );
   }
 
-  Widget _buildAnimatedAvatar() {
+  Widget _buildAnimatedAvatar(bool isListening) {
     return AnimatedBuilder(
       animation: _avatarAnimation,
       builder: (context, child) {
@@ -187,7 +218,7 @@ class _VoiceInterfaceScreenState extends State<VoiceInterfaceScreen>
                   child: CustomPaint(
                     painter: _RotatingRingsPainter(
                       animation: _avatarController,
-                      isActive: _isListening,
+                      isActive: isListening,
                     ),
                   ),
                 ),
@@ -195,7 +226,7 @@ class _VoiceInterfaceScreenState extends State<VoiceInterfaceScreen>
                 // Center icon
                 Center(
                   child: Icon(
-                    _isListening ? Icons.mic : Icons.mic_none,
+                    isListening ? Icons.mic : Icons.mic_none,
                     size: 50,
                     color: AppTheme.pureWhite,
                   ),
@@ -208,43 +239,51 @@ class _VoiceInterfaceScreenState extends State<VoiceInterfaceScreen>
     );
   }
 
-  Widget _buildWaveformVisualizer() {
+  Widget _buildWaveformVisualizer(bool isListening) {
     return Container(
       height: 200,
       padding: const EdgeInsets.symmetric(horizontal: 40),
-      child: _isListening
+      child: isListening
           ? VoiceWaveform(
-              isListening: _isListening,
+              isListening: isListening,
               size: 200,
               color: AppTheme.electricBlue,
             )
           : CircularWaveform(
-              isActive: _isListening,
+              isActive: isListening,
               size: 200,
               color: AppTheme.electricBlue,
             ),
     );
   }
 
-  Widget _buildConversationList() {
+  Widget _buildConversationList(List<Message> messages) {
+    // We reverse the list for display (Newest at bottom)
+    // ListView reverse:true means index 0 is at bottom.
+    // So we pass chronological messages list and let ListView handle reversing.
+    
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      reverse: true,
+      reverse: true, 
       physics: const BouncingScrollPhysics(),
-      itemCount: _messages.length,
+      itemCount: messages.length,
       itemBuilder: (context, index) {
-        final reversedIndex = _messages.length - 1 - index;
-        final message = _messages[reversedIndex];
+        // Calculate correct index for chronological list when ListView is reversed
+        final reversedIndex = messages.length - 1 - index;
+        final message = messages[reversedIndex];
+        
         return _AnimatedMessageBubble(
-          message: message['text'] as String,
-          isUser: message['isUser'] as bool,
-          delay: Duration(milliseconds: index * 100),
+          key: ValueKey(message.timestamp.millisecondsSinceEpoch), // Unique key for state preservation
+          message: message.text,
+          isUser: message.isUser,
+          // Stagger animation for initial load, but new messages (index 0) appear immediately
+          delay: Duration(milliseconds: index * 50),
         );
       },
     );
   }
 
-  Widget _buildQuickResponses() {
+  Widget _buildQuickResponses(ConversationProvider convo) {
     return Container(
       height: 60,
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -257,7 +296,9 @@ class _VoiceInterfaceScreenState extends State<VoiceInterfaceScreen>
             padding: const EdgeInsets.only(right: 12),
             child: _QuickResponseChip(
               label: _quickResponses[index],
-              onTap: () {},
+              onTap: () {
+                convo.sendMessage(_quickResponses[index]);
+              },
             ),
           );
         },
@@ -265,20 +306,20 @@ class _VoiceInterfaceScreenState extends State<VoiceInterfaceScreen>
     );
   }
 
-  Widget _buildVoiceControlButton() {
+  Widget _buildVoiceControlButton(VoiceProvider voice, ConversationProvider convo, bool isListening) {
     return GestureDetector(
-      onTap: _toggleListening,
+      onTap: () => _toggleListening(voice, convo),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
-        width: _isListening ? 200 : 80,
+        width: isListening ? 200 : 80,
         height: 80,
         decoration: BoxDecoration(
-          gradient: _isListening ? AppTheme.primaryGradient : AppTheme.accentGradient,
+          gradient: isListening ? AppTheme.primaryGradient : AppTheme.accentGradient,
           borderRadius: BorderRadius.circular(40),
           boxShadow: [
             BoxShadow(
-              color: (_isListening ? AppTheme.gradientStart : AppTheme.electricBlue).withOpacity(0.6),
+              color: (isListening ? AppTheme.gradientStart : AppTheme.electricBlue).withOpacity(0.6),
               blurRadius: 30,
               spreadRadius: 5,
             ),
@@ -288,11 +329,11 @@ class _VoiceInterfaceScreenState extends State<VoiceInterfaceScreen>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              _isListening ? Icons.stop : Icons.mic,
+              isListening ? Icons.stop : Icons.mic,
               color: AppTheme.pureWhite,
               size: 32,
             ),
-            if (_isListening) ...[
+            if (isListening) ...[
               const SizedBox(width: 12),
               Text(
                 'Listening...',
@@ -304,6 +345,126 @@ class _VoiceInterfaceScreenState extends State<VoiceInterfaceScreen>
               ),
             ],
           ],
+        ),
+      ),
+    );
+  }
+  Widget _buildHistoryDrawer(BuildContext context, ConversationProvider convo) {
+    return Drawer(
+      backgroundColor: AppTheme.deepSpaceBlue.withOpacity(0.95),
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Text(
+                'History',
+                style: GoogleFonts.poppins(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.pureWhite,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: _buildNewChatButton(convo),
+            ),
+            const SizedBox(height: 20),
+            Expanded(
+              child: convo.sessions.isEmpty
+                ? Center(
+                    child: Text(
+                      'No history yet',
+                      style: GoogleFonts.inter(color: AppTheme.pureWhite.withOpacity(0.5)),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: convo.sessions.length,
+                    itemBuilder: (context, index) {
+                      final session = convo.sessions[index];
+                      final isSelected = session.id == convo.currentSessionId;
+                      return Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        decoration: isSelected ? BoxDecoration(
+                          color: AppTheme.electricBlue.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AppTheme.electricBlue.withOpacity(0.3)),
+                        ) : null,
+                        child: ListTile(
+                          title: Text(
+                            session.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                              color: isSelected ? AppTheme.pureWhite : AppTheme.pureWhite.withOpacity(0.8),
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                            ),
+                          ),
+                          subtitle: Text(
+                            DateFormat('MMM d, h:mm a').format(session.createdAt),
+                            style: GoogleFonts.inter(
+                              color: AppTheme.pureWhite.withOpacity(0.4),
+                              fontSize: 12,
+                            ),
+                          ),
+                          onTap: () {
+                            convo.loadSession(session.id);
+                            Navigator.pop(context); // Close drawer
+                          },
+                          trailing: IconButton(
+                            icon: Icon(Icons.delete_outline, size: 20, color: AppTheme.pureWhite.withOpacity(0.5)),
+                            onPressed: () {
+                               convo.deleteSession(session.id);
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+            ),
+            const Divider(color: Colors.white10),
+            ListTile(
+               leading: const Icon(Icons.delete_sweep, color: AppTheme.error),
+               title: Text('Clear All History', style: GoogleFonts.inter(color: AppTheme.error)),
+               onTap: () => convo.clearConversation(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNewChatButton(ConversationProvider convo) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+           convo.startNewChat();
+           Navigator.pop(context);
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            border: Border.all(color: AppTheme.pureWhite.withOpacity(0.2)),
+            borderRadius: BorderRadius.circular(12),
+            color: AppTheme.pureWhite.withOpacity(0.05),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.add, color: AppTheme.pureWhite),
+              const SizedBox(width: 12),
+              Text(
+                'New Chat',
+                style: GoogleFonts.inter(
+                  color: AppTheme.pureWhite,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
