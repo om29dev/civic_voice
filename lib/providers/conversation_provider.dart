@@ -129,26 +129,7 @@ class ConversationProvider extends ChangeNotifier {
   // Let's fix startNewChat first.
 
 
-  void loadSession(String sessionId) {
-    if (_sessions.any((s) => s.id == sessionId)) {
-      _currentSessionId = sessionId;
-      // Reset State Machine when switching chats (optional, but safer)
-      _currentActiveScheme = null;
-      _collectedData = {};
-      notifyListeners();
-    }
-  }
 
-  void deleteSession(String sessionId) {
-    _sessions.removeWhere((s) => s.id == sessionId);
-    if (_currentSessionId == sessionId) {
-      _currentSessionId = null;
-      startNewChat();
-    } else {
-      _saveHistory();
-      notifyListeners();
-    }
-  }
 
   void updateVoiceProvider(VoiceProvider vp) {
     _voiceProvider = vp;
@@ -550,5 +531,4 @@ class ConversationProvider extends ChangeNotifier {
   void setLanguage(String code) {
     _reasoningEngine = ReasoningEngine(languageCode: code);
   }
-}
 }

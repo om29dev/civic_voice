@@ -171,6 +171,12 @@ class UserProvider extends ChangeNotifier {
     String phone = '',
     String avatarUrl = '',
     bool isVerified = false,
+    int? age,
+    double? annualIncome,
+    String? occupation,
+    String? location,
+    bool ownsLand = false,
+    Map<String, dynamic>? preferences,
   }) {
     _currentUser = UserProfile.registered(
       name: name,
@@ -207,7 +213,15 @@ class UserProvider extends ChangeNotifier {
           ],
         ),
       ],
+      age: age,
+      annualIncome: annualIncome,
+      occupation: occupation,
+      location: location,
+      ownsLand: ownsLand,
     );
+     if (preferences != null) {
+      _currentUser = _currentUser.copyWith(preferences: preferences);
+    }
     notifyListeners();
   }
 
@@ -222,6 +236,12 @@ class UserProvider extends ChangeNotifier {
         email: data['email'] ?? '',
         phone: data['phone'] ?? '',
         isVerified: false, // Or fetch this if we add it to DB
+        age: data['age'],
+        annualIncome: data['annual_income']?.toDouble(),
+        occupation: data['occupation'],
+        location: data['location'],
+        ownsLand: data['owns_land'] ?? false,
+        preferences: data['preferences'],
       );
     } catch (e) {
       debugPrint('Error fetching profile: $e');
