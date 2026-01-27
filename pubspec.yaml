@@ -31,7 +31,7 @@ dependencies:
   
   # Functional
   provider: ^6.0.5
-  speech_to_text: ^6.3.0
+  speech_to_text: ^7.0.0
   flutter_tts: ^3.8.3
   countup: ^0.1.3
   url_launcher: ^6.2.2
