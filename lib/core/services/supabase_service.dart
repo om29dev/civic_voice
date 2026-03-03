@@ -3,13 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class SupabaseService {
   static SupabaseClient? _client;
-  
-  static SupabaseClient get client {
-    if (_client == null) {
-      throw Exception('Supabase not initialized. Call SupabaseService.initialize() first.');
-    }
-    return _client!;
-  }
+  static SupabaseClient get client => Supabase.instance.client;
   
   static GoTrueClient get auth => client.auth;
   

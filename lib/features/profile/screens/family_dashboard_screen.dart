@@ -47,7 +47,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
       body: members.isEmpty
           ? _buildEmptyState(lang)
           : ListView.separated(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
               itemCount: members.length,
               separatorBuilder: (_, __) => const SizedBox(height: 16),
               itemBuilder: (context, index) {
@@ -63,12 +63,12 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.family_restroom, size: 64, color: AppTheme.pureWhite.withOpacity(0.3)),
+          Icon(Icons.family_restroom, size: 64, color: AppTheme.pureWhite.withValues(alpha: 0.3)),
           const SizedBox(height: 16),
           Text(
             lang.translate('no_family_members'),
             style: GoogleFonts.poppins(
-              color: AppTheme.pureWhite.withOpacity(0.5),
+              color: AppTheme.pureWhite.withValues(alpha: 0.5),
               fontSize: 18,
             ),
           ),
@@ -76,7 +76,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
           Text(
             lang.translate('add_members_msg'),
             style: GoogleFonts.inter(
-              color: AppTheme.pureWhite.withOpacity(0.3),
+              color: AppTheme.pureWhite.withValues(alpha: 0.3),
               fontSize: 14,
             ),
           ),
@@ -90,7 +90,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
       key: Key(member.id),
       onDismissed: (_) => provider.removeFamilyMember(member.id),
       background: Container(
-        color: AppTheme.error.withOpacity(0.8),
+        color: AppTheme.error.withValues(alpha: 0.8),
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         child: const Icon(Icons.delete, color: Colors.white),
@@ -101,7 +101,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
           children: [
             CircleAvatar(
               radius: 24,
-              backgroundColor: AppTheme.electricBlue.withOpacity(0.2),
+              backgroundColor: AppTheme.electricBlue.withValues(alpha: 0.2),
               child: Text(
                 member.name[0].toUpperCase(),
                 style: GoogleFonts.poppins(
@@ -126,7 +126,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
                   Text(
                     '${lang.translate(member.relation.toLowerCase())} • ${member.age} yrs',
                     style: GoogleFonts.inter(
-                      color: AppTheme.pureWhite.withOpacity(0.6),
+                      color: AppTheme.pureWhite.withValues(alpha: 0.6),
                       fontSize: 13,
                     ),
                   ),
@@ -137,7 +137,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppTheme.success.withOpacity(0.2),
+                  color: AppTheme.success.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -195,7 +195,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
                 ),
                 const SizedBox(height: 12),
                 SwitchListTile(
-                  title: Text(lang.translate('dependent') + '?', style: GoogleFonts.inter(color: AppTheme.pureWhite)),
+                  title: Text('${lang.translate('dependent')}?', style: GoogleFonts.inter(color: AppTheme.pureWhite)),
                   value: isDependent,
                   activeColor: AppTheme.electricBlue,
                   onChanged: (val) => setState(() => isDependent = val),
@@ -240,7 +240,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
         labelText: label,
         filled: true,
         fillColor: AppTheme.glassBackground,
-        labelStyle: TextStyle(color: AppTheme.pureWhite.withOpacity(0.6)),
+        labelStyle: TextStyle(color: AppTheme.pureWhite.withValues(alpha: 0.6)),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );

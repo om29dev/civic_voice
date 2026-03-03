@@ -30,7 +30,7 @@ class UserProfileModal extends StatelessWidget {
             width: 50,
             height: 5,
             decoration: BoxDecoration(
-              color: Colors.grey.withOpacity(0.3),
+              color: Colors.grey.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(10),
             ),
           ),
@@ -43,7 +43,7 @@ class UserProfileModal extends StatelessWidget {
           ),
           const SizedBox(height: 15),
           Text(
-            auth.userName ?? 'Sidhant Mattoo',
+            auth.userName,
             style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary),
           ),
           Text(

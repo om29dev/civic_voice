@@ -24,7 +24,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen>
 
   final TextEditingController _phoneController = TextEditingController();
   bool _isLoading = false;
-  String _selectedLanguage = 'English';
+  final String _selectedLanguage = 'English';
 
   @override
   void initState() {
@@ -81,13 +81,13 @@ class _AuthenticationScreenState extends State<AuthenticationScreen>
           // Animated gradient background
           Positioned.fill(
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
                     AppTheme.deepSpaceBlue,
-                    const Color(0xFF1A2F4F),
+                    Color(0xFF1A2F4F),
                     AppTheme.deepSpaceBlue,
                   ],
                 ),
@@ -153,14 +153,14 @@ class _AuthenticationScreenState extends State<AuthenticationScreen>
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppTheme.electricBlue.withOpacity(0.8),
-                    AppTheme.neonCyan.withOpacity(0.6),
-                    AppTheme.gradientStart.withOpacity(0.4),
+                    AppTheme.electricBlue.withValues(alpha: 0.8),
+                    AppTheme.neonCyan.withValues(alpha: 0.6),
+                    AppTheme.gradientStart.withValues(alpha: 0.4),
                   ],
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.electricBlue.withOpacity(0.6 * _glowAnimation.value),
+                    color: AppTheme.electricBlue.withValues(alpha: 0.6 * _glowAnimation.value),
                     blurRadius: 60,
                     spreadRadius: 20,
                   ),
@@ -235,7 +235,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen>
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 14,
-              color: AppTheme.pureWhite.withOpacity(0.7),
+              color: AppTheme.pureWhite.withValues(alpha: 0.7),
             ),
           ),
           
@@ -265,7 +265,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen>
                   decoration: InputDecoration(
                     hintText: 'Enter your phone number',
                     hintStyle: GoogleFonts.inter(
-                      color: AppTheme.pureWhite.withOpacity(0.5),
+                      color: AppTheme.pureWhite.withValues(alpha: 0.5),
                     ),
                     prefixIcon: const Icon(
                       Icons.phone_outlined,
@@ -292,7 +292,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen>
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 12,
-              color: AppTheme.pureWhite.withOpacity(0.5),
+              color: AppTheme.pureWhite.withValues(alpha: 0.5),
             ),
           ),
         ],
@@ -327,10 +327,10 @@ class _AuthenticationScreenState extends State<AuthenticationScreen>
     final langProvider = Provider.of<LanguageProvider>(context);
     
     final languages = [
-      {'name': 'English', 'flag': '🇬🇧', 'lang': AppLanguage.english},
-      {'name': 'हिंदी', 'flag': '🇮🇳', 'lang': AppLanguage.hindi},
-      {'name': 'मराठी', 'flag': '🇮🇳', 'lang': AppLanguage.marathi},
-      {'name': 'தமிழ்', 'flag': '🇮🇳', 'lang': AppLanguage.tamil},
+      {'name': 'English', 'flag': '🇬🇧', 'lang': 'en'},
+      {'name': 'हिंदी', 'flag': '🇮🇳', 'lang': 'hi'},
+      {'name': 'मराठी', 'flag': '🇮🇳', 'lang': 'mr'},
+      {'name': 'தமிழ்', 'flag': '🇮🇳', 'lang': 'ta'},
     ];
 
     return Column(
@@ -339,7 +339,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen>
           'Select Language',
           style: GoogleFonts.inter(
             fontSize: 14,
-            color: AppTheme.pureWhite.withOpacity(0.7),
+            color: AppTheme.pureWhite.withValues(alpha: 0.7),
           ),
         ),
         const SizedBox(height: 16),
@@ -350,11 +350,11 @@ class _AuthenticationScreenState extends State<AuthenticationScreen>
           children: languages.map((lang) {
             final isSelected = langProvider.currentLanguage == lang['lang'];
             return _LanguageChip(
-              flag: lang['flag']! as String,
-              name: lang['name']! as String,
+              flag: lang['flag']!,
+              name: lang['name']!,
               isSelected: isSelected,
               onTap: () {
-                langProvider.setLanguage(lang['lang']! as AppLanguage);
+                langProvider.switchLanguage(lang['lang']!);
               },
             );
           }).toList(),
@@ -413,7 +413,7 @@ class _GlowingButtonState extends State<_GlowingButton>
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.electricBlue.withOpacity(0.5 * _glowAnimation.value),
+                color: AppTheme.electricBlue.withValues(alpha: 0.5 * _glowAnimation.value),
                 blurRadius: 30,
                 spreadRadius: 5,
               ),
@@ -470,7 +470,7 @@ class _LanguageChip extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: isSelected
               ? AppTheme.accentGradient
-              : LinearGradient(
+              : const LinearGradient(
                   colors: [
                     AppTheme.glassBackground,
                     AppTheme.glassBackground,
@@ -484,7 +484,7 @@ class _LanguageChip extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppTheme.electricBlue.withOpacity(0.4),
+                    color: AppTheme.electricBlue.withValues(alpha: 0.4),
                     blurRadius: 15,
                     spreadRadius: 2,
                   ),
@@ -530,7 +530,7 @@ class _LogoParticlesPainter extends CustomPainter {
       final y = center.dy + radius * 0.8 * (i / 8) * (i.isEven ? -1 : 1) * 0.5;
 
       final paint = Paint()
-        ..color = AppTheme.pureWhite.withOpacity(0.3)
+        ..color = AppTheme.pureWhite.withValues(alpha: 0.3)
         ..style = PaintingStyle.fill;
 
       canvas.drawCircle(Offset(x, y), 3, paint);

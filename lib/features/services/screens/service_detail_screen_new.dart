@@ -8,7 +8,6 @@ import 'package:civic_voice_interface/widgets/animated/particle_background.dart'
 import 'package:civic_voice_interface/providers/language_provider.dart';
 import 'package:civic_voice_interface/models/service_model_new.dart';
 import 'package:civic_voice_interface/models/scheme_model.dart';
-import 'package:civic_voice_interface/models/application_model.dart';
 import 'package:civic_voice_interface/providers/user_provider.dart';
 import 'package:civic_voice_interface/core/services/scheme_knowledge_base.dart';
 
@@ -98,7 +97,7 @@ class ServiceDetailScreen extends StatelessWidget {
                       translatedDesc,
                       style: GoogleFonts.inter(
                         fontSize: 16,
-                        color: AppTheme.pureWhite.withOpacity(0.8),
+                        color: AppTheme.pureWhite.withValues(alpha: 0.8),
                         height: 1.6,
                       ),
                     ),
@@ -174,8 +173,8 @@ class ServiceDetailScreen extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  service.color.withOpacity(0.3),
-                  service.color.withOpacity(0.1),
+                  service.color.withValues(alpha: 0.3),
+                  service.color.withValues(alpha: 0.1),
                 ],
               ),
               shape: BoxShape.circle,
@@ -205,7 +204,7 @@ class ServiceDetailScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: service.color.withOpacity(0.2),
+                        color: service.color.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -222,7 +221,7 @@ class ServiceDetailScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: AppTheme.success.withOpacity(0.2),
+                          color: AppTheme.success.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -295,7 +294,7 @@ class ServiceDetailScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
+              color: color.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 24),
@@ -309,7 +308,7 @@ class ServiceDetailScreen extends StatelessWidget {
                   label,
                   style: GoogleFonts.inter(
                     fontSize: 12,
-                    color: AppTheme.pureWhite.withOpacity(0.6),
+                    color: AppTheme.pureWhite.withValues(alpha: 0.6),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -345,7 +344,7 @@ class ServiceDetailScreen extends StatelessWidget {
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: AppTheme.electricBlue.withOpacity(0.2),
+                      color: AppTheme.electricBlue.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                       border: Border.all(color: AppTheme.electricBlue, width: 2),
                     ),
@@ -363,7 +362,7 @@ class ServiceDetailScreen extends StatelessWidget {
                     Expanded(
                       child: Container(
                         width: 2,
-                        color: AppTheme.electricBlue.withOpacity(0.3),
+                        color: AppTheme.electricBlue.withValues(alpha: 0.3),
                       ),
                     ),
                 ],
@@ -389,7 +388,7 @@ class ServiceDetailScreen extends StatelessWidget {
                         step.instruction[languageCode] ?? step.instruction['en'] ?? '',
                         style: GoogleFonts.inter(
                           fontSize: 14,
-                          color: AppTheme.pureWhite.withOpacity(0.7),
+                          color: AppTheme.pureWhite.withValues(alpha: 0.7),
                         ),
                       ),
                       if (step.estimatedTime != null || step.location != null) ...[
@@ -411,14 +410,14 @@ class ServiceDetailScreen extends StatelessWidget {
                         const SizedBox(height: 12),
                         Row(
                           children: [
-                            Icon(Icons.link, size: 14, color: AppTheme.warning.withOpacity(0.7)),
+                            Icon(Icons.link, size: 14, color: AppTheme.warning.withValues(alpha: 0.7)),
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
                                 '${lang.translate('requires')}: ${step.prerequisites!.join(", ")}',
                                 style: GoogleFonts.inter(
                                   fontSize: 12,
-                                  color: AppTheme.warning.withOpacity(0.7),
+                                  color: AppTheme.warning.withValues(alpha: 0.7),
                                   fontStyle: FontStyle.italic,
                                 ),
                               ),
@@ -455,9 +454,9 @@ class ServiceDetailScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: AppTheme.electricBlue.withOpacity(0.1),
+        color: AppTheme.electricBlue.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppTheme.electricBlue.withOpacity(0.2)),
+        border: Border.all(color: AppTheme.electricBlue.withValues(alpha: 0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -500,7 +499,7 @@ class ServiceDetailScreen extends StatelessWidget {
               translatedText,
               style: GoogleFonts.inter(
                 fontSize: 15,
-                color: AppTheme.pureWhite.withOpacity(0.8),
+                color: AppTheme.pureWhite.withValues(alpha: 0.8),
                 height: 1.5,
               ),
             ),

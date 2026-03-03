@@ -72,7 +72,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                       lang.translate('personalize_civic_msg'),
                       style: GoogleFonts.inter(
                         fontSize: 14,
-                        color: AppTheme.pureWhite.withOpacity(0.7),
+                        color: AppTheme.pureWhite.withValues(alpha: 0.7),
                       ),
                     ),
                     const SizedBox(height: 40),
@@ -96,7 +96,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                             max: 100,
                             divisions: 100,
                             activeColor: AppTheme.electricBlue,
-                            inactiveColor: AppTheme.electricBlue.withOpacity(0.2),
+                            inactiveColor: AppTheme.electricBlue.withValues(alpha: 0.2),
                             onChanged: (value) {
                               setState(() => _age = value.toInt());
                             },
@@ -125,7 +125,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                             max: 2000000,
                             divisions: 200,
                             activeColor: AppTheme.neonCyan,
-                            inactiveColor: AppTheme.neonCyan.withOpacity(0.2),
+                            inactiveColor: AppTheme.neonCyan.withValues(alpha: 0.2),
                             onChanged: (value) {
                               setState(() => _income = value);
                             },
@@ -134,7 +134,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                             lang.translate('slider_increment_note'),
                             style: GoogleFonts.inter(
                               fontSize: 12,
-                              color: AppTheme.pureWhite.withOpacity(0.4),
+                              color: AppTheme.pureWhite.withValues(alpha: 0.4),
                             ),
                           ),
                         ],
@@ -180,7 +180,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               decoration: BoxDecoration(
                                 color: isSelected 
-                                    ? AppTheme.electricBlue.withOpacity(0.3) 
+                                    ? AppTheme.electricBlue.withValues(alpha: 0.3) 
                                     : AppTheme.glassBackground,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
@@ -193,7 +193,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                                   style: GoogleFonts.inter(
                                     fontSize: 14,
                                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                    color: isSelected ? AppTheme.pureWhite : AppTheme.pureWhite.withOpacity(0.6),
+                                    color: isSelected ? AppTheme.pureWhite : AppTheme.pureWhite.withValues(alpha: 0.6),
                                   ),
                                 ),
                               ),
@@ -226,7 +226,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                                   lang.translate('farmer_scheme_note'),
                                   style: GoogleFonts.inter(
                                     fontSize: 12,
-                                    color: AppTheme.pureWhite.withOpacity(0.5),
+                                    color: AppTheme.pureWhite.withValues(alpha: 0.5),
                                   ),
                                 ),
                               ],
@@ -264,7 +264,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                             borderRadius: BorderRadius.circular(16),
                           ),
                           elevation: 8,
-                          shadowColor: AppTheme.electricBlue.withOpacity(0.5),
+                          shadowColor: AppTheme.electricBlue.withValues(alpha: 0.5),
                         ),
                          child: Text(
                           lang.translate('save_profile'),

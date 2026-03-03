@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_colors.dart';
 
 class OfficeFinderScreen extends StatelessWidget {
@@ -14,7 +15,7 @@ class OfficeFinderScreen extends StatelessWidget {
           // Simulated Map
           Container(
             color: AppColors.background,
-            child: Center(
+            child: const Center(
               child: Opacity(
                 opacity: 0.3,
                 child: Icon(Icons.map, size: 400, color: AppColors.primary),
@@ -35,7 +36,7 @@ class OfficeFinderScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.white,
                   borderRadius: BorderRadius.circular(24),
-                  boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 20)],
+                  boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 20)],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -51,7 +52,15 @@ class OfficeFinderScreen extends StatelessWidget {
                     const Text('1.2 km away • Open until 5:00 PM'),
                     const SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () async {
+                        // Open Google Maps directions to Main Seva Kendra
+                        final uri = Uri.parse(
+                          'https://www.google.com/maps/dir/?api=1&destination=Main+Seva+Kendra&travelmode=driving',
+                        );
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        }
+                      },
                       style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
                       child: const Text('GET DIRECTIONS'),
                     ),

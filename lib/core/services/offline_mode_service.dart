@@ -1,5 +1,4 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
-import '../../models/scheme_model.dart';
 import 'scheme_knowledge_base.dart';
 
 class OfflineModeService {

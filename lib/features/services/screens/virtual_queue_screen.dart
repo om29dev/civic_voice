@@ -74,7 +74,7 @@ class _VirtualQueueScreenState extends State<VirtualQueueScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const SizedBox(height: 48),
-        Icon(Icons.confirmation_number_outlined, size: 80, color: AppTheme.electricBlue.withOpacity(0.5)),
+        Icon(Icons.confirmation_number_outlined, size: 80, color: AppTheme.electricBlue.withValues(alpha: 0.5)),
         const SizedBox(height: 24),
         Text(
           lang.translate('skip_the_line'),
@@ -90,7 +90,7 @@ class _VirtualQueueScreenState extends State<VirtualQueueScreen> {
           textAlign: TextAlign.center,
           style: GoogleFonts.inter(
             fontSize: 16,
-            color: AppTheme.pureWhite.withOpacity(0.7),
+            color: AppTheme.pureWhite.withValues(alpha: 0.7),
           ),
         ),
         const SizedBox(height: 48),
@@ -128,7 +128,7 @@ class _VirtualQueueScreenState extends State<VirtualQueueScreen> {
                Text(
                  lang.translate('your_token'),
                  style: GoogleFonts.inter(
-                   color: AppTheme.pureWhite.withOpacity(0.6),
+                   color: AppTheme.pureWhite.withValues(alpha: 0.6),
                    letterSpacing: 2,
                    fontWeight: FontWeight.w600,
                  ),
@@ -192,7 +192,7 @@ class _VirtualQueueScreenState extends State<VirtualQueueScreen> {
         Text(
           label,
           style: GoogleFonts.inter(
-            color: AppTheme.pureWhite.withOpacity(0.6),
+            color: AppTheme.pureWhite.withValues(alpha: 0.6),
             fontSize: 12,
           ),
         ),

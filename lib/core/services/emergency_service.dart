@@ -40,7 +40,7 @@ class EmergencyService {
     DisasterGuide(
       title: 'Flood',
       iconAsset: 'assets/icons/flood.png',
-      color: Colors.blue,
+      color: const Color(0xFFFF6B1A),
       doSteps: [
         'Move to higher ground immediately.',
         'Listen to evacuation orders.',

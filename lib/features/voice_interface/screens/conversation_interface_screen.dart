@@ -75,11 +75,11 @@ class _ConversationInterfaceScreenState extends State<ConversationInterfaceScree
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.person, size: 16, color: AppColors.primary),
-              const SizedBox(width: 5),
+              Icon(Icons.person, size: 16, color: AppColors.primary),
+              SizedBox(width: 5),
               Text('You', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
             ],
           ),
@@ -105,12 +105,12 @@ class _ConversationInterfaceScreenState extends State<ConversationInterfaceScree
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.account_balance, size: 16, color: AppColors.secondary),
-              const SizedBox(width: 5),
-              const Text('CVI Assistant', style: TextStyle(color: AppColors.secondary, fontWeight: FontWeight.bold)),
+              Icon(Icons.account_balance, size: 16, color: AppColors.secondary),
+              SizedBox(width: 5),
+              Text('CVI Assistant', style: TextStyle(color: AppColors.secondary, fontWeight: FontWeight.bold)),
             ],
           ),
           const SizedBox(height: 8),

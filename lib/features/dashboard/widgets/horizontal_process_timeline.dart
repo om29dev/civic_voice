@@ -40,7 +40,7 @@ class HorizontalProcessTimeline extends StatelessWidget {
                       width: 30,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: isCompleted || isCurrent ? AppColors.primary : Colors.grey.withOpacity(0.2),
+                        color: isCompleted || isCurrent ? AppColors.primary : Colors.grey.withValues(alpha: 0.2),
                         border: isCurrent ? Border.all(color: AppColors.accent, width: 2) : null,
                       ),
                       child: Center(
@@ -72,7 +72,7 @@ class HorizontalProcessTimeline extends StatelessWidget {
                     width: 40,
                     height: 2,
                     margin: const EdgeInsets.symmetric(horizontal: 10),
-                    color: isCompleted ? AppColors.primary : Colors.grey.withOpacity(0.2),
+                    color: isCompleted ? AppColors.primary : Colors.grey.withValues(alpha: 0.2),
                   ),
               ],
             );

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:animate_do/animate_do.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../providers/achievement_provider.dart';
 
@@ -21,13 +20,13 @@ class AchievementBadge extends StatelessWidget {
           border: Border.all(
             color: achievement.isUnlocked
                 ? AppColors.accent
-                : Colors.grey.withOpacity(0.3),
+                : Colors.grey.withValues(alpha: 0.3),
             width: 2,
           ),
           boxShadow: achievement.isUnlocked
               ? [
                   BoxShadow(
-                    color: AppColors.accent.withOpacity(0.2),
+                    color: AppColors.accent.withValues(alpha: 0.2),
                     blurRadius: 10,
                     offset: const Offset(0, 5),
                   )

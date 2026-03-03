@@ -101,7 +101,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                       'Update your core details',
                       style: GoogleFonts.inter(
                         fontSize: 16,
-                        color: AppTheme.pureWhite.withOpacity(0.7),
+                        color: AppTheme.pureWhite.withValues(alpha: 0.7),
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -154,7 +154,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                             borderRadius: BorderRadius.circular(16),
                           ),
                           elevation: 8,
-                          shadowColor: AppTheme.electricBlue.withOpacity(0.5),
+                          shadowColor: AppTheme.electricBlue.withValues(alpha: 0.5),
                         ),
                         child: Text(
                           'Save Changes',
@@ -191,7 +191,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
         style: GoogleFonts.inter(color: AppTheme.pureWhite),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: GoogleFonts.inter(color: AppTheme.pureWhite.withOpacity(0.5)),
+          labelStyle: GoogleFonts.inter(color: AppTheme.pureWhite.withValues(alpha: 0.5)),
           prefixIcon: Icon(icon, color: AppTheme.electricBlue),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),

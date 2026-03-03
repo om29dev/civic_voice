@@ -23,7 +23,7 @@ class GamificationProvider with ChangeNotifier {
   int _level = 1;
   
   // Demo Badges
-  List<Badge> _badges = [
+  final List<Badge> _badges = [
     Badge(
       id: 'early_adopter',
       name: 'Early Bird',

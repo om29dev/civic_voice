@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 
@@ -11,7 +10,7 @@ class WaveformPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.secondary.withOpacity(0.8)
+      ..color = AppColors.secondary.withValues(alpha: 0.8)
       ..strokeWidth = 3.0
       ..strokeCap = StrokeCap.round;
 

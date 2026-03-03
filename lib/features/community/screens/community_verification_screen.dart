@@ -68,7 +68,7 @@ class CommunityVerificationScreen extends StatelessWidget {
 
   Widget _buildExplanationCard(LanguageProvider lang) {
     return GlassCard(
-      gradientColors: [AppTheme.electricBlue.withOpacity(0.1), AppTheme.electricBlue.withOpacity(0.05)],
+      gradientColors: [AppTheme.electricBlue.withValues(alpha: 0.1), AppTheme.electricBlue.withValues(alpha: 0.05)],
       child: Column(
         children: [
           const Icon(Icons.verified_user, size: 48, color: AppTheme.electricBlue),
@@ -87,7 +87,7 @@ class CommunityVerificationScreen extends StatelessWidget {
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 14,
-              color: AppTheme.pureWhite.withOpacity(0.7),
+              color: AppTheme.pureWhite.withValues(alpha: 0.7),
             ),
           ),
         ],
@@ -107,7 +107,7 @@ class CommunityVerificationScreen extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 24,
-                backgroundColor: AppTheme.neonCyan.withOpacity(0.2),
+                backgroundColor: AppTheme.neonCyan.withValues(alpha: 0.2),
                 child: Text(
                   req.requesterAvatar,
                   style: GoogleFonts.poppins(
@@ -132,7 +132,7 @@ class CommunityVerificationScreen extends StatelessWidget {
                     Text(
                       'Requested ${DateFormat('MMM d').format(req.requestDate)}',
                       style: GoogleFonts.inter(
-                        color: AppTheme.pureWhite.withOpacity(0.5),
+                        color: AppTheme.pureWhite.withValues(alpha: 0.5),
                         fontSize: 12,
                       ),
                     ),
@@ -147,7 +147,7 @@ class CommunityVerificationScreen extends StatelessWidget {
           Text(
             'Purpose:',
             style: GoogleFonts.inter(
-              color: AppTheme.pureWhite.withOpacity(0.6),
+              color: AppTheme.pureWhite.withValues(alpha: 0.6),
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
@@ -205,9 +205,9 @@ class CommunityVerificationScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 12),
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: AppTheme.success.withOpacity(0.1),
+                color: AppTheme.success.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.success.withOpacity(0.3)),
+                border: Border.all(color: AppTheme.success.withValues(alpha: 0.3)),
               ),
               child: Text(
                 Provider.of<LanguageProvider>(context, listen: false).translate('verification_complete'),

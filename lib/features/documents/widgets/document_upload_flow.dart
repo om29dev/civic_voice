@@ -80,7 +80,7 @@ class _DocumentUploadFlowState extends State<DocumentUploadFlow> {
           child: ConfettiWidget(
             confettiController: _confettiController,
             blastDirectionality: BlastDirectionality.explosive,
-            colors: const [Colors.green, Colors.blue, Colors.pink, Colors.orange, Colors.purple],
+            colors: const [Colors.green, Color(0xFFD4930A), Colors.pink, Colors.orange, Colors.purple],
           ),
         ),
       ],
@@ -99,12 +99,12 @@ class _DocumentUploadFlowState extends State<DocumentUploadFlow> {
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: AppColors.secondary, style: BorderStyle.none),
           ),
-          child: Column(
+          child: const Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.cloud_upload_outlined, size: 50, color: AppColors.secondary),
-              const SizedBox(height: 10),
-              const Text('Tap to upload or drag & drop'),
+              SizedBox(height: 10),
+              Text('Tap to upload or drag & drop'),
             ],
           ),
         ),
@@ -129,11 +129,11 @@ class _DocumentUploadFlowState extends State<DocumentUploadFlow> {
 
   Widget _buildSuccessState() {
     return FadeInDown(
-      child: Column(
+      child: const Column(
         children: [
-          const Icon(Icons.check_circle, color: AppColors.accent, size: 80),
-          const SizedBox(height: 20),
-          const Text(
+          Icon(Icons.check_circle, color: AppColors.accent, size: 80),
+          SizedBox(height: 20),
+          Text(
             'Upload Successful!',
             style: TextStyle(
               fontSize: 20,
@@ -141,7 +141,7 @@ class _DocumentUploadFlowState extends State<DocumentUploadFlow> {
               color: AppColors.accent,
             ),
           ),
-          const Text('Verification in progress'),
+          Text('Verification in progress'),
         ],
       ),
     );

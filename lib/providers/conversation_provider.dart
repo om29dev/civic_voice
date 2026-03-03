@@ -1,534 +1,152 @@
-import 'dart:convert';
-import 'package:flutter/material.dart' hide Intent;
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:civic_voice_interface/models/conversation_model.dart';
-import 'package:civic_voice_interface/models/scheme_model.dart';
-import 'package:civic_voice_interface/core/services/reasoning_engine.dart';
-import 'package:civic_voice_interface/core/services/scheme_knowledge_base.dart';
-import 'package:civic_voice_interface/core/services/offline_mode_service.dart';
-import 'package:civic_voice_interface/core/services/supabase_service.dart';
-import 'voice_provider.dart';
-import 'notes_provider.dart';
+import 'package:flutter/foundation.dart';
+import '../models/conversation_model.dart';
+import '../data/mock/services_data.dart';
+
+import '../services/groq_service.dart';
+
+// ─── Provider ─────────────────────────────────────────────────────────────────
 
 class ConversationProvider extends ChangeNotifier {
-  List<ChatSession> _sessions = [];
-  String? _currentSessionId;
-  
-  ReasoningEngine _reasoningEngine = ReasoningEngine();
-  final List<Map<String, String>> _conversationHistory = [];
-  VoiceProvider? _voiceProvider;
-  NotesProvider? _notesProvider;
-  
-  // Getters
-  List<ChatSession> get sessions => List.unmodifiable(_sessions);
-  String? get currentSessionId => _currentSessionId;
-  
-  List<Message> get messages {
-    if (_currentSessionId == null) return [];
-    try {
-      return _sessions.firstWhere((s) => s.id == _currentSessionId).messages;
-    } catch (_) {
-      return [];
-    }
-  }
+  ConversationSession _session =
+      ConversationSession.create(language: 'en');
 
-  ConversationProvider() {
-    _loadHistory();
-  }
+  bool _isLoading = false;
+  String _currentServiceId = '';
+  String? _errorMessage;
 
-  Future<void> _loadHistory() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      
-      // Load Sessions
-      final String? sessionsJson = prefs.getString('chat_sessions');
-      if (sessionsJson != null) {
-        final List<dynamic> decoded = jsonDecode(sessionsJson);
-        _sessions = decoded.map((s) => ChatSession.fromJson(s)).toList();
-        
-        // Sort by date (newest first)
-        _sessions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      }
+  // ─── Getters ─────────────────────────────────────────────────────────────
 
-      // Restore last session if available
-      if (_sessions.isNotEmpty) {
-        _currentSessionId = _sessions.first.id;
-      } else {
-        startNewChat();
-      }
-      
-      notifyListeners();
-    } catch (e) {
-      debugPrint("Error loading history: $e");
-    }
-  }
+  ConversationSession get session          => _session;
+  List<MessageModel> get modernMessages   => _session.messages; // rename to avoid conflict
+  bool get isLoading                       => _isLoading;
+  String get currentServiceId             => _currentServiceId;
+  String? get errorMessage                => _errorMessage;
+  bool get hasMessages                    => _session.messages.isNotEmpty;
 
-  Future<void> _saveHistory() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('chat_sessions', jsonEncode(_sessions.map((s) => s.toJson()).toList()));
-    } catch (e) {
-      debugPrint("Error saving history: $e");
-    }
-  }
+  // ─── Legacy Getters ─────────────────────────────────────────────────────
   
-  void startNewChat() {
-    _currentSessionId = null;
-    _currentActiveScheme = null;
-    _collectedData = {};
-    _missingField = null;
-    _conversationHistory.clear();
+  /// Exposes modern MessageModels as legacy Messages for UI backwards compatibility.
+  List<Message> get messages => _session.messages
+      .map((m) => Message(
+            text: m.text,
+            isUser: m.isUser,
+            timestamp: m.timestamp,
+            // (Optional action mapping could occur here if needed by legacy screens)
+          ))
+      .toList();
+
+  // ─── Session ─────────────────────────────────────────────────────────────
+
+  void setLanguage(String langCode) {
+    _session = _session.copyWith(language: langCode);
     notifyListeners();
   }
 
-  void loadSession(String sessionId) {
-    if (_sessions.any((s) => s.id == sessionId)) {
-      _currentSessionId = sessionId;
-      _currentActiveScheme = null;
-      _collectedData = {};
-      
-      // Restore AI context
-      try {
-        final session = _sessions.firstWhere((s) => s.id == sessionId);
-        _updateConversationHistoryFromSession(session);
-      } catch (_) {}
-      
-      notifyListeners();
-    }
-  }
-
-  void deleteSession(String sessionId) {
-    _sessions.removeWhere((s) => s.id == sessionId);
-    if (_currentSessionId == sessionId) {
-      _currentSessionId = null;
-      startNewChat();
-    } else {
-      _saveHistory();
-      notifyListeners();
-    }
-  }
-
-  // ... (providers update methods are fine, keep them or let them be)
-  // Wait, I am replacing a block that includes startNewChat... to clearConversation.
-  // The block in the file (Step 61) is split. lines 70-103 and 463-486.
-  // I should do two replaces or one big one? The file is large. Two replaces is safer.
-  
-  // Actually, I can just replace the implementation of the methods I see in the file.
-  // But wait, the previous `replace_file_content` call (Step 56) INSERTED `startNewChat`, `loadSession`, `deleteSession` around line 55 (before `sendMessage`).
-  // AND there was `startNewChat` at line 70 in original text?
-  // No, in Step 56 I *replaced* lines 55 (end of _saveHistory) to.. wait.
-  // In Step 56 I replaced `_saveHistory`'s closing brace? No.
-  // Effectively I appended the new methods after `_saveHistory` and BEFORE `updateVoiceProvider`.
-  // So lines 70-103 in View (Step 61) ARE the new methods I inserted.
-  // AND `clearMessages` / `deleteMessage` / `clearConversation` are at the BOTTOM (lines 463+).
-  
-  // So I have to fix:
-  // 1. `startNewChat` at line 70 (remove `_messages.clear`).
-  // 2. `deleteMessage` and `clearConversation` at bottom.
-
-  // Let's fix startNewChat first.
-
-
-
-
-  void updateVoiceProvider(VoiceProvider vp) {
-    _voiceProvider = vp;
-  }
-
-  void updateNotesProvider(NotesProvider np) {
-    _notesProvider = np;
-  }
-
-  void sendMessage(String text, {bool isUser = true}) async {
-    // 1. Ensure Session Exists
-    ChatSession? session;
-    if (_currentSessionId == null) {
-      // Create new session
-      final newId = DateTime.now().millisecondsSinceEpoch.toString();
-      session = ChatSession(
-        id: newId, 
-        title: text.length > 30 ? '${text.substring(0, 30)}...' : text, // Auto-title
-        createdAt: DateTime.now(), 
-        messages: []
-      );
-      _sessions.insert(0, session); // Add to top
-      _currentSessionId = newId;
-    } else {
-      try {
-        session = _sessions.firstWhere((s) => s.id == _currentSessionId);
-      } catch (_) {
-        // Fallback if ID is invalid
-        startNewChat();
-        sendMessage(text, isUser: isUser);
-        return;
-      }
-    }
-
-    final message = Message(
-      text: text, 
-      isUser: isUser, 
-      timestamp: DateTime.now()
-    );
-    
-    session.messages.add(message);
-    
-    // Sort sessions to move active one to top?
-    // _sessions.remove(session);
-    // _sessions.insert(0, session);
-    
+  void clearConversation() {
+    _session = ConversationSession.create(language: _session.language);
+    _currentServiceId = '';
+    _errorMessage = null;
     notifyListeners();
-    _saveHistory();
-
-    // Sync user message to Supabase
-    if (isUser && SupabaseService.isLoggedIn) {
-      _syncMessageToSupabase(message);
-    }
-
-    if (isUser) {
-      // Pass the *full* history of this session to the AI?
-      // reasoningEngine expects List<Map<String,String>> history.
-      // We should construct it from the session messages.
-      _updateConversationHistoryFromSession(session);
-      
-      await _processUserMessage(text);
-    }
-  }
-  
-  void _updateConversationHistoryFromSession(ChatSession session) {
-    _conversationHistory.clear();
-    for (var msg in session.messages) {
-      _conversationHistory.add({
-        'role': msg.isUser ? 'user' : 'assistant',
-        'content': msg.text
-      });
-    }
   }
 
-  Future<void> _syncMessageToSupabase(Message msg) async {
-    try {
-      await SupabaseService.from('messages').insert({
-        'user_id': SupabaseService.userId,
-        'session_id': _currentSessionId, // Add session ID support if DB has it, else it might just log flat
-        'text': msg.text,
-        'is_user': msg.isUser,
-        'timestamp': msg.timestamp.toIso8601String(),
-        'action': msg.action,
-      });
-    } catch (e) {
-      debugPrint("Supabase Sync Error: $e");
-    }
-  }
+  /// Legacy alias for clearConversation.
+  void clearMessages() => clearConversation();
 
-  // State Variables
-  String? _currentActiveScheme;
-  Map<String, dynamic> _collectedData = {};
-  String? _missingField;
-
-  Future<void> _processUserMessage(String text) async {
-    final offlineService = OfflineModeService();
-    String responseText = "";
-
-    if (await offlineService.isOnline()) {
-       // ONLINE MODE: State Machine + AI
-       
-       // 1. Extraction: Try to get data from user input if we are in a flow
-       if (_currentActiveScheme != null) {
-         _extractData(text);
-       } else {
-         // Try to detect scheme trigger
-         String detectedId = _reasoningEngine.detectSchemeId(text);
-         if (detectedId.isNotEmpty) {
-           _currentActiveScheme = detectedId;
-           _collectedData = {};
-           _missingField = null;
-         }
-       }
-
-       // 2. Process Next Step or AI Chat
-       if (_currentActiveScheme != null) {
-         responseText = _processNextStep();
-         // If processNextStep returns null/empty (meaning it's done or confused), fall back to AI? 
-         // Actually processNextStep should handle the flow.
-       } 
-       
-       if (responseText.isEmpty) {
-         // Fallback to General AI (Phase 1 Ambiguity/Discovery handled here too)
-         responseText = await _reasoningEngine.generateAIResponse(text, _conversationHistory);
-         
-         // If AI suggests a scheme (ambiguity resolution), we might want to catch that?
-         // For now, let the AI handle the natural conversation.
-       }
-
-    } else {
-       // OFFLINE MODE: Local Regex Matcher
-       responseText = "📡 [OFFLINE MODE] " + offlineService.processQuery(text);
-    }
-    
-    // Check for ACTIONS (Online only usually, but structure might suffice)
-    if (responseText.contains('[ACTION:REMINDER]')) {
-      try {
-        final parts = responseText.split('|');
-        final actionPart = parts[0].replaceAll('[ACTION:REMINDER]', '').trim();
-        final startJson = actionPart.indexOf('{');
-        final endJson = actionPart.lastIndexOf('}');
-        final jsonStr = actionPart.substring(startJson, endJson + 1);
-        final actionData = jsonDecode(jsonStr);
-        
-        // Execute Action
-        if (_notesProvider != null) {
-          DateTime reminderTime = DateTime.now().add(const Duration(minutes: 5)); // Default 5 mins
-          _notesProvider!.addNote(
-             actionData['title'], 
-             actionData['body'], 
-             reminderTime: reminderTime
-          );
-        }
-        
-        // Clean text for display
-        responseText = parts.length > 1 ? parts[1].trim() : "Reminder set.";
-      } catch (e) {
-        debugPrint("Action Parsing Error: $e");
-        responseText = "I tried to set a reminder but something went wrong.";
-      }
-    }
-
-    // Update history for multi-turn (format for Groq API)
-    _conversationHistory.add({'role': 'user', 'content': text});
-    _conversationHistory.add({'role': 'assistant', 'content': responseText});
-
-    _addSystemMessage(responseText);
-  }
-
-  void _extractData(String text) {
-    text = text.toLowerCase();
-    
-    // Extract Age
-    if (text.contains('years') || text.contains('age') || text.contains('old')) {
-      final ageReg = RegExp(r'(\d{2})');
-      final match = ageReg.firstMatch(text);
-      if (match != null) {
-        _collectedData['age'] = int.tryParse(match.group(1)!);
-      }
-    }
-
-    // Extract Income
-    if (text.contains('income') || text.contains('earn') || text.contains('salary') || text.contains('rupees') || text.contains('rs') || text.contains('₹')) {
-       // Remove commas and k (10k -> 10000) handling if needed, simplified for now
-       String clean = text.replaceAll(',', '');
-       final incomeReg = RegExp(r'(\d{4,})'); // Look for 4+ digits
-       final match = incomeReg.firstMatch(clean);
-       if (match != null) {
-         _collectedData['income'] = int.tryParse(match.group(1)!);
-       }
-    }
-    
-    // Extract Boolean (Yes/No)
-    if (text.contains('yes') || text.contains('haan') || text.contains('have') || text.contains('own')) {
-       // This is contextual. If missingField is 'land', 'yes' means true.
-       if (_missingField != null) {
-         _collectedData[_missingField!] = true;
-       }
-    }
-    if (text.contains('no') || text.contains('nahi') || text.contains('dont')) {
-       if (_missingField != null) {
-         _collectedData[_missingField!] = false;
-       }
-    }
-  }
-
-  String _processNextStep() {
-    final scheme = SchemeKnowledgeBase.getSchemeById(_currentActiveScheme!);
-    if (scheme == null) return ""; // Should not happen
-
-    // Check each rule
-    for (var rule in scheme.eligibilityRules) {
-      if (!_collectedData.containsKey(rule.parameter)) {
-        _missingField = rule.parameter;
-        // Check if we already have this in UserProfile? 
-        // For now, ask the user.
-        return _voiceProvider?.languageCode == 'hi' 
-            ? rule.question['hi']! 
-            : rule.question['en']!;
-      }
-    }
-
-    // All data detected! Run Eligibility.
-    return _checkEligibility(scheme);
-  }
-
-  String _checkEligibility(GovernmentScheme scheme) {
-    bool eligible = true;
-    String reason = "";
-    
-    for (var rule in scheme.eligibilityRules) {
-      if (!rule.check(_collectedData[rule.parameter])) {
-        eligible = false;
-        // Phase 4: Dynamic Rejection Logic
-        reason = _formatRejectionWithGap(rule, _collectedData[rule.parameter]);
-        break;
-      }
-    }
-    
-    // Reset state after determination
-    _currentActiveScheme = null;
-    _collectedData = {};
-    _missingField = null;
-
-    if (eligible) {
-      return _voiceProvider?.languageCode == 'hi'
-          ? "बधाई हो! आप ${scheme.names['hi']} के लिए पात्र हैं। क्या आप आवेदन प्रक्रिया जानना चाहते हैं?"
-          : "Congratulations! You are eligible for ${scheme.names['en']}. Would you like to know the application process?";
-    } else {
-      // Phase 4: Partial Match Advice / Alternatives
-      String suggestion = "";
-      if (scheme.alternativeSchemeIds?.isNotEmpty == true) {
-        final alts = scheme.alternativeSchemeIds!.map((id) {
-            final s = SchemeKnowledgeBase.getSchemeById(id);
-            return s?.names[_voiceProvider?.languageCode ?? 'en'] ?? s?.names['en'];
-        }).where((n) => n != null).join(", ");
-        
-        if (alts.isNotEmpty) {
-           suggestion = _voiceProvider?.languageCode == 'hi'
-               ? " हालाँकि, आप $alts के लिए पात्र हो सकते हैं।"
-               : " However, you might be eligible for $alts.";
-        }
-      }
-      return reason + suggestion; 
-    }
-  }
-
-  String _formatRejectionWithGap(EligibilityRule rule, dynamic userValue) {
-    // Phase 4: Gap Analysis
-    bool isHindi = _voiceProvider?.languageCode == 'hi';
-    
-    if (rule.parameter == 'age' && rule.operator == '>=') {
-      int required = rule.value as int;
-      int userAge = userValue as int;
-      int gap = required - userAge;
-      if (gap > 0) {
-        return isHindi 
-            ? "आपकी आयु $userAge वर्ष है, लेकिन इसके लिए $required वर्ष होनी चाहिए। आप $gap वर्षों में पात्र होंगे।"
-            : "You are $userAge years old, but you need to be at least $required. You'll be eligible in $gap years.";
-      }
-    }
-    
-    if (rule.parameter == 'income' && rule.operator == '<=') {
-      int limit = rule.value as int;
-      int userIncome = userValue as int;
-      int excess = userIncome - limit;
-      if (excess > 0) {
-        return isHindi
-            ? "आपकी आय ₹$userIncome है, लेकिन सीमा ₹$limit है। आप सीमा से ₹$excess ऊपर हैं।"
-            : "Your income is ₹$userIncome, but the limit is ₹$limit. You exceed the limit by ₹$excess.";
-      }
-    }
-
-    // Default explanation
-    return isHindi 
-        ? "क्षमा करें, आप पात्र नहीं हैं। ${rule.explanation['hi']}"
-        : "I am sorry, you are not eligible. ${rule.explanation['en']}";
-  }
-
-  void _addSystemMessage(String text) {
-    Map<String, dynamic>? detectedAction;
-    String cleanText = text;
-
-    // Parse Actions
-    final List<String> actionTags = ['LINK', 'NAVIGATE', 'GUIDE', 'REMINDER'];
-    for (var tag in actionTags) {
-      final String tagStr = '[ACTION:$tag]';
-      if (cleanText.contains(tagStr)) {
-        try {
-          final parts = cleanText.split(tagStr);
-          cleanText = parts[0].trim();
-          final String jsonStr = parts[1].trim();
-          
-          // Find actual JSON if there's trailing text
-          final firstBrace = jsonStr.indexOf('{');
-          final lastBrace = jsonStr.lastIndexOf('}');
-          if (firstBrace != -1 && lastBrace != -1) {
-            final String finalJson = jsonStr.substring(firstBrace, lastBrace + 1);
-            detectedAction = jsonDecode(finalJson);
-            detectedAction?['type'] = tag.toLowerCase();
-          }
-        } catch (e) {
-          debugPrint("Error parsing $tag action: $e");
-        }
-      }
-    }
-
-    // Special handling for legacy/immediate reminders in current turn
-    if (detectedAction != null && detectedAction['type'] == 'reminder' && _notesProvider != null) {
-      DateTime reminderTime = DateTime.now().add(const Duration(minutes: 5));
-      _notesProvider!.addNote(
-        detectedAction['title'] ?? 'Reminder',
-        detectedAction['body'] ?? '',
-        reminderTime: reminderTime,
-      );
-    }
-
-    final message = Message(
-      text: cleanText, 
-      isUser: false, 
-      timestamp: DateTime.now(),
-      action: detectedAction,
-    );
-    
-    // Add to current session
-    if (_currentSessionId != null) {
-       try {
-         final session = _sessions.firstWhere((s) => s.id == _currentSessionId);
-         session.messages.add(message);
-       } catch (_) {}
-    } else {
-       // Should not happen if flow is correct, but safe fallback:
-       // If system speaks without user context (e.g. welcome), create session?
-       // For now, ignore or create temp session? 
-       // Let's create session if null, assuming auto-start.
-       final newId = DateTime.now().millisecondsSinceEpoch.toString();
-       final session = ChatSession(id: newId, title: "New Chat", createdAt: DateTime.now(), messages: [message]);
-       _sessions.insert(0, session);
-       _currentSessionId = newId;
-    }
-
-    notifyListeners();
-    
-    if (_voiceProvider != null) {
-      _voiceProvider!.speak(cleanText);
-    }
-
-    // Sync AI response to Supabase
-    if (SupabaseService.isLoggedIn) {
-      _syncMessageToSupabase(message);
-    }
-
-    _saveHistory();
-  }
-
-  void clearMessages() {
-    clearConversation();
-  }
-
+  /// Legacy method to delete a specific message by index in the unified session.
   void deleteMessage(int index) {
-    if (_currentSessionId != null) {
-      try {
-        final session = _sessions.firstWhere((s) => s.id == _currentSessionId);
-        if (index >= 0 && index < session.messages.length) {
-          session.messages.removeAt(index);
-          notifyListeners();
-          _saveHistory();
-        }
-      } catch (_) {}
+    if (index >= 0 && index < _session.messages.length) {
+      final updatedList = List<MessageModel>.from(_session.messages)..removeAt(index);
+      _session = _session.copyWith(messages: updatedList);
+      notifyListeners();
     }
   }
 
-  void clearConversation() async {
-    _sessions.clear();
-    startNewChat();
-    _saveHistory();
+  // ─── Send Message ─────────────────────────────────────────────────────────
+
+  Future<void> sendMessage(String text) async {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return;
+
+    _errorMessage = null;
+
+    // Add user message
+    final userMsg = MessageModel.fromUser(text: trimmed);
+    _session = _session.withMessage(userMsg);
+    _isLoading = true;
+    notifyListeners();
+
+    // Simulate network/processing delay for natural feel
+    await Future.delayed(const Duration(milliseconds: 600));
+
+    try {
+      final responseText = await GroqService.chat(_session.messages, _session.language);
+      final linkedServiceId = GroqService.extractServiceId(responseText);
+
+      final botMsg = MessageModel.fromBot(
+        text: responseText,
+        serviceTag: linkedServiceId,
+        isServiceCard: linkedServiceId != null,
+        confidence: 0.95,
+      );
+      _session = _session.withMessage(botMsg);
+
+      if (linkedServiceId != null) {
+        _currentServiceId = linkedServiceId;
+      }
+    } catch (e) {
+      _errorMessage = e.toString();
+      final errMsg = MessageModel.fromBot(
+        text: _errorText(_session.language),
+      );
+      _session = _session.withMessage(errMsg);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
-  void setLanguage(String code) {
-    _reasoningEngine = ReasoningEngine(languageCode: code);
-  }
+  // ─── Fallback Strings ─────────────────────────────────────────────────────
+
+  String _localizedGreeting(String lang) => switch (lang) {
+        'hi' => 'नमस्ते! मैं Civic Voice हूँ। आप किस सरकारी सेवा के बारे में जानना चाहते हैं?\n\nमैं आपकी मदद कर सकता हूँ: आधार, पैन, पासपोर्ट, ड्राइविंग लाइसेंस, राशन कार्ड, जन्म प्रमाण पत्र, भूमि अभिलेख, और वृद्धावस्था पेंशन।',
+        'mr' => 'नमस्कार! मी Civic Voice आहे. तुम्हाला कोणत्या सरकारी सेवेबद्दल जाणून घ्यायचे आहे?\n\nमी मदत करू शकतो: आधार, पॅन, पासपोर्ट, वाहन परवाना, रेशन कार्ड, जन्म दाखला, जमीन नोंदी, आणि वृद्धापकाळ निवृत्तीवेतन.',
+        'ta' => 'வணக்கம்! நான் Civic Voice. நீங்கள் எந்த அரசு சேவையைப் பற்றி அறிய விரும்புகிறீர்கள்?\n\nஆதார், பான், கடவுச்சீட்டு, வாகன உரிமம், ரேஷன் அட்டை, பிறப்பு சான்றிதழ், நில பதிவுகள், முதியோர் ஓய்வூதியம் பற்றி உதவலாம்.',
+        _    => 'Namaste! I\'m Civic Voice — your AI guide for Indian government services. 🇮🇳\n\nI can help you with:\n• Aadhaar Card\n• PAN Card\n• Passport\n• Driving License\n• Land Records\n• Birth Certificate\n• Ration Card\n• Senior Citizen Pension\n\nJust tell me what you need!',
+      };
+
+  String _localizedGoodbye(String lang) => switch (lang) {
+        'hi' => 'धन्यवाद! यदि आपको और सहायता की आवश्यकता हो तो वापस आएं। जय हिन्द! 🇮🇳',
+        'mr' => 'धन्यवाद! आणखी मदत हवी असल्यास परत या. जय हिंद! 🇮🇳',
+        'ta' => 'நன்றி! மீண்டும் உதவி தேவைப்பட்டால் வாருங்கள். ஜய் ஹிந்த்! 🇮🇳',
+        _    => 'Thank you for using Civic Voice! Come back anytime you need help with government services. Jai Hind! 🇮🇳',
+      };
+
+  String _localizedUnknown(String lang) => switch (lang) {
+        'hi' => 'मुझे खेद है, मैं आपका प्रश्न समझ नहीं पाया। कृपया किसी सरकारी सेवा का नाम बताएं जैसे "आधार", "पैन", "पासपोर्ट" आदि।',
+        'mr' => 'मला माफ करा, मला तुमचा प्रश्न समजला नाही. कृपया एखाद्या सरकारी सेवेचे नाव सांगा जसे "आधार", "पॅन", "पासपोर्ट" इ.',
+        'ta' => 'மன்னிக்கவும், உங்கள் கேள்வி புரியவில்லை. "ஆதார்", "பான்", "கடவுச்சீட்டு" போன்ற அரசு சேவையின் பெயரை சொல்லுங்கள்.',
+        _    => 'I\'m not sure I understood that. Try asking about a specific service like "Aadhaar", "PAN card", or "Passport" — or ask about eligibility, documents, fees, or steps.',
+      };
+
+  String _localizedAskService(String lang) => switch (lang) {
+        'hi' => 'कृपया बताएं कि आप किस सेवा के बारे में जानना चाहते हैं? जैसे: आधार, पैन, पासपोर्ट, ड्राइविंग लाइसेंस, इत्यादि।',
+        'mr' => 'कृपया सांगा तुम्हाला कोणत्या सेवेबद्दल माहिती हवी आहे? उदा: आधार, पॅन, पासपोर्ट, वाहन परवाना.',
+        'ta' => 'நீங்கள் எந்த சேவையைப் பற்றி தெரிந்துகொள்ள விரும்புகிறீர்கள்? உதாரணம்: ஆதார், பான், கடவுச்சீட்டு.',
+        _    => 'Which service are you asking about? Please specify — e.g. Aadhaar, PAN, Passport, Driving License, etc.',
+      };
+
+  String _errorText(String lang) => switch (lang) {
+        'hi' => 'कुछ गलत हो गया। कृपया पुनः प्रयास करें।',
+        'mr' => 'काहीतरी चुकीचे झाले. कृपया पुन्हा प्रयत्न करा.',
+        'ta' => 'ஏதோ தவறு நடந்தது. மீண்டும் முயற்சிக்கவும்.',
+        _    => 'Something went wrong. Please try again.',
+      };
+
+  // ─── Legacy API Stubs ───────────────────────────────────────────────────────
+  void startNewChat()             => clearConversation();
+  Future<void> loadSession(String id) async { /* single-session app */ }
+  Future<void> deleteSession(String id) async { /* single-session app */ }
+  void updateVoiceProvider(dynamic vp) { /* no-op */ }
+  List<ConversationSession> get sessions        => [_session];
+  String get currentSessionId                   => _session.id;
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:civic_voice_interface/core/theme/app_theme.dart';
@@ -52,7 +51,7 @@ class TrackApplicationScreen extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: statusColor.withOpacity(0.1),
+            color: statusColor.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -126,7 +125,7 @@ class TrackApplicationScreen extends StatelessWidget {
         Text(
           label,
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurface.withOpacity(0.6),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
         Text(
@@ -165,7 +164,7 @@ class TrackApplicationScreen extends StatelessWidget {
                       width: 12,
                       height: 12,
                       decoration: BoxDecoration(
-                        color: event.isCompleted ? AppTheme.success : theme.colorScheme.onSurface.withOpacity(0.2),
+                        color: event.isCompleted ? AppTheme.success : theme.colorScheme.onSurface.withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -173,7 +172,7 @@ class TrackApplicationScreen extends StatelessWidget {
                       Container(
                         width: 2,
                         height: 50,
-                        color: event.isCompleted ? AppTheme.success : theme.colorScheme.onSurface.withOpacity(0.2),
+                        color: event.isCompleted ? AppTheme.success : theme.colorScheme.onSurface.withValues(alpha: 0.2),
                       ),
                   ],
                 ),
@@ -186,21 +185,21 @@ class TrackApplicationScreen extends StatelessWidget {
                         event.title,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: event.isCompleted ? theme.colorScheme.onSurface : theme.colorScheme.onSurface.withOpacity(0.5),
+                          color: event.isCompleted ? theme.colorScheme.onSurface : theme.colorScheme.onSurface.withValues(alpha: 0.5),
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         event.description,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(0.6),
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         DateFormat('MMM dd, hh:mm a').format(event.timestamp),
                         style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(0.4),
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
                         ),
                       ),
                       const SizedBox(height: 20),

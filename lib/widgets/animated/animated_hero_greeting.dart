@@ -123,8 +123,8 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
                       center: Alignment.topLeft,
                       radius: 1.5,
                       colors: [
-                        AppTheme.electricBlue.withOpacity(0.1 * _glowAnimation.value),
-                        AppTheme.neonCyan.withOpacity(0.05 * _glowAnimation.value),
+                        AppTheme.electricBlue.withValues(alpha: 0.1 * _glowAnimation.value),
+                        AppTheme.neonCyan.withValues(alpha: 0.05 * _glowAnimation.value),
                         Colors.transparent,
                       ],
                     ),
@@ -189,7 +189,7 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.electricBlue.withOpacity(0.4 * _glowAnimation.value),
+                  color: AppTheme.electricBlue.withValues(alpha: 0.4 * _glowAnimation.value),
                   blurRadius: 40,
                   spreadRadius: 10,
                 ),
@@ -204,7 +204,7 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: AppTheme.pureWhite.withOpacity(0.3),
+                color: AppTheme.pureWhite.withValues(alpha: 0.3),
                 width: 3,
               ),
               image: const DecorationImage(
@@ -225,7 +225,7 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     blurRadius: 5,
                   )
                 ],
@@ -248,7 +248,7 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: AppTheme.pureWhite.withOpacity(0.5),
+            color: AppTheme.pureWhite.withValues(alpha: 0.5),
             blurRadius: 8,
             spreadRadius: 2,
           ),
@@ -266,7 +266,7 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
       children: [
         // Animated "Hi!" text
         ShaderMask(
-          shaderCallback: (bounds) => LinearGradient(
+          shaderCallback: (bounds) => const LinearGradient(
             colors: [
               AppTheme.electricBlue,
               AppTheme.neonCyan,
@@ -290,7 +290,7 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
           lang.translate('how_can_help'),
           style: GoogleFonts.inter(
             fontSize: 16,
-            color: AppTheme.pureWhite.withOpacity(0.8),
+            color: AppTheme.pureWhite.withValues(alpha: 0.8),
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -306,7 +306,7 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
               margin: const EdgeInsets.only(right: 4),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(2),
-                gradient: LinearGradient(
+                gradient: const LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
@@ -343,7 +343,7 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
               boxShadow: [
                 BoxShadow(
                   color: (index % 2 == 0 ? AppTheme.electricBlue : AppTheme.neonCyan)
-                      .withOpacity(0.5),
+                      .withValues(alpha: 0.5),
                   blurRadius: 8,
                   spreadRadius: 2,
                 ),

@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../../core/theme/app_theme.dart';
 
 class GlassCard extends StatelessWidget {
   final Widget child;
@@ -45,15 +44,15 @@ class GlassCard extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: gradientColors ?? [
-                  (isDark ? Colors.white : Colors.black).withOpacity(0.05),
-                  (isDark ? Colors.white : Colors.black).withOpacity(0.02),
+                  (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+                  (isDark ? Colors.white : Colors.black).withValues(alpha: 0.02),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(borderRadius),
               border: border ?? Border.all(
-                color: (isDark ? Colors.white : Colors.black).withOpacity(0.1),
+                color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1),
                 width: 1,
               ),
             ),
@@ -62,8 +61,8 @@ class GlassCard extends StatelessWidget {
               child: InkWell(
                 onTap: onTap,
                 borderRadius: BorderRadius.circular(borderRadius),
-                splashColor: theme.colorScheme.primary.withOpacity(0.1),
-                highlightColor: theme.colorScheme.primary.withOpacity(0.05),
+                splashColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+                highlightColor: theme.colorScheme.primary.withValues(alpha: 0.05),
                 child: Padding(
                   padding: padding ?? const EdgeInsets.all(20),
                   child: child,
@@ -151,7 +150,7 @@ class _AnimatedGlassCardState extends State<AnimatedGlassCard>
                   borderRadius: BorderRadius.circular(widget.borderRadius),
                   boxShadow: [
                     BoxShadow(
-                      color: theme.colorScheme.primary.withOpacity(0.1 * _glowAnimation.value),
+                      color: theme.colorScheme.primary.withValues(alpha: 0.1 * _glowAnimation.value),
                       blurRadius: 20 * _glowAnimation.value,
                       spreadRadius: 2 * _glowAnimation.value,
                     ),

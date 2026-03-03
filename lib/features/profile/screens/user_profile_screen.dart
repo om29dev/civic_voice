@@ -9,7 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../widgets/glass/glass_card.dart';
 import '../../../widgets/animated/particle_background.dart';
 import '../../../providers/language_provider.dart';
-import '../../voice_interface/screens/voice_dashboard_screen.dart';
+import '../../../core/constants/app_language.dart';
 import 'user_onboarding_screen.dart';
 import 'personal_information_screen.dart';
 import '../../../providers/user_provider.dart';
@@ -259,7 +259,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.electricBlue.withOpacity(0.5),
+                  color: AppTheme.electricBlue.withValues(alpha: 0.5),
                   blurRadius: 20,
                   spreadRadius: 5,
                 ),
@@ -292,7 +292,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             user.email,
             style: GoogleFonts.inter(
               fontSize: 14,
-              color: AppTheme.pureWhite.withOpacity(0.7),
+              color: AppTheme.pureWhite.withValues(alpha: 0.7),
             ),
           ),
           const SizedBox(height: 8),
@@ -301,7 +301,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               user.phone,
               style: GoogleFonts.inter(
                 fontSize: 14,
-                color: AppTheme.pureWhite.withOpacity(0.7),
+                color: AppTheme.pureWhite.withValues(alpha: 0.7),
               ),
             ),
             const SizedBox(height: 8),
@@ -309,7 +309,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: (user.isVerified ? AppTheme.success : AppTheme.warning).withOpacity(0.2),
+              color: (user.isVerified ? AppTheme.success : AppTheme.warning).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -342,7 +342,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Widget _buildIncompleteProfileBanner(BuildContext context) {
     final lang = Provider.of<LanguageProvider>(context);
     return GlassCard(
-      gradientColors: [AppTheme.warning.withOpacity(0.1), AppTheme.warning.withOpacity(0.05)],
+      gradientColors: [AppTheme.warning.withValues(alpha: 0.1), AppTheme.warning.withValues(alpha: 0.05)],
       child: Column(
         children: [
           const Icon(Icons.info_outline, color: AppTheme.warning, size: 32),
@@ -361,7 +361,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 13,
-              color: AppTheme.pureWhite.withOpacity(0.7),
+              color: AppTheme.pureWhite.withValues(alpha: 0.7),
             ),
           ),
           const SizedBox(height: 16),
@@ -425,7 +425,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.inter(
               fontSize: 10,
-              color: AppTheme.pureWhite.withOpacity(0.7),
+              color: AppTheme.pureWhite.withValues(alpha: 0.7),
             ),
           ),
         ],
@@ -444,7 +444,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: AppTheme.pureWhite.withOpacity(0.7),
+              color: AppTheme.pureWhite.withValues(alpha: 0.7),
             ),
           ),
         ),
@@ -500,7 +500,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               label,
               style: GoogleFonts.inter(
                 fontSize: 14,
-                color: AppTheme.pureWhite.withOpacity(0.6),
+                color: AppTheme.pureWhite.withValues(alpha: 0.6),
               ),
             ),
           ),
@@ -564,11 +564,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 style: GoogleFonts.inter(color: AppTheme.pureWhite),
               ),
               value: lang,
-              groupValue: langProvider.currentLanguage,
+              groupValue: AppLanguage.fromCode(langProvider.currentCode),
               activeColor: AppTheme.electricBlue,
               onChanged: (value) {
                 if (value != null) {
-                  langProvider.setLanguage(value);
+                  langProvider.setLanguageByCode(value.code);
                   Navigator.pop(context);
                 }
               },
@@ -678,10 +678,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 style: const TextStyle(color: AppTheme.pureWhite),
                 decoration: InputDecoration(
                   labelText: langProvider.translate('current_password'),
-                  labelStyle: TextStyle(color: AppTheme.pureWhite.withOpacity(0.7)),
+                  labelStyle: TextStyle(color: AppTheme.pureWhite.withValues(alpha: 0.7)),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: AppTheme.glassBorder),
+                    borderSide: const BorderSide(color: AppTheme.glassBorder),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -696,10 +696,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 style: const TextStyle(color: AppTheme.pureWhite),
                 decoration: InputDecoration(
                   labelText: langProvider.translate('new_password'),
-                  labelStyle: TextStyle(color: AppTheme.pureWhite.withOpacity(0.7)),
+                  labelStyle: TextStyle(color: AppTheme.pureWhite.withValues(alpha: 0.7)),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: AppTheme.glassBorder),
+                    borderSide: const BorderSide(color: AppTheme.glassBorder),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -714,10 +714,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 style: const TextStyle(color: AppTheme.pureWhite),
                 decoration: InputDecoration(
                   labelText: langProvider.translate('confirm_password'),
-                  labelStyle: TextStyle(color: AppTheme.pureWhite.withOpacity(0.7)),
+                  labelStyle: TextStyle(color: AppTheme.pureWhite.withValues(alpha: 0.7)),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: AppTheme.glassBorder),
+                    borderSide: const BorderSide(color: AppTheme.glassBorder),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),

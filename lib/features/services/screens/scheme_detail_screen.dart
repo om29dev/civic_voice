@@ -8,7 +8,6 @@ import 'package:civic_voice_interface/providers/user_provider.dart';
 import 'package:civic_voice_interface/providers/language_provider.dart';
 import 'package:civic_voice_interface/providers/voice_provider.dart';
 import 'package:civic_voice_interface/models/application_model.dart';
-import 'package:intl/intl.dart';
 
 class SchemeDetailScreen extends StatefulWidget {
   final GovernmentScheme scheme;
@@ -76,10 +75,10 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
             padding: const EdgeInsets.only(right: 16.0),
             child: Container(
               decoration: BoxDecoration(
-                color: _isReading ? AppColors.primary.withOpacity(0.2) : Colors.transparent,
+                color: _isReading ? AppColors.primary.withValues(alpha: 0.2) : Colors.transparent,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: _isReading ? AppColors.primary : AppColors.white.withOpacity(0.3),
+                  color: _isReading ? AppColors.primary : AppColors.white.withValues(alpha: 0.3),
                   width: 2,
                 ),
               ),
@@ -108,7 +107,7 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
               Text(
                 widget.scheme.description,
                 style: TextStyle(
-                  color: AppColors.white.withOpacity(0.8),
+                  color: AppColors.white.withValues(alpha: 0.8),
                   fontSize: 16,
                   height: 1.5,
                 ),
@@ -124,7 +123,7 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
               Text(
                 widget.scheme.benefits,
                 style: TextStyle(
-                  color: AppColors.white.withOpacity(0.8),
+                  color: AppColors.white.withValues(alpha: 0.8),
                   fontSize: 16,
                   height: 1.5,
                 ),
@@ -184,13 +183,13 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.check, color: AppColors.success, size: 20),
+                        const Icon(Icons.check, color: AppColors.success, size: 20),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             rule.explanation['en']!,
                             style: TextStyle(
-                              color: AppColors.white.withOpacity(0.7),
+                              color: AppColors.white.withValues(alpha: 0.7),
                               fontSize: 14,
                             ),
                           ),
@@ -214,9 +213,9 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
                     margin: const EdgeInsets.only(bottom: 15),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppColors.white.withOpacity(0.05),
+                      color: AppColors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.white.withOpacity(0.1)),
+                      border: Border.all(color: AppColors.white.withValues(alpha: 0.1)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -233,7 +232,7 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
                         Text(
                           doc.reason['en']!,
                           style: TextStyle(
-                            color: AppColors.white.withOpacity(0.5),
+                            color: AppColors.white.withValues(alpha: 0.5),
                             fontSize: 13,
                           ),
                         ),
@@ -260,7 +259,7 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
                         Container(
                           width: 32,
                           height: 32,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: AppColors.primary,
                             shape: BoxShape.circle,
                           ),
@@ -291,7 +290,7 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
                               Text(
                                 step.instruction['en']!,
                                 style: TextStyle(
-                                  color: AppColors.white.withOpacity(0.6),
+                                  color: AppColors.white.withValues(alpha: 0.6),
                                   fontSize: 13,
                                 ),
                               ),
@@ -326,7 +325,7 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
         color: AppColors.background,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -419,9 +418,9 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -434,7 +433,7 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
                 Text(
                   label,
                   style: TextStyle(
-                    color: AppColors.white.withOpacity(0.6),
+                    color: AppColors.white.withValues(alpha: 0.6),
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                   ),

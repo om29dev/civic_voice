@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:glassmorphism/glassmorphism.dart';
-import '../../core/constants/app_colors.dart';
 
 class GlassCard extends StatelessWidget {
   final Widget child;
@@ -33,16 +32,16 @@ class GlassCard extends StatelessWidget {
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          Colors.white.withOpacity(0.1),
-          Colors.white.withOpacity(0.05),
+          Colors.white.withValues(alpha: 0.1),
+          Colors.white.withValues(alpha: 0.05),
         ],
       ),
       borderGradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          Colors.white.withOpacity(0.2),
-          Colors.white.withOpacity(0.05),
+          Colors.white.withValues(alpha: 0.2),
+          Colors.white.withValues(alpha: 0.05),
         ],
       ),
       child: child,

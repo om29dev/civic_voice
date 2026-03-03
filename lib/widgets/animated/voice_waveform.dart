@@ -116,7 +116,7 @@ class WaveformPainter extends CustomPainter {
 
       final gradient = LinearGradient(
         colors: [
-          color.withOpacity(0.3),
+          color.withValues(alpha: 0.3),
           color,
         ],
       );
@@ -140,7 +140,7 @@ class WaveformPainter extends CustomPainter {
       // Glow effect when listening
       if (isListening) {
         final glowPaint = Paint()
-          ..color = color.withOpacity(0.3)
+          ..color = color.withValues(alpha: 0.3)
           ..strokeWidth = barWidth * 1.5
           ..strokeCap = StrokeCap.round
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
@@ -157,8 +157,8 @@ class WaveformPainter extends CustomPainter {
     final centerPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          color.withOpacity(0.8),
-          color.withOpacity(0.3),
+          color.withValues(alpha: 0.8),
+          color.withValues(alpha: 0.3),
           Colors.transparent,
         ],
       ).createShader(Rect.fromCircle(center: center, radius: radius * 0.3));
@@ -249,12 +249,14 @@ class _CircularWaveformState extends State<CircularWaveform>
       builder: (context, child) {
         return Transform.scale(
           scale: _pulseAnimation.value,
-          child: CustomPaint(
-            size: Size(widget.size, widget.size),
-            painter: CircularWavePainter(
-              progress: _waveAnimation.value,
-              color: widget.color,
-              isActive: widget.isActive,
+          child: RepaintBoundary(
+            child: CustomPaint(
+              size: Size(widget.size, widget.size),
+              painter: CircularWavePainter(
+                progress: _waveAnimation.value,
+                color: widget.color,
+                isActive: widget.isActive,
+              ),
             ),
           ),
         );
@@ -286,7 +288,7 @@ class CircularWavePainter extends CustomPainter {
       final opacity = (1 - waveProgress) * 0.5;
 
       final paint = Paint()
-        ..color = color.withOpacity(opacity)
+        ..color = color.withValues(alpha: opacity)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 3;
 
@@ -298,8 +300,8 @@ class CircularWavePainter extends CustomPainter {
       final glowPaint = Paint()
         ..shader = RadialGradient(
           colors: [
-            color.withOpacity(0.8),
-            color.withOpacity(0.4),
+            color.withValues(alpha: 0.8),
+            color.withValues(alpha: 0.4),
             Colors.transparent,
           ],
         ).createShader(Rect.fromCircle(center: center, radius: maxRadius * 0.4));

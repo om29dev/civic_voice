@@ -36,7 +36,7 @@ class _ProcessNavigatorState extends State<ProcessNavigator> with SingleTickerPr
         color: AppColors.white,
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
-          BoxShadow(color: AppColors.primary.withOpacity(0.05), blurRadius: 20),
+          BoxShadow(color: AppColors.primary.withValues(alpha: 0.05), blurRadius: 20),
         ],
       ),
       child: Column(
@@ -87,13 +87,13 @@ class _ProcessNavigatorState extends State<ProcessNavigator> with SingleTickerPr
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isCurrent ? AppColors.secondary : AppColors.primary.withOpacity(0.1),
+                  color: isCurrent ? AppColors.secondary : AppColors.primary.withValues(alpha: 0.1),
                   border: Border.all(
                     color: isCurrent ? AppColors.white : AppColors.primary,
                     width: 2,
                   ),
                   boxShadow: isCurrent 
-                    ? [BoxShadow(color: AppColors.secondary.withOpacity(0.5), blurRadius: 10)] 
+                    ? [BoxShadow(color: AppColors.secondary.withValues(alpha: 0.5), blurRadius: 10)] 
                     : [],
                 ),
                 child: Icon(
@@ -147,7 +147,7 @@ class PathPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.primary.withOpacity(0.2)
+      ..color = AppColors.primary.withValues(alpha: 0.2)
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
 

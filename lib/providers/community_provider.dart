@@ -26,7 +26,7 @@ class VerificationRequest {
 
 class CommunityProvider with ChangeNotifier {
   // Mock Requests
-  List<VerificationRequest> _requests = [
+  final List<VerificationRequest> _requests = [
     VerificationRequest(
       id: 'v1',
       requesterName: 'Ramesh Kumar',

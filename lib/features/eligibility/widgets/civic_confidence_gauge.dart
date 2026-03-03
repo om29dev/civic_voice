@@ -1,79 +1,50 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:syncfusion_flutter_gauges/gauges.dart';
 import '../../../core/constants/app_colors.dart';
 
+/// Eligibility confidence gauge — pure Flutter, no third-party gauge lib needed.
 class CivicConfidenceGauge extends StatelessWidget {
   final double score; // 0.0 to 100.0
-
   const CivicConfidenceGauge({super.key, required this.score});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 250,
+      height: 200,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.05),
+            color: AppColors.primary.withValues(alpha: 0.05),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
         ],
       ),
-      child: SfRadialGauge(
-        title: const GaugeTitle(
-          text: 'Civic Confidence Score',
-          textStyle: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-        ),
-        axes: <RadialAxis>[
-          RadialAxis(
-            minimum: 0,
-            maximum: 100,
-            showLabels: false,
-            showTicks: false,
-            axisLineStyle: const AxisLineStyle(
-              thickness: 0.2,
-              cornerStyle: CornerStyle.bothCurve,
-              color: Color.fromARGB(30, 0, 176, 255),
-              thicknessUnit: GaugeSizeUnit.factor,
+      child: Column(
+        children: [
+          const Text(
+            'Civic Confidence Score',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
             ),
-            pointers: <GaugePointer>[
-              RangePointer(
-                value: score,
-                cornerStyle: CornerStyle.bothCurve,
-                width: 0.2,
-                sizeUnit: GaugeSizeUnit.factor,
-                enableAnimation: true,
-                animationDuration: 1500,
-                gradient: const SweepGradient(
-                  colors: <Color>[AppColors.secondary, AppColors.accent],
-                  stops: <double>[0.25, 0.75],
-                ),
-              ),
-              MarkerPointer(
-                value: score,
-                markerType: MarkerType.circle,
-                color: AppColors.primary,
-                markerHeight: 20,
-                markerWidth: 20,
-                enableAnimation: true,
-                animationDuration: 1500,
-              )
-            ],
-            annotations: <GaugeAnnotation>[
-              GaugeAnnotation(
-                positionFactor: 0.1,
-                angle: 90,
-                widget: Column(
+          ),
+          const SizedBox(height: 12),
+          Expanded(
+            child: CustomPaint(
+              painter: _GaugePainter(score: score),
+              child: Center(
+                child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       score.toInt().toString(),
                       style: const TextStyle(
-                        fontSize: 40,
+                        fontSize: 36,
                         fontWeight: FontWeight.bold,
                         color: AppColors.primary,
                       ),
@@ -81,18 +52,60 @@ class CivicConfidenceGauge extends StatelessWidget {
                     const Text(
                       'Ready',
                       style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.textBody,
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],
                 ),
-              )
-            ],
-          )
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
+}
+
+class _GaugePainter extends CustomPainter {
+  final double score;
+  const _GaugePainter({required this.score});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height * 0.7;
+    final radius = math.min(cx, cy) * 0.85;
+    const startAngle = math.pi;
+    const sweepFull = math.pi;
+
+    // Background arc
+    final bgPaint = Paint()
+      ..color = AppColors.border.withValues(alpha: 0.4)
+      ..strokeWidth = 14
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    canvas.drawArc(
+      Rect.fromCircle(center: Offset(cx, cy), radius: radius),
+      startAngle, sweepFull, false, bgPaint,
+    );
+
+    // Filled arc
+    final fgPaint = Paint()
+      ..shader = const SweepGradient(
+        startAngle: startAngle,
+        endAngle: startAngle + sweepFull,
+        colors: [AppColors.accent, AppColors.primary],
+      ).createShader(Rect.fromCircle(center: Offset(cx, cy), radius: radius))
+      ..strokeWidth = 14
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    canvas.drawArc(
+      Rect.fromCircle(center: Offset(cx, cy), radius: radius),
+      startAngle, sweepFull * (score / 100), false, fgPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_GaugePainter old) => old.score != score;
 }

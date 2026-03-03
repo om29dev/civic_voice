@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:civic_voice_interface/core/theme/app_theme.dart';
-import 'package:civic_voice_interface/widgets/glass/glass_card.dart';
 import 'package:civic_voice_interface/widgets/animated/voice_waveform.dart';
 import 'package:civic_voice_interface/widgets/animated/particle_background.dart';
 import 'package:civic_voice_interface/providers/conversation_provider.dart';
@@ -193,19 +192,19 @@ class _VoiceInterfaceScreenState extends State<VoiceInterfaceScreen>
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  AppTheme.electricBlue.withOpacity(0.8),
-                  AppTheme.neonCyan.withOpacity(0.6),
-                  AppTheme.gradientStart.withOpacity(0.4),
+                  AppTheme.electricBlue.withValues(alpha: 0.8),
+                  AppTheme.neonCyan.withValues(alpha: 0.6),
+                  AppTheme.gradientStart.withValues(alpha: 0.4),
                 ],
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.electricBlue.withOpacity(0.6),
+                  color: AppTheme.electricBlue.withValues(alpha: 0.6),
                   blurRadius: 40,
                   spreadRadius: 10,
                 ),
                 BoxShadow(
-                  color: AppTheme.neonCyan.withOpacity(0.4),
+                  color: AppTheme.neonCyan.withValues(alpha: 0.4),
                   blurRadius: 60,
                   spreadRadius: 20,
                 ),
@@ -273,7 +272,7 @@ class _VoiceInterfaceScreenState extends State<VoiceInterfaceScreen>
         final message = messages[reversedIndex];
         
         return _AnimatedMessageBubble(
-          key: ValueKey(message.timestamp.millisecondsSinceEpoch), // Unique key for state preservation
+          key: ValueKey(message.timestamp.millisecondsSinceEpoch.toString()), // Unique key for state preservation
           message: message.text,
           isUser: message.isUser,
           // Stagger animation for initial load, but new messages (index 0) appear immediately
@@ -319,7 +318,7 @@ class _VoiceInterfaceScreenState extends State<VoiceInterfaceScreen>
           borderRadius: BorderRadius.circular(40),
           boxShadow: [
             BoxShadow(
-              color: (isListening ? AppTheme.gradientStart : AppTheme.electricBlue).withOpacity(0.6),
+              color: (isListening ? AppTheme.gradientStart : AppTheme.electricBlue).withValues(alpha: 0.6),
               blurRadius: 30,
               spreadRadius: 5,
             ),
@@ -351,7 +350,7 @@ class _VoiceInterfaceScreenState extends State<VoiceInterfaceScreen>
   }
   Widget _buildHistoryDrawer(BuildContext context, ConversationProvider convo) {
     return Drawer(
-      backgroundColor: AppTheme.deepSpaceBlue.withOpacity(0.95),
+      backgroundColor: AppTheme.deepSpaceBlue.withValues(alpha: 0.95),
       child: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -377,7 +376,7 @@ class _VoiceInterfaceScreenState extends State<VoiceInterfaceScreen>
                 ? Center(
                     child: Text(
                       'No history yet',
-                      style: GoogleFonts.inter(color: AppTheme.pureWhite.withOpacity(0.5)),
+                      style: GoogleFonts.inter(color: AppTheme.pureWhite.withValues(alpha: 0.5)),
                     ),
                   )
                 : ListView.builder(
@@ -388,24 +387,24 @@ class _VoiceInterfaceScreenState extends State<VoiceInterfaceScreen>
                       return Container(
                         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                         decoration: isSelected ? BoxDecoration(
-                          color: AppTheme.electricBlue.withOpacity(0.2),
+                          color: AppTheme.electricBlue.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppTheme.electricBlue.withOpacity(0.3)),
+                          border: Border.all(color: AppTheme.electricBlue.withValues(alpha: 0.3)),
                         ) : null,
                         child: ListTile(
                           title: Text(
-                            session.title,
+                            session.title ?? '',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.inter(
-                              color: isSelected ? AppTheme.pureWhite : AppTheme.pureWhite.withOpacity(0.8),
+                              color: isSelected ? AppTheme.pureWhite : AppTheme.pureWhite.withValues(alpha: 0.8),
                               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                             ),
                           ),
                           subtitle: Text(
                             DateFormat('MMM d, h:mm a').format(session.createdAt),
                             style: GoogleFonts.inter(
-                              color: AppTheme.pureWhite.withOpacity(0.4),
+                              color: AppTheme.pureWhite.withValues(alpha: 0.4),
                               fontSize: 12,
                             ),
                           ),
@@ -414,7 +413,7 @@ class _VoiceInterfaceScreenState extends State<VoiceInterfaceScreen>
                             Navigator.pop(context); // Close drawer
                           },
                           trailing: IconButton(
-                            icon: Icon(Icons.delete_outline, size: 20, color: AppTheme.pureWhite.withOpacity(0.5)),
+                            icon: Icon(Icons.delete_outline, size: 20, color: AppTheme.pureWhite.withValues(alpha: 0.5)),
                             onPressed: () {
                                convo.deleteSession(session.id);
                             },
@@ -448,9 +447,9 @@ class _VoiceInterfaceScreenState extends State<VoiceInterfaceScreen>
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            border: Border.all(color: AppTheme.pureWhite.withOpacity(0.2)),
+            border: Border.all(color: AppTheme.pureWhite.withValues(alpha: 0.2)),
             borderRadius: BorderRadius.circular(12),
-            color: AppTheme.pureWhite.withOpacity(0.05),
+            color: AppTheme.pureWhite.withValues(alpha: 0.05),
           ),
           child: Row(
             children: [
@@ -477,6 +476,7 @@ class _AnimatedMessageBubble extends StatefulWidget {
   final Duration delay;
 
   const _AnimatedMessageBubble({
+    super.key,
     required this.message,
     required this.isUser,
     required this.delay,
@@ -541,8 +541,8 @@ class _AnimatedMessageBubbleState extends State<_AnimatedMessageBubble>
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: widget.isUser
-                      ? [AppTheme.electricBlue.withOpacity(0.4), AppTheme.electricBlue.withOpacity(0.2)]
-                      : [AppTheme.gradientStart.withOpacity(0.4), AppTheme.gradientEnd.withOpacity(0.2)],
+                      ? [AppTheme.electricBlue.withValues(alpha: 0.4), AppTheme.electricBlue.withValues(alpha: 0.2)]
+                      : [AppTheme.gradientStart.withValues(alpha: 0.4), AppTheme.gradientEnd.withValues(alpha: 0.2)],
                 ),
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(20),
@@ -552,13 +552,13 @@ class _AnimatedMessageBubbleState extends State<_AnimatedMessageBubble>
                 ),
                 border: Border.all(
                   color: widget.isUser
-                      ? AppTheme.electricBlue.withOpacity(0.4)
-                      : AppTheme.gradientStart.withOpacity(0.4),
+                      ? AppTheme.electricBlue.withValues(alpha: 0.4)
+                      : AppTheme.gradientStart.withValues(alpha: 0.4),
                   width: 1,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: (widget.isUser ? AppTheme.electricBlue : AppTheme.gradientStart).withOpacity(0.2),
+                    color: (widget.isUser ? AppTheme.electricBlue : AppTheme.gradientStart).withValues(alpha: 0.2),
                     blurRadius: 15,
                     spreadRadius: 2,
                   ),
@@ -611,7 +611,7 @@ class _QuickResponseChipState extends State<_QuickResponseChip> {
         decoration: BoxDecoration(
           gradient: _isPressed
               ? AppTheme.accentGradient
-              : LinearGradient(
+              : const LinearGradient(
                   colors: [
                     AppTheme.glassBackground,
                     AppTheme.glassBackground,
@@ -625,7 +625,7 @@ class _QuickResponseChipState extends State<_QuickResponseChip> {
           boxShadow: _isPressed
               ? [
                   BoxShadow(
-                    color: AppTheme.electricBlue.withOpacity(0.4),
+                    color: AppTheme.electricBlue.withValues(alpha: 0.4),
                     blurRadius: 15,
                     spreadRadius: 2,
                   ),
@@ -657,10 +657,10 @@ class _AnimatedGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = color.withOpacity(0.05)
+      ..color = color.withValues(alpha: 0.05)
       ..strokeWidth = 1;
 
-    final spacing = 40.0;
+    const spacing = 40.0;
     final offset = (animation.value * spacing) % spacing;
 
     // Vertical lines
@@ -707,7 +707,7 @@ class _RotatingRingsPainter extends CustomPainter {
       final rotation = animation.value * 2 * 3.14159 * (i.isEven ? 1 : -1);
 
       final paint = Paint()
-        ..color = AppTheme.pureWhite.withOpacity(0.2 - i * 0.05)
+        ..color = AppTheme.pureWhite.withValues(alpha: 0.2 - i * 0.05)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2;
 

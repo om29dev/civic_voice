@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import '../providers/user_provider.dart';
 
 class EligibilityRule {

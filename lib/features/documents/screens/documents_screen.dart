@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../widgets/glass/glass_card.dart';
-import '../../../widgets/animated/particle_background.dart';
 import '../../../providers/user_provider.dart';
 import '../../../models/document_model.dart';
 import '../../../core/services/document_inference_service.dart';
@@ -47,6 +46,80 @@ class _DocumentsScreenState extends State<DocumentsScreen>
     _tabController.dispose();
     _inferenceService.dispose();
     super.dispose();
+  }
+
+  void _showSearchDialog(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final allDocs = userProvider.currentUser.documents;
+    String query = '';
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          final results = query.isEmpty
+              ? allDocs
+              : allDocs.where((d) => d.name.toLowerCase().contains(query.toLowerCase())).toList();
+
+          return Dialog(
+            backgroundColor: const Color(0xFF0D1117),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 80),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: TextField(
+                    autofocus: true,
+                    style: GoogleFonts.inter(color: Colors.white),
+                    onChanged: (v) => setDialogState(() => query = v),
+                    decoration: InputDecoration(
+                      hintText: 'Search documents...',
+                      hintStyle: GoogleFonts.inter(color: Colors.white38),
+                      prefixIcon: const Icon(Icons.search, color: AppTheme.electricBlue),
+                      enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.glassBorder), borderRadius: BorderRadius.circular(12)),
+                      focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: AppTheme.electricBlue), borderRadius: BorderRadius.circular(12)),
+                      filled: true,
+                      fillColor: AppTheme.glassBackground,
+                    ),
+                  ),
+                ),
+                if (results.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text('No results for "$query"', style: GoogleFonts.poppins(color: Colors.white54)),
+                  )
+                else
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 280),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                      itemCount: results.length,
+                      itemBuilder: (_, i) {
+                        final doc = results[i];
+                        return ListTile(
+                          leading: Icon(doc.icon, color: doc.color),
+                          title: Text(doc.name, style: GoogleFonts.inter(color: Colors.white, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          subtitle: Text(doc.category, style: GoogleFonts.inter(color: Colors.white54, fontSize: 11)),
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            setState(() {
+                              _selectedCategory = doc.category == _selectedCategory ? 'All' : doc.category;
+                              _tabController.animateTo(0);
+                            });
+                          },
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
   }
 
   Future<void> _scanDocument(BuildContext context) async {
@@ -188,22 +261,20 @@ class _DocumentsScreenState extends State<DocumentsScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.deepSpaceBlue,
-      body: Stack(
-        children: [
-          const Positioned.fill(
-            child: AnimatedGradientBackground(),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF0D1117), Color(0xFF161B22)],
           ),
-          const Positioned.fill(
-            child: ParticleBackground(
-              numberOfParticles: 40,
-              particleColor: AppTheme.electricBlue,
-            ),
-          ),
-          SafeArea(
+        ),
+        child: RepaintBoundary(
+          child: SafeArea(
             child: Consumer<UserProvider>(
               builder: (context, userProvider, child) {
                 final documents = userProvider.currentUser.documents;
-                
+
                 return Column(
                   children: [
                     _buildHeader(documents.length),
@@ -224,7 +295,7 @@ class _DocumentsScreenState extends State<DocumentsScreen>
               },
             ),
           ),
-        ],
+        ),
       ),
       floatingActionButton: _buildUploadFAB(),
     );
@@ -243,7 +314,7 @@ class _DocumentsScreenState extends State<DocumentsScreen>
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.electricBlue.withOpacity(0.3),
+                  color: AppTheme.electricBlue.withValues(alpha: 0.3),
                   blurRadius: 12,
                   spreadRadius: 2,
                 ),
@@ -272,14 +343,14 @@ class _DocumentsScreenState extends State<DocumentsScreen>
                   '$docCount ${lang.translate('documents_stored')}',
                   style: GoogleFonts.inter(
                     fontSize: 14,
-                    color: AppTheme.pureWhite.withOpacity(0.7),
+                    color: AppTheme.pureWhite.withValues(alpha: 0.7),
                   ),
                 ),
               ],
             ),
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: () => _showSearchDialog(context),
             icon: const Icon(Icons.search, color: AppTheme.electricBlue),
           ),
         ],
@@ -303,7 +374,7 @@ class _DocumentsScreenState extends State<DocumentsScreen>
           borderRadius: BorderRadius.circular(16),
         ),
         labelColor: AppTheme.pureWhite,
-        unselectedLabelColor: AppTheme.pureWhite.withOpacity(0.5),
+        unselectedLabelColor: AppTheme.pureWhite.withValues(alpha: 0.5),
         labelStyle: GoogleFonts.inter(fontWeight: FontWeight.w600),
         tabs: [
           Tab(text: lang.translate('all_documents')),
@@ -367,11 +438,11 @@ class _DocumentsScreenState extends State<DocumentsScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.description_outlined, size: 64, color: AppTheme.pureWhite.withOpacity(0.3)),
+            Icon(Icons.description_outlined, size: 64, color: AppTheme.pureWhite.withValues(alpha: 0.3)),
             const SizedBox(height: 16),
             Text(
               lang.translate('no_documents_found'),
-              style: GoogleFonts.poppins(color: AppTheme.pureWhite.withOpacity(0.5)),
+              style: GoogleFonts.poppins(color: AppTheme.pureWhite.withValues(alpha: 0.5)),
             ),
           ],
         ),
@@ -405,8 +476,8 @@ class _DocumentsScreenState extends State<DocumentsScreen>
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
                       colors: [
-                        AppTheme.electricBlue.withOpacity(0.2),
-                        AppTheme.neonCyan.withOpacity(0.1),
+                        AppTheme.electricBlue.withValues(alpha: 0.2),
+                        AppTheme.neonCyan.withValues(alpha: 0.1),
                       ],
                     ),
                   ),
@@ -430,7 +501,7 @@ class _DocumentsScreenState extends State<DocumentsScreen>
                   lang.translate('drag_drop'), // Assuming this key covers the description or adding a new one
                   style: GoogleFonts.inter(
                     fontSize: 14,
-                    color: AppTheme.pureWhite.withOpacity(0.7),
+                    color: AppTheme.pureWhite.withValues(alpha: 0.7),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -445,7 +516,7 @@ class _DocumentsScreenState extends State<DocumentsScreen>
                     padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     elevation: 10,
-                    shadowColor: AppTheme.electricBlue.withOpacity(0.5),
+                    shadowColor: AppTheme.electricBlue.withValues(alpha: 0.5),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -455,7 +526,7 @@ class _DocumentsScreenState extends State<DocumentsScreen>
                   label: Text(lang.translate('choose_files')),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.pureWhite,
-                    side: BorderSide(color: AppTheme.glassBorder),
+                    side: const BorderSide(color: AppTheme.glassBorder),
                     padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
@@ -493,7 +564,7 @@ class _DocumentsScreenState extends State<DocumentsScreen>
               return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: AppTheme.electricBlue.withOpacity(0.2),
+                  color: AppTheme.electricBlue.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: AppTheme.electricBlue),
                 ),
@@ -525,7 +596,7 @@ class _DocumentsScreenState extends State<DocumentsScreen>
               Icon(
                 Icons.archive_outlined,
                 size: 80,
-                color: AppTheme.pureWhite.withOpacity(0.3),
+                color: AppTheme.pureWhite.withValues(alpha: 0.3),
               ),
               const SizedBox(height: 16),
               Text(
@@ -541,7 +612,7 @@ class _DocumentsScreenState extends State<DocumentsScreen>
                 lang.translate('archived_hint'),
                 style: GoogleFonts.inter(
                   fontSize: 14,
-                  color: AppTheme.pureWhite.withOpacity(0.6),
+                  color: AppTheme.pureWhite.withValues(alpha: 0.6),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -558,7 +629,7 @@ class _DocumentsScreenState extends State<DocumentsScreen>
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: AppTheme.electricBlue.withOpacity(0.5),
+            color: AppTheme.electricBlue.withValues(alpha: 0.5),
             blurRadius: 20,
             spreadRadius: 5,
           ),
@@ -589,7 +660,7 @@ class _DocumentCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: document.color.withOpacity(0.2),
+              color: document.color.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(
@@ -616,7 +687,7 @@ class _DocumentCard extends StatelessWidget {
                   '${document.size} • $dateStr',
                   style: GoogleFonts.inter(
                     fontSize: 12,
-                    color: AppTheme.pureWhite.withOpacity(0.6),
+                    color: AppTheme.pureWhite.withValues(alpha: 0.6),
                   ),
                 ),
                 if (document.verificationMessage != null) ...[
@@ -637,10 +708,10 @@ class _DocumentCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               color: document.isVerified
-                  ? AppTheme.success.withOpacity(0.2)
+                  ? AppTheme.success.withValues(alpha: 0.2)
                   : (document.status == 'Scan Required' 
                       ? AppTheme.glassBackground 
-                      : AppTheme.error.withOpacity(0.2)),
+                      : AppTheme.error.withValues(alpha: 0.2)),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -651,7 +722,7 @@ class _DocumentCard extends StatelessWidget {
                 color: document.isVerified
                     ? AppTheme.success
                     : (document.status == 'Scan Required' 
-                        ? AppTheme.pureWhite.withOpacity(0.5) 
+                        ? AppTheme.pureWhite.withValues(alpha: 0.5) 
                         : AppTheme.error),
               ),
             ),

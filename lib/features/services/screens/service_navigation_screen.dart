@@ -43,7 +43,7 @@ class ServiceNavigationScreen extends StatelessWidget {
                 'Find and apply for government initiatives matching your voice profile.',
                 style: TextStyle(
                   fontSize: 16,
-                  color: AppColors.textBody.withOpacity(0.6),
+                  color: AppColors.textBody.withValues(alpha: 0.6),
                 ),
               ),
             ),

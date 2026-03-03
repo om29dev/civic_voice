@@ -1,7 +1,7 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:syncfusion_flutter_gauges/gauges.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../widgets/glass/glass_card.dart';
 import '../../../providers/gamification_provider.dart' as game;
@@ -34,65 +34,41 @@ class GamificationScreen extends StatelessWidget {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            // Score Radial Gauge
+            // Score Arc Gauge (pure Flutter)
             SizedBox(
               height: 250,
-              child: SfRadialGauge(
-                axes: <RadialAxis>[
-                  RadialAxis(
-                    minimum: 0,
-                    maximum: 1000,
-                    showLabels: false,
-                    showTicks: false,
-                    axisLineStyle: AxisLineStyle(
-                      thickness: 0.2,
-                      cornerStyle: CornerStyle.bothCurve,
-                      color: AppTheme.glassBorder,
-                      thicknessUnit: GaugeSizeUnit.factor,
-                    ),
-                    pointers: <GaugePointer>[
-                      RangePointer(
-                        value: gameProvider.civicScore.toDouble(),
-                        cornerStyle: CornerStyle.bothCurve,
-                        width: 0.2,
-                        sizeUnit: GaugeSizeUnit.factor,
-                        gradient: const SweepGradient(
-                          colors: [AppTheme.electricBlue, AppTheme.neonCyan],
+              child: CustomPaint(
+                painter: _ScoreArcPainter(
+                  score: gameProvider.civicScore.toDouble(),
+                  maxScore: 1000,
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 30),
+                      Text(
+                        gameProvider.civicScore.toString(),
+                        style: GoogleFonts.poppins(
+                          fontSize: 48,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.electricBlue,
                         ),
-                      )
-                    ],
-                    annotations: <GaugeAnnotation>[
-                      GaugeAnnotation(
-                        positionFactor: 0.1,
-                        angle: 90,
-                        widget: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              gameProvider.civicScore.toString(),
-                              style: GoogleFonts.poppins(
-                                fontSize: 48,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.electricBlue,
-                              ),
-                            ),
-                            Text(
-                              'CIVIC SCORE',
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                color: AppTheme.pureWhite.withOpacity(0.5),
-                                letterSpacing: 2,
-                              ),
-                            ),
-                          ],
+                      ),
+                      Text(
+                        'CIVIC SCORE',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: AppTheme.pureWhite.withValues(alpha: 0.5),
+                          letterSpacing: 2,
                         ),
-                      )
+                      ),
                     ],
-                  )
-                ],
+                  ),
+                ),
               ),
             ),
-            
+
             // Level Card
             GlassCard(
               child: Row(
@@ -148,15 +124,15 @@ class GamificationScreen extends StatelessWidget {
     return GlassCard(
       padding: const EdgeInsets.all(16),
       gradientColors: badge.isUnlocked 
-          ? [AppTheme.electricBlue.withOpacity(0.1), AppTheme.electricBlue.withOpacity(0.05)]
-          : [Colors.grey.withOpacity(0.1), Colors.grey.withOpacity(0.05)],
+          ? [AppTheme.electricBlue.withValues(alpha: 0.1), AppTheme.electricBlue.withValues(alpha: 0.05)]
+          : [Colors.grey.withValues(alpha: 0.1), Colors.grey.withValues(alpha: 0.05)],
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             badge.icon, 
             size: 40, 
-            color: badge.isUnlocked ? AppTheme.electricBlue : Colors.grey.withOpacity(0.5),
+            color: badge.isUnlocked ? AppTheme.electricBlue : Colors.grey.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 12),
           Text(
@@ -176,7 +152,7 @@ class GamificationScreen extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.inter(
               fontSize: 10,
-              color: badge.isUnlocked ? AppTheme.pureWhite.withOpacity(0.7) : Colors.grey.withOpacity(0.5),
+              color: badge.isUnlocked ? AppTheme.pureWhite.withValues(alpha: 0.7) : Colors.grey.withValues(alpha: 0.5),
             ),
           ),
         ],
@@ -184,3 +160,50 @@ class GamificationScreen extends StatelessWidget {
     );
   }
 }
+
+class _ScoreArcPainter extends CustomPainter {
+  final double score;
+  final double maxScore;
+  
+  _ScoreArcPainter({required this.score, required this.maxScore});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height * 0.7;
+    final radius = math.min(cx, cy) * 0.9;
+    const startAngle = math.pi;
+    const sweepFull = math.pi;
+
+    // Background arc
+    final bgPaint = Paint()
+      ..color = AppTheme.glassBorder
+      ..strokeWidth = 12
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    canvas.drawArc(
+      Rect.fromCircle(center: Offset(cx, cy), radius: radius),
+      startAngle, sweepFull, false, bgPaint,
+    );
+
+    // Filled arc
+    final percentage = (score / maxScore).clamp(0.0, 1.0);
+    final fgPaint = Paint()
+      ..shader = const SweepGradient(
+        startAngle: startAngle,
+        endAngle: startAngle + sweepFull,
+        colors: [AppTheme.electricBlue, AppTheme.neonCyan],
+      ).createShader(Rect.fromCircle(center: Offset(cx, cy), radius: radius))
+      ..strokeWidth = 12
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    canvas.drawArc(
+      Rect.fromCircle(center: Offset(cx, cy), radius: radius),
+      startAngle, sweepFull * percentage, false, fgPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_ScoreArcPainter old) => old.score != score;
+}
+

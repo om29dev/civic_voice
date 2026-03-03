@@ -72,8 +72,8 @@ class _CircularProgressCardState extends State<CircularProgressCard>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Colors.white.withOpacity(0.1),
-                Colors.white.withOpacity(0.05),
+                Colors.white.withValues(alpha: 0.1),
+                Colors.white.withValues(alpha: 0.05),
               ],
             ),
             borderRadius: BorderRadius.circular(20),
@@ -83,7 +83,7 @@ class _CircularProgressCardState extends State<CircularProgressCard>
             ),
             boxShadow: [
               BoxShadow(
-                color: widget.color.withOpacity(0.3 * _glowAnimation.value),
+                color: widget.color.withValues(alpha: 0.3 * _glowAnimation.value),
                 blurRadius: 30,
                 spreadRadius: 5,
               ),
@@ -101,7 +101,7 @@ class _CircularProgressCardState extends State<CircularProgressCard>
                       size: const Size(120, 120),
                       painter: _CircularProgressPainter(
                         progress: 1.0,
-                        color: widget.color.withOpacity(0.2),
+                        color: widget.color.withValues(alpha: 0.2),
                         strokeWidth: 12,
                       ),
                     ),
@@ -169,7 +169,7 @@ class _CircularProgressCardState extends State<CircularProgressCard>
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     fontSize: 14,
-                    color: AppTheme.pureWhite.withOpacity(0.7),
+                    color: AppTheme.pureWhite.withValues(alpha: 0.7),
                   ),
                 ),
               ],
@@ -238,7 +238,7 @@ class _CelebrationParticlesPainter extends CustomPainter {
       final y = center.dy + sin(angle) * distance;
 
       final paint = Paint()
-        ..color = color.withOpacity(1 - animation.value)
+        ..color = color.withValues(alpha: 1 - animation.value)
         ..style = PaintingStyle.fill;
 
       canvas.drawCircle(
@@ -307,8 +307,8 @@ class _LinearProgressCardState extends State<LinearProgressCard>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Colors.white.withOpacity(0.1),
-                Colors.white.withOpacity(0.05),
+                Colors.white.withValues(alpha: 0.1),
+                Colors.white.withValues(alpha: 0.05),
               ],
             ),
             borderRadius: BorderRadius.circular(16),
@@ -349,7 +349,7 @@ class _LinearProgressCardState extends State<LinearProgressCard>
                     Container(
                       height: 8,
                       decoration: BoxDecoration(
-                        color: widget.color.withOpacity(0.2),
+                        color: widget.color.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
@@ -361,13 +361,13 @@ class _LinearProgressCardState extends State<LinearProgressCard>
                           gradient: LinearGradient(
                             colors: [
                               widget.color,
-                              widget.color.withOpacity(0.7),
+                              widget.color.withValues(alpha: 0.7),
                             ],
                           ),
                           borderRadius: BorderRadius.circular(8),
                           boxShadow: [
                             BoxShadow(
-                              color: widget.color.withOpacity(0.5),
+                              color: widget.color.withValues(alpha: 0.5),
                               blurRadius: 8,
                               spreadRadius: 1,
                             ),
@@ -384,7 +384,7 @@ class _LinearProgressCardState extends State<LinearProgressCard>
                   widget.label,
                   style: GoogleFonts.inter(
                     fontSize: 12,
-                    color: AppTheme.pureWhite.withOpacity(0.6),
+                    color: AppTheme.pureWhite.withValues(alpha: 0.6),
                   ),
                 ),
               ],

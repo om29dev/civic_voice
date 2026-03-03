@@ -36,12 +36,12 @@ class NotesScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                   Icon(Icons.mic_none, size: 64, color: AppTheme.pureWhite.withOpacity(0.3)),
+                   Icon(Icons.mic_none, size: 64, color: AppTheme.pureWhite.withValues(alpha: 0.3)),
                    const SizedBox(height: 16),
                    Text(
                      'No notes yet',
                      style: GoogleFonts.poppins(
-                       color: AppTheme.pureWhite.withOpacity(0.5),
+                       color: AppTheme.pureWhite.withValues(alpha: 0.5),
                        fontSize: 18,
                      ),
                    ),
@@ -49,7 +49,7 @@ class NotesScreen extends StatelessWidget {
                    Text(
                      'Say "Take a note..." or "Remind me to..."',
                      style: GoogleFonts.inter(
-                       color: AppTheme.pureWhite.withOpacity(0.3),
+                       color: AppTheme.pureWhite.withValues(alpha: 0.3),
                        fontSize: 14,
                      ),
                    ),
@@ -66,7 +66,7 @@ class NotesScreen extends StatelessWidget {
                   key: Key(note.id),
                   onDismissed: (_) => notesProvider.deleteNote(note.id),
                   background: Container(
-                    color: AppTheme.error.withOpacity(0.8),
+                    color: AppTheme.error.withValues(alpha: 0.8),
                     alignment: Alignment.centerRight,
                     padding: const EdgeInsets.only(right: 20),
                     child: const Icon(Icons.delete, color: Colors.white),
@@ -97,7 +97,7 @@ class NotesScreen extends StatelessWidget {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.warning.withOpacity(0.2),
+                                  color: AppTheme.warning.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Row(
@@ -121,7 +121,7 @@ class NotesScreen extends StatelessWidget {
                         Text(
                           note.content,
                           style: GoogleFonts.inter(
-                            color: AppTheme.pureWhite.withOpacity(0.9),
+                            color: AppTheme.pureWhite.withValues(alpha: 0.9),
                             fontSize: 14,
                             height: 1.5,
                           ),
@@ -133,7 +133,7 @@ class NotesScreen extends StatelessWidget {
                             Text(
                               DateFormat('MMM d').format(note.createdAt),
                               style: GoogleFonts.inter(
-                                color: AppTheme.pureWhite.withOpacity(0.4),
+                                color: AppTheme.pureWhite.withValues(alpha: 0.4),
                                 fontSize: 12,
                               ),
                             ),

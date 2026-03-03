@@ -159,13 +159,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             shape: BoxShape.circle,
                             gradient: RadialGradient(
                               colors: [
-                                AppTheme.electricBlue.withOpacity(0.8),
-                                AppTheme.neonCyan.withOpacity(0.6),
+                                AppTheme.electricBlue.withValues(alpha: 0.8),
+                                AppTheme.neonCyan.withValues(alpha: 0.6),
                               ],
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: AppTheme.electricBlue.withOpacity(0.5),
+                                color: AppTheme.electricBlue.withValues(alpha: 0.5),
                                 blurRadius: 40,
                                 spreadRadius: 10,
                               ),
@@ -193,7 +193,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               'Already have an account? ',
                               style: GoogleFonts.inter(
                                 fontSize: 14,
-                                color: AppTheme.pureWhite.withOpacity(0.7),
+                                color: AppTheme.pureWhite.withValues(alpha: 0.7),
                               ),
                             ),
                             TextButton(
@@ -246,7 +246,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 14,
-              color: AppTheme.pureWhite.withOpacity(0.7),
+              color: AppTheme.pureWhite.withValues(alpha: 0.7),
             ),
           ),
           
@@ -331,7 +331,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     text: TextSpan(
                       style: GoogleFonts.inter(
                         fontSize: 13,
-                        color: AppTheme.pureWhite.withOpacity(0.7),
+                        color: AppTheme.pureWhite.withValues(alpha: 0.7),
                       ),
                       children: [
                         const TextSpan(text: 'I agree to the '),
@@ -368,18 +368,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
           // Divider
           Row(
             children: [
-              Expanded(child: Divider(color: AppTheme.pureWhite.withOpacity(0.2))),
+              Expanded(child: Divider(color: AppTheme.pureWhite.withValues(alpha: 0.2))),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
                   'OR REGISTER WITH',
                   style: GoogleFonts.inter(
                     fontSize: 11,
-                    color: AppTheme.pureWhite.withOpacity(0.5),
+                    color: AppTheme.pureWhite.withValues(alpha: 0.5),
                   ),
                 ),
               ),
-              Expanded(child: Divider(color: AppTheme.pureWhite.withOpacity(0.2))),
+              Expanded(child: Divider(color: AppTheme.pureWhite.withValues(alpha: 0.2))),
             ],
           ),
           
@@ -444,7 +444,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: GoogleFonts.inter(
-                color: AppTheme.pureWhite.withOpacity(0.5),
+                color: AppTheme.pureWhite.withValues(alpha: 0.5),
               ),
               prefixIcon: Icon(icon, color: AppTheme.electricBlue),
               suffixIcon: suffixIcon,
@@ -463,7 +463,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.electricBlue.withOpacity(0.5),
+            color: AppTheme.electricBlue.withValues(alpha: 0.5),
             blurRadius: 30,
             spreadRadius: 5,
           ),
@@ -515,7 +515,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       style: OutlinedButton.styleFrom(
         foregroundColor: AppTheme.pureWhite,
         padding: const EdgeInsets.symmetric(vertical: 14),
-        side: BorderSide(color: AppTheme.glassBorder),
+        side: const BorderSide(color: AppTheme.glassBorder),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),

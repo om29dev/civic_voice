@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../providers/language_provider.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -18,7 +16,7 @@ class WelcomeScreen extends StatelessWidget {
           Positioned(
             top: -100,
             right: -100,
-            child: _GlowBlob(color: AppColors.primary.withOpacity(0.15), size: 400),
+            child: _GlowBlob(color: AppColors.primary.withValues(alpha: 0.15), size: 400),
           ),
           
           SafeArea(
@@ -34,11 +32,11 @@ class WelcomeScreen extends StatelessWidget {
                       padding: const EdgeInsets.all(25),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: AppColors.white.withOpacity(0.05),
-                        border: Border.all(color: AppColors.white.withOpacity(0.1)),
+                        color: AppColors.white.withValues(alpha: 0.05),
+                        border: Border.all(color: AppColors.white.withValues(alpha: 0.1)),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primary.withOpacity(0.2),
+                            color: AppColors.primary.withValues(alpha: 0.2),
                             blurRadius: 30,
                           )
                         ],
@@ -106,7 +104,7 @@ class WelcomeScreen extends StatelessWidget {
                         Text(
                           'VERSION 1.0.4 - SECURE CHANNEL',
                           style: GoogleFonts.jetBrainsMono(
-                            color: AppColors.white.withOpacity(0.2),
+                            color: AppColors.white.withValues(alpha: 0.2),
                             fontSize: 10,
                           ),
                         ),
@@ -136,7 +134,7 @@ class _GlowBlob extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: RadialGradient(colors: [color, color.withOpacity(0)]),
+        gradient: RadialGradient(colors: [color, color.withValues(alpha: 0)]),
       ),
     );
   }

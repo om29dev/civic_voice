@@ -41,9 +41,9 @@ class SchemesScreen extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
@@ -121,10 +121,10 @@ class SchemesScreen extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 15),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: AppColors.white.withOpacity(0.05),
+          color: AppColors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isEligible ? AppColors.primary.withOpacity(0.5) : AppColors.white.withOpacity(0.1),
+            color: isEligible ? AppColors.primary.withValues(alpha: 0.5) : AppColors.white.withValues(alpha: 0.1),
             width: isEligible ? 1.5 : 1,
           ),
         ),
@@ -135,7 +135,7 @@ class SchemesScreen extends StatelessWidget {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: (isEligible ? AppColors.primary : AppColors.primary).withOpacity(0.2),
+                color: (isEligible ? AppColors.primary : AppColors.primary).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -167,7 +167,7 @@ class SchemesScreen extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: AppColors.success.withOpacity(0.2),
+                            color: AppColors.success.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -185,7 +185,7 @@ class SchemesScreen extends StatelessWidget {
                   Text(
                     scheme.description,
                     style: TextStyle(
-                      color: AppColors.white.withOpacity(0.6),
+                      color: AppColors.white.withValues(alpha: 0.6),
                       fontSize: 13,
                     ),
                     maxLines: 2,
@@ -199,7 +199,7 @@ class SchemesScreen extends StatelessWidget {
             const SizedBox(width: 8),
             Icon(
               Icons.arrow_forward_ios,
-              color: AppColors.white.withOpacity(0.3),
+              color: AppColors.white.withValues(alpha: 0.3),
               size: 16,
             ),
           ],

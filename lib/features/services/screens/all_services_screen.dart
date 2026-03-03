@@ -122,7 +122,7 @@ class _AllServicesScreenState extends State<AllServicesScreen> {
         decoration: InputDecoration(
           hintText: lang.translate('search_services'),
           hintStyle: GoogleFonts.inter(
-            color: AppTheme.pureWhite.withOpacity(0.5),
+            color: AppTheme.pureWhite.withValues(alpha: 0.5),
           ),
           prefixIcon: const Icon(Icons.search, color: AppTheme.electricBlue),
           border: InputBorder.none,
@@ -147,7 +147,7 @@ class _AllServicesScreenState extends State<AllServicesScreen> {
         decoration: BoxDecoration(
           gradient: isSelected
               ? AppTheme.accentGradient
-              : LinearGradient(
+              : const LinearGradient(
                   colors: [
                     AppTheme.glassBackground,
                     AppTheme.glassBackground,
@@ -198,8 +198,8 @@ class _AllServicesScreenState extends State<AllServicesScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    service.color.withOpacity(0.3),
-                    service.color.withOpacity(0.1),
+                    service.color.withValues(alpha: 0.3),
+                    service.color.withValues(alpha: 0.1),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(12),
@@ -226,7 +226,7 @@ class _AllServicesScreenState extends State<AllServicesScreen> {
               translatedDesc,
               style: GoogleFonts.inter(
                 fontSize: 12,
-                color: AppTheme.pureWhite.withOpacity(0.6),
+                color: AppTheme.pureWhite.withValues(alpha: 0.6),
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -234,7 +234,7 @@ class _AllServicesScreenState extends State<AllServicesScreen> {
             const Spacer(),
             Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.access_time,
                   size: 14,
                   color: AppTheme.electricBlue,

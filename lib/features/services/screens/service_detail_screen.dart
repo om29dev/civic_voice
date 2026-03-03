@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -148,7 +147,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [widget.service.color.withOpacity(0.4), AppColors.background],
+                    colors: [widget.service.color.withValues(alpha: 0.4), AppColors.background],
                   ),
                 ),
               ),
@@ -164,11 +163,11 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: AppColors.white.withOpacity(0.05),
-                        border: Border.all(color: AppColors.white.withOpacity(0.1)),
+                        color: AppColors.white.withValues(alpha: 0.05),
+                        border: Border.all(color: AppColors.white.withValues(alpha: 0.1)),
                         boxShadow: [
                           BoxShadow(
-                            color: widget.service.color.withOpacity(0.3),
+                            color: widget.service.color.withValues(alpha: 0.3),
                             blurRadius: 40,
                             spreadRadius: 10,
                           )
@@ -229,9 +228,9 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(25),
       decoration: BoxDecoration(
-        color: AppColors.white.withOpacity(0.03),
+        color: AppColors.white.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: AppColors.white.withOpacity(0.05)),
+        border: Border.all(color: AppColors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
         children: widget.service.steps.map((step) {
@@ -248,14 +247,14 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                       height: 24,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: isCompleted ? AppColors.success : (isCurrent ? AppColors.primary : AppColors.white.withOpacity(0.1)),
+                        color: isCompleted ? AppColors.success : (isCurrent ? AppColors.primary : AppColors.white.withValues(alpha: 0.1)),
                         border: isCurrent ? Border.all(color: AppColors.white, width: 2) : null,
-                        boxShadow: isCurrent ? [BoxShadow(color: AppColors.primary.withOpacity(0.5), blurRadius: 10)] : null,
+                        boxShadow: isCurrent ? [BoxShadow(color: AppColors.primary.withValues(alpha: 0.5), blurRadius: 10)] : null,
                       ),
                       child: isCompleted ? const Icon(Icons.check, size: 14, color: AppColors.background) : null,
                     ),
                     if (step.order != widget.service.steps.length)
-                      Container(width: 2, height: 40, color: AppColors.white.withOpacity(0.1)),
+                      Container(width: 2, height: 40, color: AppColors.white.withValues(alpha: 0.1)),
                   ],
                 ),
                 const SizedBox(width: 20),
@@ -266,14 +265,14 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                       Text(
                         step.title,
                         style: GoogleFonts.poppins(
-                          color: isCurrent ? AppColors.white : AppColors.white.withOpacity(0.5),
+                          color: isCurrent ? AppColors.white : AppColors.white.withValues(alpha: 0.5),
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
                       ),
                       Text(
                         step.instruction ?? 'Verify details and submit.',
-                        style: TextStyle(color: AppColors.white.withOpacity(0.3), fontSize: 12),
+                        style: TextStyle(color: AppColors.white.withValues(alpha: 0.3), fontSize: 12),
                       ),
                     ],
                   ),
@@ -295,12 +294,12 @@ class _Premium3DDocCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.white.withOpacity(0.05),
+        color: AppColors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.white.withOpacity(0.1)),
+        border: Border.all(color: AppColors.white.withValues(alpha: 0.1)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 10),
           )
@@ -327,7 +326,7 @@ class _Premium3DDocCard extends StatelessWidget {
           Text(
             'REQUIRED',
             style: GoogleFonts.jetBrainsMono(
-              color: AppColors.primary.withOpacity(0.5),
+              color: AppColors.primary.withValues(alpha: 0.5),
               fontSize: 10,
               fontWeight: FontWeight.bold,
             ),

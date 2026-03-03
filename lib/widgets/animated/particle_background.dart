@@ -64,13 +64,15 @@ class _ParticleBackgroundState extends State<ParticleBackground>
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: ParticlePainter(
-        particles: particles,
-        particleColor: widget.particleColor,
-        connectParticles: widget.connectParticles,
+    return RepaintBoundary(
+      child: CustomPaint(
+        painter: ParticlePainter(
+          particles: particles,
+          particleColor: widget.particleColor,
+          connectParticles: widget.connectParticles,
+        ),
+        child: Container(),
       ),
-      child: Container(),
     );
   }
 }
@@ -116,11 +118,11 @@ class ParticlePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = particleColor.withOpacity(0.6)
+      ..color = particleColor.withValues(alpha: 0.6)
       ..style = PaintingStyle.fill;
 
     final linePaint = Paint()
-      ..color = particleColor.withOpacity(0.1)
+      ..color = particleColor.withValues(alpha: 0.1)
       ..strokeWidth = 1
       ..style = PaintingStyle.stroke;
 
@@ -137,7 +139,7 @@ class ParticlePainter extends CustomPainter {
 
           if (distance < 150) {
             final opacity = (1 - distance / 150) * 0.3;
-            linePaint.color = particleColor.withOpacity(opacity);
+            linePaint.color = particleColor.withValues(alpha: opacity);
             canvas.drawLine(
               Offset(p1.x * size.width, p1.y * size.height),
               Offset(p2.x * size.width, p2.y * size.height),
@@ -154,7 +156,7 @@ class ParticlePainter extends CustomPainter {
       
       // Glow effect
       final glowPaint = Paint()
-        ..color = particleColor.withOpacity(0.3)
+        ..color = particleColor.withValues(alpha: 0.3)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
       canvas.drawCircle(center, particle.size * 2, glowPaint);
       

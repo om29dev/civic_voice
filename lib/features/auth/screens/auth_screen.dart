@@ -6,6 +6,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:civic_voice_interface/core/constants/app_colors.dart';
 import 'package:civic_voice_interface/providers/auth_provider.dart';
 import 'package:civic_voice_interface/providers/language_provider.dart';
+import 'package:civic_voice_interface/core/constants/app_language.dart';
+import 'package:civic_voice_interface/core/theme/app_theme.dart';
+import 'package:civic_voice_interface/widgets/t_text.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -15,7 +18,7 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
-  bool _isLogin = true;
+  final bool _isLogin = true;
   final _phoneController = TextEditingController();
   final _otpController = TextEditingController();
   bool _isLoading = false;
@@ -84,12 +87,12 @@ class _AuthScreenState extends State<AuthScreen> {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.5),
+            color: AppColors.primary.withValues(alpha: 0.5),
             blurRadius: 40,
             spreadRadius: 10,
           ),
           BoxShadow(
-            color: AppColors.accent.withOpacity(0.3),
+            color: AppColors.accent.withValues(alpha: 0.3),
             blurRadius: 20,
             spreadRadius: 5,
           ),
@@ -112,29 +115,29 @@ class _AuthScreenState extends State<AuthScreen> {
           width: 400,
           padding: const EdgeInsets.all(40),
           decoration: BoxDecoration(
-            color: AppColors.white.withOpacity(0.05),
+            color: AppColors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(30),
             border: Border.all(
-              color: AppColors.white.withOpacity(0.1),
+              color: AppColors.white.withValues(alpha: 0.1),
               width: 1.5,
             ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const TText(
                 'Welcome Back',
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: AppColors.white,
                 ),
               ),
               const SizedBox(height: 8),
-              Text(
+              const TText(
                 'Enter your mobile number to continue',
-                style: GoogleFonts.inter(
-                  color: AppColors.white.withOpacity(0.6),
+                style: TextStyle(
+                  color: Color(0x99FFFFFF),
                   fontSize: 14,
                 ),
               ),
@@ -160,16 +163,13 @@ class _AuthScreenState extends State<AuthScreen> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     elevation: 15,
-                    shadowColor: AppColors.primary.withOpacity(0.4),
+                    shadowColor: AppColors.primary.withValues(alpha: 0.4),
                   ),
-                  child: _isLoading 
+                  child: _isLoading
                       ? const CircularProgressIndicator(color: AppColors.background)
-                      : const Text(
+                      : const TText(
                           'GET OTP',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 2,
-                          ),
+                          style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 2),
                         ),
                 ),
               ),
@@ -187,10 +187,10 @@ class _AuthScreenState extends State<AuthScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.white.withOpacity(0.03),
+        color: AppColors.white.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppColors.white.withOpacity(0.05),
+          color: AppColors.white.withValues(alpha: 0.05),
         ),
       ),
       child: TextField(
@@ -198,8 +198,8 @@ class _AuthScreenState extends State<AuthScreen> {
         style: const TextStyle(color: AppColors.white),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: TextStyle(color: AppColors.white.withOpacity(0.3)),
-          prefixIcon: Icon(icon, color: AppColors.primary.withOpacity(0.7)),
+          hintStyle: TextStyle(color: AppColors.white.withValues(alpha: 0.3)),
+          prefixIcon: Icon(icon, color: AppColors.primary.withValues(alpha: 0.7)),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         ),
@@ -218,12 +218,12 @@ class _MeshGradient extends StatelessWidget {
         Positioned(
           top: -100,
           left: -100,
-          child: _BlurredBlob(color: AppColors.primary.withOpacity(0.2), size: 400),
+          child: _BlurredBlob(color: AppColors.primary.withValues(alpha: 0.2), size: 400),
         ),
         Positioned(
           bottom: -150,
           right: -100,
-          child: _BlurredBlob(color: AppColors.gradEnd.withOpacity(0.2), size: 500),
+          child: _BlurredBlob(color: AppTheme.gradientEnd.withValues(alpha: 0.2), size: 500),
         ),
       ],
     );
@@ -243,7 +243,7 @@ class _BlurredBlob extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: RadialGradient(
-          colors: [color, color.withOpacity(0)],
+          colors: [color, color.withValues(alpha: 0)],
         ),
       ),
     );
@@ -294,7 +294,7 @@ class _ParticlePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = AppColors.white.withOpacity(0.1);
+    final paint = Paint()..color = AppColors.white.withValues(alpha: 0.1);
     for (int i = 0; i < 50; i++) {
       double x = (i * 137.5) % size.width;
       double y = (i * 137.5 + progress * 500) % size.height;
@@ -315,10 +315,10 @@ class _PremiumLanguageSelector extends StatelessWidget {
     return Wrap(
       spacing: 15,
       children: [
-        _LangToggle(code: 'EN', name: 'English', isSelected: langProvider.currentLanguage == AppLanguage.english),
-        _LangToggle(code: 'HI', name: 'हिन्दी', isSelected: langProvider.currentLanguage == AppLanguage.hindi),
-        _LangToggle(code: 'MR', name: 'मराठी', isSelected: langProvider.currentLanguage == AppLanguage.marathi),
-        _LangToggle(code: 'TA', name: 'தமிழ்', isSelected: langProvider.currentLanguage == AppLanguage.tamil),
+        _LangToggle(code: 'EN', name: 'English', isSelected: langProvider.currentLanguage == 'en'),
+        _LangToggle(code: 'HI', name: 'हिन्दी', isSelected: langProvider.currentLanguage == 'hi'),
+        _LangToggle(code: 'MR', name: 'मराठी', isSelected: langProvider.currentLanguage == 'mr'),
+        _LangToggle(code: 'TA', name: 'தமிழ்', isSelected: langProvider.currentLanguage == 'ta'),
       ],
     );
   }
@@ -332,22 +332,36 @@ class _LangToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isSelected ? AppColors.primary : AppColors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isSelected ? AppColors.accent : AppColors.white.withOpacity(0.1),
+    return GestureDetector(
+      onTap: () {
+        final langProvider = Provider.of<LanguageProvider>(context, listen: false);
+        String newLang;
+        switch (code) {
+            case 'HI': newLang = 'hi'; break;
+            case 'MR': newLang = 'mr'; break;
+            case 'TA': newLang = 'ta'; break;
+            case 'EN': 
+            default: newLang = 'en'; break;
+        }
+        langProvider.setLanguageByCode(newLang);
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : AppColors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppColors.accent : AppColors.white.withValues(alpha: 0.1),
+          ),
         ),
-      ),
-      child: Text(
-        code,
-        style: TextStyle(
-          color: isSelected ? AppColors.background : AppColors.white,
-          fontWeight: FontWeight.bold,
-          fontSize: 12,
+        child: Text(
+          code,
+          style: TextStyle(
+            color: isSelected ? AppColors.background : AppColors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 12,
+          ),
         ),
       ),
     );

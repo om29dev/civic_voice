@@ -93,7 +93,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.red.withOpacity(0.5),
+                      color: Colors.red.withValues(alpha: 0.5),
                       blurRadius: 40,
                       spreadRadius: 10,
                     ),
@@ -107,7 +107,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                       Text(
                         lang.translate('tap_for_112'),
                         style: GoogleFonts.inter(
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
@@ -124,7 +124,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
             
             // Location Card
             GlassCard(
-              gradientColors: [Colors.red.withOpacity(0.1), Colors.red.withOpacity(0.05)],
+              gradientColors: [Colors.red.withValues(alpha: 0.1), Colors.red.withValues(alpha: 0.05)],
               child: Column(
                 children: [
                   Row(
@@ -255,12 +255,12 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('• ', style: TextStyle(color: AppTheme.pureWhite.withOpacity(0.7))),
+              Text('• ', style: TextStyle(color: AppTheme.pureWhite.withValues(alpha: 0.7))),
               Expanded(
                 child: Text(
                   step,
                   style: GoogleFonts.inter(
-                    color: AppTheme.pureWhite.withOpacity(0.9),
+                    color: AppTheme.pureWhite.withValues(alpha: 0.9),
                     fontSize: 13,
                   ),
                 ),

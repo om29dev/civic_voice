@@ -26,7 +26,7 @@ class ServiceCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: service.color.withOpacity(0.1),
+                color: service.color.withValues(alpha: 0.1),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -38,7 +38,7 @@ class ServiceCard extends StatelessWidget {
                 height: 60,
                 width: 60,
                 decoration: BoxDecoration(
-                  color: service.color.withOpacity(0.1),
+                  color: service.color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(service.icon, color: service.color, size: 30),
@@ -61,7 +61,7 @@ class ServiceCard extends StatelessWidget {
                       service.description,
                       style: TextStyle(
                         fontSize: 14,
-                        color: AppColors.textBody.withOpacity(0.6),
+                        color: AppColors.textBody.withValues(alpha: 0.6),
                       ),
                     ),
                   ],

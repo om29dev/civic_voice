@@ -1,5 +1,4 @@
 import 'package:civic_voice_interface/models/scheme_model.dart';
-import 'package:civic_voice_interface/core/services/scheme_knowledge_base.dart';
 
 enum Intent { discovery, schemeInfo, eligibility, documents, process, unknown }
 

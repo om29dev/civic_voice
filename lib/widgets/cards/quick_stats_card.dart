@@ -44,7 +44,7 @@ class QuickStatsCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: iconColor.withOpacity(0.1),
+                    color: iconColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: iconColor, size: 24),
@@ -56,7 +56,7 @@ class QuickStatsCard extends StatelessWidget {
                     child: CircularProgressIndicator(
                       value: progress,
                       strokeWidth: 4,
-                      backgroundColor: Colors.white.withOpacity(0.05),
+                      backgroundColor: Colors.white.withValues(alpha: 0.05),
                       color: iconColor,
                     ),
                   ),
@@ -98,7 +98,7 @@ class QuickStatsCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 14,
-                    color: AppColors.textBody.withOpacity(0.6),
+                    color: AppColors.textBody.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w500,
                   ),
                 ),

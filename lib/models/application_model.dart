@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 
 enum ApplicationStatus { submitted, verified, approved, rejected }
 

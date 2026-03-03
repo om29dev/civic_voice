@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:civic_voice_interface/core/theme/app_theme.dart';
 import 'package:civic_voice_interface/widgets/glass/glass_card.dart';
-import 'package:civic_voice_interface/widgets/animated/particle_background.dart';
 import 'package:civic_voice_interface/providers/language_provider.dart';
 import 'package:civic_voice_interface/providers/auth_provider.dart';
 import 'package:civic_voice_interface/providers/user_provider.dart';
@@ -80,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen>
     setState(() => _isLoading = true);
     
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final success = await authProvider.login(
+    await authProvider.login(
       _emailController.text.trim(),
       _passwordController.text,
     );
@@ -88,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen>
     if (mounted) {
       setState(() => _isLoading = false);
       
-      if (success) {
+      if (authProvider.error == null) {
         if (!mounted) return;
         
         // Fetch profile data from Supabase to populate UserProvider
@@ -115,66 +114,115 @@ class _LoginScreenState extends State<LoginScreen>
     Navigator.pushReplacementNamed(context, '/dashboard');
   }
 
+  void _showForgotPasswordDialog() {
+    final lang = Provider.of<LanguageProvider>(context, listen: false);
+    final emailCtrl = TextEditingController(text: _emailController.text);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1F2E),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          lang.translate('forgot_password'),
+          style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Enter your email address and we\'ll send you a link to reset your password.',
+              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: emailCtrl,
+              keyboardType: TextInputType.emailAddress,
+              style: GoogleFonts.inter(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'your@email.com',
+                hintStyle: GoogleFonts.inter(color: Colors.white38),
+                prefixIcon: const Icon(Icons.email_outlined, color: AppTheme.electricBlue),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: AppTheme.glassBorder),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: AppTheme.electricBlue),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                filled: true,
+                fillColor: AppTheme.glassBackground,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancel', style: GoogleFonts.inter(color: Colors.white54)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final authProvider = Provider.of<AuthProvider>(context, listen: false);
+              await authProvider.resetPassword(emailCtrl.text.trim());
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Reset link sent to ${emailCtrl.text.trim()}'),
+                    backgroundColor: AppTheme.electricBlue,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.electricBlue,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: Text('Send Reset Link', style: GoogleFonts.inter(color: AppTheme.deepSpaceBlue, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.deepSpaceBlue,
-      body: Stack(
-        children: [
-          // Animated gradient background
-          const Positioned.fill(
-            child: AnimatedGradientBackground(),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF0A0E1A), Color(0xFF0D1B2E), Color(0xFF081420)],
+            stops: [0.0, 0.5, 1.0],
           ),
-          
-          // Particle field
-          const Positioned.fill(
-            child: ParticleBackground(
-              numberOfParticles: 80,
-              particleColor: AppTheme.electricBlue,
-              connectParticles: true,
-            ),
-          ),
-          
-          // Main content
-          SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 40),
-                    
-                    // Animated Logo
-                    _buildAnimatedLogo(),
-                    
-                    const SizedBox(height: 60),
-                    
-                    // Login Card
-                    _buildLoginCard(),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Register Link
-                    _buildRegisterLink(),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Guest Login
-                    _buildGuestLogin(),
-                    
-                    const SizedBox(height: 30),
-                    
-                    // Language Selector
-                    _buildLanguageSelector(),
-                    
-                    const SizedBox(height: 40),
-                  ],
-                ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 40),
+                  _buildAnimatedLogo(),
+                  const SizedBox(height: 60),
+                  _buildLoginCard(),
+                  const SizedBox(height: 24),
+                  _buildRegisterLink(),
+                  const SizedBox(height: 24),
+                  _buildGuestLogin(),
+                  const SizedBox(height: 30),
+                  _buildLanguageSelector(),
+                  const SizedBox(height: 40),
+                ],
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -192,14 +240,14 @@ class _LoginScreenState extends State<LoginScreen>
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  AppTheme.electricBlue.withOpacity(0.8),
-                  AppTheme.neonCyan.withOpacity(0.6),
-                  AppTheme.gradientStart.withOpacity(0.4),
+                  AppTheme.electricBlue.withValues(alpha: 0.8),
+                  AppTheme.neonCyan.withValues(alpha: 0.6),
+                  AppTheme.gradientStart.withValues(alpha: 0.4),
                 ],
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.electricBlue.withOpacity(0.6 * _glowAnimation.value),
+                  color: AppTheme.electricBlue.withValues(alpha: 0.6 * _glowAnimation.value),
                   blurRadius: 60,
                   spreadRadius: 20,
                 ),
@@ -245,7 +293,7 @@ class _LoginScreenState extends State<LoginScreen>
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 14,
-              color: AppTheme.pureWhite.withOpacity(0.7),
+              color: AppTheme.pureWhite.withValues(alpha: 0.7),
             ),
           ),
           
@@ -282,7 +330,7 @@ class _LoginScreenState extends State<LoginScreen>
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
-              onPressed: () {},
+              onPressed: () => _showForgotPasswordDialog(),
               child: Text(
                 lang.translate('forgot_password'),
                 style: GoogleFonts.inter(
@@ -307,18 +355,18 @@ class _LoginScreenState extends State<LoginScreen>
           // Divider
           Row(
             children: [
-              Expanded(child: Divider(color: AppTheme.pureWhite.withOpacity(0.2))),
+              Expanded(child: Divider(color: AppTheme.pureWhite.withValues(alpha: 0.2))),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
                   lang.translate('or'),
                   style: GoogleFonts.inter(
                     fontSize: 12,
-                    color: AppTheme.pureWhite.withOpacity(0.5),
+                    color: AppTheme.pureWhite.withValues(alpha: 0.5),
                   ),
                 ),
               ),
-              Expanded(child: Divider(color: AppTheme.pureWhite.withOpacity(0.2))),
+              Expanded(child: Divider(color: AppTheme.pureWhite.withValues(alpha: 0.2))),
             ],
           ),
           
@@ -331,7 +379,17 @@ class _LoginScreenState extends State<LoginScreen>
                 child: _buildSocialButton(
                   icon: Icons.g_mobiledata,
                   label: lang.translate('google'),
-                  onPressed: () {},
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('Google Sign-In requires device Google account setup. Use email/password or OTP instead.'),
+                        backgroundColor: AppTheme.electricBlue,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        duration: const Duration(seconds: 4),
+                      ),
+                    );
+                  },
                 ),
               ),
               const SizedBox(width: 12),
@@ -383,7 +441,7 @@ class _LoginScreenState extends State<LoginScreen>
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: GoogleFonts.inter(
-                color: AppTheme.pureWhite.withOpacity(0.5),
+                color: AppTheme.pureWhite.withValues(alpha: 0.5),
               ),
               prefixIcon: Icon(icon, color: AppTheme.electricBlue),
               suffixIcon: suffixIcon,
@@ -408,7 +466,7 @@ class _LoginScreenState extends State<LoginScreen>
       style: OutlinedButton.styleFrom(
         foregroundColor: AppTheme.pureWhite,
         padding: const EdgeInsets.symmetric(vertical: 14),
-        side: BorderSide(color: AppTheme.glassBorder),
+        side: const BorderSide(color: AppTheme.glassBorder),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
@@ -425,7 +483,7 @@ class _LoginScreenState extends State<LoginScreen>
           lang.translate('no_account'),
           style: GoogleFonts.inter(
             fontSize: 14,
-            color: AppTheme.pureWhite.withOpacity(0.7),
+            color: AppTheme.pureWhite.withValues(alpha: 0.7),
           ),
         ),
         TextButton(
@@ -451,7 +509,7 @@ class _LoginScreenState extends State<LoginScreen>
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.person_outline,
             color: AppTheme.neonCyan,
             size: 24,
@@ -473,7 +531,7 @@ class _LoginScreenState extends State<LoginScreen>
                   lang.translate('limited_features'),
                   style: GoogleFonts.inter(
                     fontSize: 12,
-                    color: AppTheme.pureWhite.withOpacity(0.6),
+                    color: AppTheme.pureWhite.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -495,10 +553,10 @@ class _LoginScreenState extends State<LoginScreen>
     final langProvider = Provider.of<LanguageProvider>(context);
     
     final languages = [
-      {'name': 'English', 'flag': '🇬🇧', 'lang': AppLanguage.english},
-      {'name': 'हिंदी', 'flag': '🇮🇳', 'lang': AppLanguage.hindi},
-      {'name': 'मराठी', 'flag': '🇮🇳', 'lang': AppLanguage.marathi},
-      {'name': 'தமிழ்', 'flag': '🇮🇳', 'lang': AppLanguage.tamil},
+      {'name': 'English', 'flag': '🇬🇧', 'lang': 'en'},
+      {'name': 'हिंदी', 'flag': '🇮🇳', 'lang': 'hi'},
+      {'name': 'मराठी', 'flag': '🇮🇳', 'lang': 'mr'},
+      {'name': 'தமிழ்', 'flag': '🇮🇳', 'lang': 'ta'},
     ];
 
     return Column(
@@ -507,7 +565,7 @@ class _LoginScreenState extends State<LoginScreen>
           langProvider.translate('select_language'),
           style: GoogleFonts.inter(
             fontSize: 14,
-            color: AppTheme.pureWhite.withOpacity(0.7),
+            color: AppTheme.pureWhite.withValues(alpha: 0.7),
           ),
         ),
         const SizedBox(height: 16),
@@ -518,11 +576,11 @@ class _LoginScreenState extends State<LoginScreen>
           children: languages.map((lang) {
             final isSelected = langProvider.currentLanguage == lang['lang'];
             return _LanguageChip(
-              flag: lang['flag']! as String,
-              name: lang['name']! as String,
+              flag: lang['flag']!,
+              name: lang['name']!,
               isSelected: isSelected,
               onTap: () {
-                langProvider.setLanguage(lang['lang']! as AppLanguage);
+                langProvider.switchLanguage(lang['lang']!);
               },
             );
           }).toList(),
@@ -601,7 +659,7 @@ class _GlowingButtonState extends State<_GlowingButton>
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.electricBlue.withOpacity(0.5 * _glowAnimation.value),
+                color: AppTheme.electricBlue.withValues(alpha: 0.5 * _glowAnimation.value),
                 blurRadius: 30,
                 spreadRadius: 5,
               ),
@@ -661,7 +719,7 @@ class _LanguageChip extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: isSelected
               ? AppTheme.accentGradient
-              : LinearGradient(
+              : const LinearGradient(
                   colors: [
                     AppTheme.glassBackground,
                     AppTheme.glassBackground,
@@ -675,7 +733,7 @@ class _LanguageChip extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppTheme.electricBlue.withOpacity(0.4),
+                    color: AppTheme.electricBlue.withValues(alpha: 0.4),
                     blurRadius: 15,
                     spreadRadius: 2,
                   ),

@@ -36,7 +36,7 @@ class _EligibilityCheckerState extends State<EligibilityChecker> {
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.05),
+            color: AppColors.primary.withValues(alpha: 0.05),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
@@ -91,9 +91,9 @@ class _EligibilityCheckerState extends State<EligibilityChecker> {
             const Text('Processing your data...')
           else
             FadeInUp(
-              child: Column(
+              child: const Column(
                 children: [
-                  const Text(
+                  Text(
                     '🎉 You are likely eligible!',
                     style: TextStyle(
                       color: AppColors.accent,
@@ -101,8 +101,8 @@ class _EligibilityCheckerState extends State<EligibilityChecker> {
                       fontSize: 18,
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  const Text(
+                  SizedBox(height: 10),
+                  Text(
                     'Your voice profile matches 9/10 criteria for the Ration Card scheme.',
                     textAlign: TextAlign.center,
                   ),

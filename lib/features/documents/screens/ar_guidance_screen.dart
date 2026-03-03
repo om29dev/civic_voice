@@ -101,7 +101,7 @@ class _ARGuidanceScreenState extends State<ARGuidanceScreen> {
                       child: Container(
                         decoration: BoxDecoration(
                           border: Border.all(color: AppTheme.electricBlue, width: 3),
-                          color: AppTheme.electricBlue.withOpacity(0.2),
+                          color: AppTheme.electricBlue.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Center(

@@ -1,0 +1,351 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../providers/language_provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../features/auth/auth_screen.dart';
+import '../../features/dashboard/screens/main_dashboard_screen.dart';
+import '../../features/voice/voice_screen.dart';
+import '../../features/services/screens/services_screen.dart';
+import '../../features/profile/profile_screen.dart';
+import '../../features/onboarding/screens/first_launch_screen.dart';
+import '../../features/splash/splash_screen.dart';
+import '../../features/services/screens/service_detail_screen_v2.dart';
+import '../../models/service_model.dart';
+import '../../features/notifications/screens/notifications_screen_v2.dart';
+import '../../features/services/screens/my_applications_screen.dart';
+import '../../features/documents/screens/documents_screen.dart';
+import '../../providers/notification_provider.dart';
+import '../../features/profile/screens/family_dashboard_screen.dart';
+import '../../widgets/navigation/cvi_bottom_nav.dart';
+
+/// Route name constants — use these instead of raw strings.
+abstract class Routes {
+  static const splash          = '/';
+  static const onboarding      = '/onboarding';
+  static const auth            = '/auth';
+  static const dashboard       = '/dashboard';
+  static const voice           = '/voice';
+  static const services        = '/services';
+  static const serviceDetail   = '/service/:id';
+  static const eligibility     = '/service/:id/eligibility';
+  static const profile         = '/profile';
+  static const family          = '/family';
+  static const notifications   = '/notifications';
+  static const myApplications  = '/my-applications';
+  static const documents       = '/documents';
+  static const officeLocator   = '/office-locator';
+
+  static String serviceDetailPath(String id) => '/service/$id';
+  static String eligibilityPath(String id) => '/service/$id/eligibility';
+}
+
+/// Manages the GoRouter instance and listens to auth state for redirects.
+class AppRouter {
+  final BuildContext _context;
+  late final GoRouter router;
+
+  AppRouter(this._context) {
+    final authProvider = _context.read<AuthProvider>();
+
+    router = GoRouter(
+      initialLocation: Routes.splash,
+      debugLogDiagnostics: false,
+      refreshListenable: authProvider,
+
+      redirect: (context, state) async {
+        final auth    = context.read<AuthProvider>();
+        final loc     = state.matchedLocation;
+
+        // Still initializing — stay on splash
+        if (auth.isLoading) {
+          return loc == Routes.splash ? null : Routes.splash;
+        }
+
+        final isOnSplash      = loc == Routes.splash;
+        final isOnOnboarding  = loc == Routes.onboarding;
+        final isOnAuth        = loc == Routes.auth;
+
+        // Check first-launch flag
+        final prefs        = await SharedPreferences.getInstance();
+        final seenOnboard  = prefs.getBool('cvi_onboarded') ?? false;
+
+        // Not authenticated
+        if (!auth.isAuthenticated) {
+          // First time launch → onboarding
+          if (!seenOnboard && !isOnOnboarding) return Routes.onboarding;
+          // Has been onboarded but not authed → auth
+          if (seenOnboard && !isOnAuth) return Routes.auth;
+          return null;
+        }
+
+        // Authenticated — send away from auth/onboarding/splash
+        if (isOnSplash || isOnAuth || isOnOnboarding) {
+          return Routes.dashboard;
+        }
+
+        return null; // No redirect needed
+      },
+
+      routes: [
+        // ── Splash ────────────────────────────────────────────────────────
+        GoRoute(
+          path: Routes.splash,
+          name: 'splash',
+          pageBuilder: (context, state) => _buildPage(
+            state,
+            const SplashScreen(),
+          ),
+        ),
+
+        // ── Onboarding ────────────────────────────────────────────────────
+        GoRoute(
+          path: Routes.onboarding,
+          name: 'onboarding',
+          pageBuilder: (context, state) => _buildPage(
+            state,
+            const FirstLaunchScreen(),
+          ),
+        ),
+
+        // ── Auth ──────────────────────────────────────────────────────────
+        GoRoute(
+          path: Routes.auth,
+          name: 'auth',
+          pageBuilder: (context, state) => _buildPage(
+            state,
+            const AuthScreen(),
+          ),
+        ),
+
+        // ── Shell: Dashboard + nested tabs ───────────────────────────────
+        ShellRoute(
+          builder: (context, state, child) => _AppShell(child: child),
+          routes: [
+            GoRoute(
+              path: Routes.dashboard,
+              name: 'dashboard',
+              pageBuilder: (context, state) => _noTransitionPage(
+                state,
+                const MainDashboardScreen(key: PageStorageKey('dashboard')),
+              ),
+            ),
+            GoRoute(
+              path: Routes.services,
+              name: 'services',
+              pageBuilder: (context, state) => _noTransitionPage(
+                state,
+                const ServicesScreen(key: PageStorageKey('services')),
+              ),
+            ),
+            GoRoute(
+              path: Routes.profile,
+              name: 'profile',
+              pageBuilder: (context, state) => _noTransitionPage(
+                state,
+                const ProfileScreen(key: PageStorageKey('profile')),
+              ),
+            ),
+          ],
+        ),
+
+        // ── Full-Screen Routes ───────────────────────────────────────────
+        GoRoute(
+          path: Routes.voice,
+          name: 'voice',
+          pageBuilder: (context, state) => _buildPage(
+            state,
+            const VoiceScreen(),
+          ),
+        ),
+
+        // ── Service Detail (full-screen, outside shell) ───────────────────
+        GoRoute(
+          path: Routes.serviceDetail,
+          name: 'serviceDetail',
+          pageBuilder: (context, state) {
+            final service = state.extra as ServiceModel;
+            return _buildPage(state, ServiceDetailScreenV2(service: service));
+          },
+        ),
+
+        GoRoute(
+          path: Routes.eligibility,
+          name: 'eligibility',
+          pageBuilder: (context, state) {
+            // final service = state.extra as ServiceModel;
+            // TODO: import EligibilityCheckerScreen
+            // return _buildPage(state, EligibilityCheckerScreen(service: service));
+            return _buildPage(state, const Scaffold(body: Center(child: Text('Eligibility Screen')))); // Temp
+          },
+        ),
+
+        GoRoute(
+          path: Routes.notifications,
+          name: 'notifications',
+          pageBuilder: (context, state) => _buildPage(
+            state,
+            const NotificationsScreenV2(),
+          ),
+        ),
+
+        // ── My Applications (full-screen) ──────────────────────────────────
+        GoRoute(
+          path: Routes.myApplications,
+          name: 'myApplications',
+          pageBuilder: (context, state) => _buildPage(
+            state,
+            const MyApplicationsScreen(),
+          ),
+        ),
+
+        // ── Documents (full-screen) ────────────────────────────────────────
+        GoRoute(
+          path: Routes.documents,
+          name: 'documents',
+          pageBuilder: (context, state) => _buildPage(
+            state,
+            const DocumentsScreen(),
+          ),
+        ),
+
+        // ── Office Locator (full-screen) ───────────────────────────────────
+        GoRoute(
+          path: Routes.officeLocator,
+          name: 'officeLocator',
+          pageBuilder: (context, state) => _buildPage(
+            state,
+            const Scaffold(body: Center(child: Text('Office Locator Screen'))), // Temp
+          ),
+        ),
+      ],
+
+      errorBuilder: (context, state) => _ErrorScreen(error: state.error),
+    );
+  }
+
+  /// Fade + slide-up transition for full-screen routes.
+  static CustomTransitionPage<void> _buildPage(
+          GoRouterState state, Widget child) =>
+      CustomTransitionPage<void>(
+        key: state.pageKey,
+        child: child,
+        transitionDuration: const Duration(milliseconds: 300),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          final slide = Tween<Offset>(
+            begin: const Offset(0, 0.04),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
+          final fade = Tween<double>(begin: 0.0, end: 1.0)
+              .animate(CurvedAnimation(parent: animation, curve: Curves.easeOut));
+          return FadeTransition(
+            opacity: fade,
+            child: SlideTransition(position: slide, child: child),
+          );
+        },
+      );
+
+  /// Instant swap for bottom-nav shell tabs (no transition).
+  static NoTransitionPage<void> _noTransitionPage(
+          GoRouterState state, Widget child) =>
+      NoTransitionPage<void>(key: state.pageKey, child: child);
+
+  void dispose() {
+    router.dispose();
+  }
+}
+
+// ─── Bottom Navigation Shell ──────────────────────────────────────────────────
+
+class _AppShell extends StatelessWidget {
+  final Widget child;
+  const _AppShell({required this.child});
+
+  static const _tabs = [
+    Routes.dashboard, // 0
+    Routes.services,  // 1
+    Routes.voice,     // 2
+    Routes.profile,   // 3
+  ];
+
+  int _currentIndex(BuildContext context) {
+    final location = GoRouterState.of(context).matchedLocation;
+    final idx = _tabs.indexWhere((t) => location.startsWith(t));
+    return idx < 0 ? 0 : idx;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final currentIdx = _currentIndex(context);
+
+    return Scaffold(
+      extendBody: true,
+      body: Stack(
+        children: [
+          child,
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: CVIBottomNav(
+              currentIndex: currentIdx,
+              onTap: (i) {
+                if (i == 2) {
+                  context.push(Routes.voice);
+                } else {
+                  context.go(_tabs[i]);
+                }
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Error Screen ─────────────────────────────────────────────────────────────
+
+class _ErrorScreen extends StatelessWidget {
+  final Exception? error;
+  const _ErrorScreen({this.error});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline_rounded,
+                  color: Color(0xFFFF1744), size: 64),
+              const SizedBox(height: 16),
+              const Text('Page Not Found',
+                  style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFFE6F1FF))),
+              const SizedBox(height: 8),
+              Text(
+                error?.toString() ?? 'Unknown navigation error',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Color(0xFF8892A4), fontSize: 14),
+              ),
+              const SizedBox(height: 32),
+              TextButton.icon(
+                onPressed: () => context.go(Routes.dashboard),
+                icon: const Icon(Icons.home_rounded, color: Color(0xFF00F5FF)),
+                label: const Text('Go Home',
+                    style: TextStyle(color: Color(0xFF00F5FF))),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

@@ -49,7 +49,7 @@ class _AnimatedMicButtonState extends State<AnimatedMicButton>
             boxShadow: [
               BoxShadow(
                 color: (isListening ? Colors.redAccent : AppColors.primary)
-                    .withOpacity(0.4),
+                    .withValues(alpha: 0.4),
                 blurRadius: 20,
                 spreadRadius: 5,
               ),
@@ -78,7 +78,7 @@ class _AnimatedMicButtonState extends State<AnimatedMicButton>
               shape: BoxShape.circle,
               border: Border.all(
                 color: (Provider.of<VoiceProvider>(context).isListening ? Colors.redAccent : AppColors.secondary)
-                    .withOpacity(1.0 - _controller.value),
+                    .withValues(alpha: 1.0 - _controller.value),
                 width: 2,
               ),
             ),

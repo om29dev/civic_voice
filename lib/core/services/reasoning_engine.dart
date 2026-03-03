@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
-import '../../models/scheme_model.dart';
 import 'scheme_knowledge_base.dart';
 
 enum Intent { discovery, schemeInfo, eligibility, documents, process, ambiguous, unknown }
@@ -93,8 +92,9 @@ class SmartIntentParser {
       // 1 match = 0.5
       // 2 matches = 0.8
       // 3+ matches = 0.95
-      if (maxScore == 1.0) totalConfidence = 0.5;
-      else if (maxScore == 2.0) totalConfidence = 0.8;
+      if (maxScore == 1.0) {
+        totalConfidence = 0.5;
+      } else if (maxScore == 2.0) totalConfidence = 0.8;
       else totalConfidence = 0.95;
 
       // Ambiguity Check
