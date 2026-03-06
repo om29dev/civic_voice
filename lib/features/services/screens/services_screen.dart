@@ -76,9 +76,14 @@ class _ServicesScreenState extends State<ServicesScreen> {
               ),
               child: SafeArea(
                 bottom: false,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final width = constraints.hasBoundedWidth ? constraints.maxWidth : MediaQuery.of(context).size.width;
+                    return SizedBox(
+                      width: width,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                     const TricolorBar(height: 2),
                     const SizedBox(height: 18),
                     Padding(
@@ -120,12 +125,14 @@ class _ServicesScreenState extends State<ServicesScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Container(
                         height: 48,
+                        width: double.infinity,
                         decoration: BoxDecoration(
                           color: AppColors.bgMid,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: AppColors.surfaceBorder),
                         ),
                         child: Row(
+                          mainAxisSize: MainAxisSize.max,
                           children: [
                             const SizedBox(width: 14),
                             const Icon(Icons.search_rounded,
@@ -225,8 +232,10 @@ class _ServicesScreenState extends State<ServicesScreen> {
                         },
                       ),
                     ),
-                    const SizedBox(height: 16),
-                  ],
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -336,21 +345,29 @@ class _ServiceCard extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Builder(builder: (ctx) {
-                                final lang = ctx.read<LanguageProvider>();
-                                return Row(children: [
-                                  if (service.isPopular) _tag(lang.t('services_popular'), AppColors.saffron),
-                                  if (service.fees == '0' || service.fees.toLowerCase() == 'free') ...[
-                                    const SizedBox(width: 6),
-                                    _tag(lang.t('services_free'), AppColors.emeraldLight),
-                                  ],
-                                  const SizedBox(width: 6),
-                                  _tag(lang.t('services_online'), AppColors.accentBlue),
-                                ]);
-                              }),
-                            ],
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            physics: const BouncingScrollPhysics(),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Builder(builder: (ctx) {
+                                  final lang = ctx.read<LanguageProvider>();
+                                  return Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (service.isPopular) _tag(lang.t('services_popular'), AppColors.saffron),
+                                      if (service.fees == '0' || service.fees.toLowerCase() == 'free') ...[
+                                        const SizedBox(width: 6),
+                                        _tag(lang.t('services_free'), AppColors.emeraldLight),
+                                      ],
+                                      const SizedBox(width: 6),
+                                      _tag(lang.t('services_online'), AppColors.accentBlue),
+                                    ],
+                                  );
+                                }),
+                              ],
+                            ),
                           ),
                           if (service.estimatedTimeline.isNotEmpty) ...[
                             const SizedBox(height: 6),

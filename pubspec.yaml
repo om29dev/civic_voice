@@ -67,6 +67,11 @@ dependencies:
 
   timezone: any
 
+  # Security (Document Vault)
+  flutter_secure_storage: ^9.0.0
+  local_auth: ^2.1.8
+  flutter_image_compress: ^2.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

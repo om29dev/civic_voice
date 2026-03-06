@@ -17,7 +17,11 @@ import '../../models/service_model.dart';
 import '../../features/notifications/screens/notifications_screen_v2.dart';
 import '../../features/services/screens/my_applications_screen.dart';
 import '../../features/documents/screens/documents_screen.dart';
+import '../../features/documents/screens/document_vault_screen.dart';
+import '../../features/forms/screens/auto_fill_form_screen.dart';
+import '../../features/forms/screens/smart_browser_screen.dart';
 import '../../providers/notification_provider.dart';
+import '../../providers/document_vault_provider.dart';
 import '../../features/profile/screens/family_dashboard_screen.dart';
 import '../../widgets/navigation/cvi_bottom_nav.dart';
 
@@ -36,10 +40,14 @@ abstract class Routes {
   static const notifications   = '/notifications';
   static const myApplications  = '/my-applications';
   static const documents       = '/documents';
+  static const documentVault   = '/document-vault';
+  static const autoFillForm    = '/auto-fill/:serviceId';
+  static const smartBrowser     = '/smart-browser';
   static const officeLocator   = '/office-locator';
 
   static String serviceDetailPath(String id) => '/service/$id';
   static String eligibilityPath(String id) => '/service/$id/eligibility';
+  static String autoFillFormPath(String serviceId) => '/auto-fill/$serviceId';
 }
 
 /// Manages the GoRouter instance and listens to auth state for redirects.
@@ -209,6 +217,53 @@ class AppRouter {
             state,
             const DocumentsScreen(),
           ),
+        ),
+
+        // ── Document Vault (AI-powered) ──────────────────────────────────────
+        GoRoute(
+          path: Routes.documentVault,
+          name: 'documentVault',
+          pageBuilder: (context, state) => _buildPage(
+            state,
+            const DocumentVaultScreen(),
+          ),
+        ),
+
+        GoRoute(
+          path: Routes.autoFillForm,
+          name: 'autoFillForm',
+          pageBuilder: (context, state) {
+            final serviceId = state.pathParameters['serviceId'] ?? '';
+            final service = state.extra as ServiceModel?;
+            return _buildPage(
+              state,
+              AutoFillFormScreen(
+                serviceId: serviceId,
+                service: service,
+              ),
+            );
+          },
+        ),
+
+        // ── Smart Browser ───────────────────────────────────────────────────
+        GoRoute(
+          path: Routes.smartBrowser,
+          name: 'smartBrowser',
+          pageBuilder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>;
+            final docs = context.read<DocumentVaultProvider>().documents;
+            return _buildPage(
+              state,
+              SmartBrowserScreen(
+                url: extra['url'] as String,
+                title: extra['title'] as String,
+                formData: extra['formData'] as Map<String, String>,
+                documents: docs,
+                languageCode: extra['languageCode'] as String? ?? context.read<LanguageProvider>().languageCode,
+                initialTranslate: extra['initialTranslate'] as bool? ?? true,
+              ),
+            );
+          },
         ),
 
         // ── Office Locator (full-screen) ───────────────────────────────────

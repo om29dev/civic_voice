@@ -11,7 +11,7 @@ import '../../../widgets/decorative/jali_pattern.dart';
 import '../../../widgets/decorative/tricolor_bar.dart';
 import '../../../widgets/bilingual_label.dart';
 import '../../../widgets/indian_card.dart';
-import '../../../models/service_model_new.dart'; // Updated model reference
+// import '../../../models/service_model_new.dart'; // Unused
 import '../../../providers/user_provider.dart';
 import '../../../providers/conversation_provider.dart';
 import '../../../providers/notification_provider.dart';
@@ -365,7 +365,153 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
   }
 
   // ─── POPULAR SERVICES ───────────────────────────────────────────────────────
-  // ... (keeping implementation but ensure it uses the right model if needed)
+  Widget _buildPopularServices() {
+    final services = [
+      {'emoji': '🪪', 'name': 'Aadhaar Card', 'hindi': 'आधार कार्ड', 'color': AppColors.saffron},
+      {'emoji': '📘', 'name': 'Passport', 'hindi': 'पासपोर्ट', 'color': AppColors.accentBlue},
+      {'emoji': '💳', 'name': 'PAN Card', 'hindi': 'पैन कार्ड', 'color': AppColors.gold},
+      {'emoji': '🗳️', 'name': 'Voter ID', 'hindi': 'मतदाता पत्र', 'color': AppColors.emerald},
+      {'emoji': '🚗', 'name': 'Driving License', 'hindi': 'ड्राइविंग लाइसेंस', 'color': AppColors.saffron},
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const BilingualLabel(
+                englishText: 'Popular Services',
+                hindiText: 'लोकप्रिय सेवाएं',
+                englishColor: AppColors.textPrimary,
+                hindiColor: AppColors.textMuted,
+                scale: 1.1,
+              ),
+              GestureDetector(
+                onTap: () => context.go(Routes.services),
+                child: Text(
+                  'View All →',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.saffron,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 110,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              itemCount: services.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (context, index) {
+                final s = services[index];
+                final color = s['color'] as Color;
+                return GestureDetector(
+                  onTap: () => context.go(Routes.services),
+                  child: Container(
+                    width: 100,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: color.withValues(alpha: 0.2)),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(s['emoji'] as String, style: const TextStyle(fontSize: 28)),
+                        const SizedBox(height: 8),
+                        Text(
+                          s['name'] as String,
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.poppins(
+                            fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textPrimary,
+                          ),
+                        ),
+                        Text(
+                          s['hindi'] as String,
+                          style: GoogleFonts.notoSansDevanagari(fontSize: 8, color: AppColors.textMuted),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── GOVERNMENT SCHEME BANNER ──────────────────────────────────────────────
+  Widget _buildGovernmentSchemeBanner() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: IndianCard(
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          children: [
+            Container(
+              width: 3,
+              height: 50,
+              decoration: BoxDecoration(
+                color: AppColors.emerald,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '🏛️ Government Schemes',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'PM Kisan, Ayushman Bharat & more — Ask CVI to check eligibility',
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () => context.push(Routes.voice),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.emerald.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.mic_rounded, color: AppColors.emerald, size: 20),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   // ─── RECENT ACTIVITY ────────────────────────────────────────────────────────
   Widget _buildRecentActivity() {
@@ -487,17 +633,5 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
         ],
       ),
     );
-  }
-
-  Color _getCategoryColorFromString(String category) {
-    if (category.contains('Finance')) return AppColors.emerald;
-    if (category.contains('Identity')) return AppColors.saffron;
-    if (category.contains('Health')) return AppColors.accentRed;
-    if (category.contains('Education')) return AppColors.gold;
-    if (category.contains('Business')) return AppColors.gold;
-    if (category.contains('Employment')) return AppColors.saffron;
-    if (category.contains('Agriculture')) return AppColors.emerald;
-    if (category.contains('Transport')) return AppColors.gold;
-    return AppColors.saffron;
   }
 }

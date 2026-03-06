@@ -16,6 +16,7 @@ import 'providers/services_provider.dart';
 import 'providers/notification_provider.dart';
 import 'providers/analytics_provider.dart';
 import 'providers/accessibility_provider.dart';
+import 'providers/document_vault_provider.dart';
 import 'app.dart';
 
 Future<void> main() async {
@@ -62,6 +63,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
         ChangeNotifierProvider(create: (_) => AnalyticsProvider()),
         ChangeNotifierProvider(create: (_) => AccessibilityProvider()),
+        ChangeNotifierProvider(create: (_) => DocumentVaultProvider()..loadDocuments()),
       ],
       child: const CVIApp(),
     ),

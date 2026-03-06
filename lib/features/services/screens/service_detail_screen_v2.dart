@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/services/form_filler_service.dart';
 import '../../../models/service_model.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -155,7 +156,15 @@ class _ServiceDetailScreenV2State extends State<ServiceDetailScreenV2>
           // ── Sticky Bottom Bar ─────────────────────────────────────────────
           _StickyBar(
             accentColor: _accentColor,
-            onApplyNow: () => _launch(s.officialLink),
+            onApplyNow: () {
+              // Check if a form definition exists for this service
+              final formDef = FormFillerService.getForm(s.id);
+              if (formDef != null) {
+                context.push(Routes.autoFillFormPath(s.id), extra: s);
+              } else {
+                _launch(s.officialLink);
+              }
+            },
             onAskCVI: _openVoiceWithContext,
           ),
         ],

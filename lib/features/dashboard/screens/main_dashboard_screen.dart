@@ -251,6 +251,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
       ('Services',  Icons.apps_rounded,        AppColors.gold,                () => context.go(Routes.services)),
       ('My Apps',   Icons.assignment_rounded,  AppColors.gold,                () => context.push(Routes.myApplications)),
       ('Documents', Icons.file_present_rounded,const Color(0xFF138808),       () => context.push(Routes.documents)),
+      ('Doc Vault', Icons.lock_rounded,        AppColors.saffron,             () => context.push(Routes.documentVault)),
     ];
 
     return Column(

@@ -5,7 +5,24 @@ import '../../models/service_model.dart';
 class MockServicesData {
   MockServicesData._();
 
-  static List<ServiceModel> get all => [];
+  static List<ServiceModel> get all => [
+    aadhaarCard,
+    panCard,
+    passport,
+    drivingLicense,
+    landRecords,
+    birthCertificate,
+    rationCard,
+    seniorCitizenPension,
+    incomeTax,
+    voterId,
+    gstRegistration,
+    epfoAccount,
+    pmKisan,
+    ayushmanBharat,
+    nationalScholarship,
+    msmeRegistration,
+  ];
 
   // ─────────────────────────────────────────────────────────────────────────
   // SERVICE 1: Aadhaar Card
@@ -100,7 +117,7 @@ class MockServicesData {
   static const ServiceModel panCard = ServiceModel(
     id: 'pan_card',
     iconEmoji: '💳',
-    category: ServiceCategory.finance,
+    category: ServiceCategory.identity,
     isAvailable: true,
     name: {
       'en': 'PAN Card',
@@ -154,7 +171,7 @@ class MockServicesData {
         title: 'Visit Income Tax e-Filing Portal',
         description:
             'Go to incometax.gov.in and click on "Instant e-PAN" for a free e-PAN using Aadhaar.',
-        actionUrl: 'https://www.incometax.gov.in',
+        actionUrl: 'https://onlineservices.proteantech.in/paam/endUserRegisterContact.html',
       ),
       StepItem(
         number: 2,
@@ -184,7 +201,7 @@ class MockServicesData {
     ],
     estimatedTimeline: '15–20 working days (physical), instant (e-PAN)',
     fees: '₹107 (physical card) | ₹72 (e-PAN)',
-    officialLink: 'https://www.incometax.gov.in',
+    officialLink: 'https://onlineservices.proteantech.in/paam/endUserRegisterContact.html',
     helplineNumber: '1800-180-1961',
   );
 
@@ -298,7 +315,7 @@ class MockServicesData {
   static const ServiceModel drivingLicense = ServiceModel(
     id: 'driving_license',
     iconEmoji: '🚗',
-    category: ServiceCategory.transport,
+    category: ServiceCategory.identity,
     isAvailable: true,
     name: {
       'en': 'Driving License',
