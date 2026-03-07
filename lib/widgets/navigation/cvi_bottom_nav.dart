@@ -34,6 +34,8 @@ class _CVIBottomNavState extends State<CVIBottomNav>
              label: 'Services', hindi: 'सेवाएं'),
     _NavItem(icon: Icons.mic_rounded,
              label: 'Voice', hindi: 'आवाज़'),
+    _NavItem(icon: Icons.auto_awesome_rounded,
+             label: 'Recs', hindi: 'सुझाव'),
     _NavItem(icon: Icons.person_rounded,
              label: 'Profile', hindi: 'प्रोफाइल'),
   ];
@@ -44,7 +46,7 @@ class _CVIBottomNavState extends State<CVIBottomNav>
     _previousIndex = widget.currentIndex;
 
     // Bounce controllers for each tab
-    _bounceControllers = List.generate(4, (i) =>
+    _bounceControllers = List.generate(5, (i) =>
       AnimationController(
         vsync: this,
         duration: const Duration(milliseconds: 400),
@@ -157,7 +159,7 @@ class _CVIBottomNavState extends State<CVIBottomNav>
             AnimatedBuilder(
               animation: _slideAnimation,
               builder: (context, _) {
-                final tabWidth = (MediaQuery.of(context).size.width - 32) / 4;
+                final tabWidth = (MediaQuery.of(context).size.width - 32) / 5;
                 // Voice tab (index 2) gets special treatment
                 final isVoiceActive = widget.currentIndex == 2;
                 return Positioned(
@@ -201,7 +203,7 @@ class _CVIBottomNavState extends State<CVIBottomNav>
 
             // ── TAB ITEMS ──
             Row(
-              children: List.generate(4, (index) {
+              children: List.generate(5, (index) {
                 final isActive = widget.currentIndex == index;
                 final item = _items[index];
                 final isVoice = index == 2;
@@ -299,7 +301,7 @@ class _CVIBottomNavState extends State<CVIBottomNav>
                                 : const Color(0xFF6B5A4A),
                               letterSpacing: 0.2,
                             ),
-                            child: Text(item.label),
+                            child: Text(item.label, overflow: TextOverflow.ellipsis, maxLines: 1),
                           ),
 
                           // Hindi label below
@@ -314,7 +316,7 @@ class _CVIBottomNavState extends State<CVIBottomNav>
                                 : const Color(0xFF6B5A4A)
                                   .withValues(alpha: 0.5),
                             ),
-                            child: Text(item.hindi),
+                            child: Text(item.hindi, overflow: TextOverflow.ellipsis, maxLines: 1),
                           ),
                         ],
                       ),

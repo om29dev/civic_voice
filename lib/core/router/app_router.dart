@@ -3,6 +3,15 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../features/eligibility/screens/ai_eligibility_flow_screen.dart';
+import '../../features/voice/screens/voice_complaint_screen.dart';
+import '../../features/documents/screens/ai_document_scanner_screen.dart';
+import '../../features/services/screens/scheme_discovery_screen.dart';
+import '../../features/dashboard/screens/application_dashboard_screen.dart';
+import '../../features/services/screens/offline_guidance_screen.dart';
+import '../../features/profile/screens/citizen_profile_dashboard.dart';
+import '../../features/recommendations/screens/recommendations_screen.dart';
+
 import '../../providers/language_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../features/auth/auth_screen.dart';
@@ -44,6 +53,14 @@ abstract class Routes {
   static const autoFillForm    = '/auto-fill/:serviceId';
   static const smartBrowser     = '/smart-browser';
   static const officeLocator   = '/office-locator';
+  static const voiceComplaint  = '/voice-complaint';
+  static const documentScanner = '/document-scanner';
+  static const schemeDiscovery = '/scheme-discovery';
+  static const appTracker      = '/app-tracker';
+  static const offlineGuidance = '/offline-guidance';
+  static const citizenProfile  = '/citizen-profile';
+  static const recommendations = '/recommendations';
+
 
   static String serviceDetailPath(String id) => '/service/$id';
   static String eligibilityPath(String id) => '/service/$id/eligibility';
@@ -156,6 +173,14 @@ class AppRouter {
                 const ProfileScreen(key: PageStorageKey('profile')),
               ),
             ),
+            GoRoute(
+              path: Routes.recommendations,
+              name: 'recommendations',
+              pageBuilder: (context, state) => _noTransitionPage(
+                state,
+                const RecommendationsScreen(key: PageStorageKey('recommendations')),
+              ),
+            ),
           ],
         ),
 
@@ -185,6 +210,7 @@ class AppRouter {
           pageBuilder: (context, state) {
             // final service = state.extra as ServiceModel;
             // TODO: import EligibilityCheckerScreen
+
             // return _buildPage(state, EligibilityCheckerScreen(service: service));
             return _buildPage(state, const Scaffold(body: Center(child: Text('Eligibility Screen')))); // Temp
           },
@@ -275,6 +301,37 @@ class AppRouter {
             const Scaffold(body: Center(child: Text('Office Locator Screen'))), // Temp
           ),
         ),
+        GoRoute(
+          path: Routes.voiceComplaint,
+          name: 'voiceComplaint',
+          pageBuilder: (context, state) => _buildPage(state, VoiceComplaintScreen()),
+        ),
+        GoRoute(
+          path: Routes.documentScanner,
+          name: 'documentScanner',
+          pageBuilder: (context, state) => _buildPage(state, const AIDocumentScannerScreen()),
+        ),
+        GoRoute(
+          path: Routes.schemeDiscovery,
+          name: 'schemeDiscovery',
+          pageBuilder: (context, state) => _buildPage(state, SchemeDiscoveryScreen()),
+        ),
+        GoRoute(
+          path: Routes.appTracker,
+          name: 'appTracker',
+          pageBuilder: (context, state) => _buildPage(state, ApplicationDashboardScreen()),
+        ),
+        GoRoute(
+          path: Routes.offlineGuidance,
+          name: 'offlineGuidance',
+          pageBuilder: (context, state) => _buildPage(state, OfflineGuidanceScreen()),
+        ),
+        GoRoute(
+          path: Routes.citizenProfile,
+          name: 'citizenProfile',
+          pageBuilder: (context, state) => _buildPage(state, CitizenProfileDashboard()),
+        ),
+
       ],
 
       errorBuilder: (context, state) => _ErrorScreen(error: state.error),
@@ -322,7 +379,8 @@ class _AppShell extends StatelessWidget {
     Routes.dashboard, // 0
     Routes.services,  // 1
     Routes.voice,     // 2
-    Routes.profile,   // 3
+    Routes.recommendations, // 3
+    Routes.profile,   // 4
   ];
 
   int _currentIndex(BuildContext context) {

@@ -1,0 +1,131 @@
+﻿Analyzing civic_voice...                                        
+
+   info - Don't invoke 'print' in production code - debug_groq.dart:8:3 - avoid_print
+   info - Don't invoke 'print' in production code - debug_groq.dart:28:7 - avoid_print
+   info - Don't invoke 'print' in production code - debug_groq.dart:29:7 - avoid_print
+   info - Don't invoke 'print' in production code - debug_groq.dart:32:5 - avoid_print
+warning - Unused import: '../../features/eligibility/screens/ai_eligibility_flow_screen.dart' - lib\core\router\app_router.dart:6:8 - unused_import
+warning - Unused import: '../../providers/notification_provider.dart' - lib\core\router\app_router.dart:32:8 - unused_import
+warning - Unused import: '../../features/profile/screens/family_dashboard_screen.dart' - lib\core\router\app_router.dart:34:8 - unused_import
+   info - Use 'const' with the constructor to improve performance - lib\core\router\app_router.dart:307:62 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\core\router\app_router.dart:317:62 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\core\router\app_router.dart:322:62 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\core\router\app_router.dart:327:62 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\core\router\app_router.dart:332:62 - prefer_const_constructors
+   info - The import of 'dart:typed_data' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/foundation.dart' - lib\core\services\document_ai_service.dart:6:8 - unnecessary_import
+warning - The operand can't be 'null', so the condition is always 'true' - lib\core\services\document_ai_service.dart:48:20 - unnecessary_null_comparison
+warning - The operand can't be 'null', so the condition is always 'true' - lib\core\services\document_ai_service.dart:59:20 - unnecessary_null_comparison
+warning - Unused import: 'dart:convert' - lib\core\services\document_vault_service.dart:5:8 - unused_import
+warning - Unused import: 'dart:io' - lib\core\services\document_vault_service.dart:6:8 - unused_import
+   info - The import of 'dart:typed_data' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/foundation.dart' - lib\core\services\document_vault_service.dart:7:8 - unnecessary_import
+warning - Unused import: 'package:flutter_image_compress/flutter_image_compress.dart' - lib\core\services\document_vault_service.dart:9:8 - unused_import
+   info - Statements in an if should be enclosed in a block - lib\core\services\reasoning_engine.dart:97:35 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\core\services\reasoning_engine.dart:98:12 - curly_braces_in_flow_control_structures
+warning - The value of the field '_activeVisionModel' isn't used - lib\core\services\reasoning_engine.dart:297:11 - unused_field
+   info - Don't invoke 'print' in production code - lib\core\services\translation_service.dart:15:7 - avoid_print
+  error - The argument type 'CardTheme' can't be assigned to the parameter type 'CardThemeData?'.  - lib\core\themes\app_theme.dart:61:18 - argument_type_not_assignable
+warning - The value of the local variable 'size' isn't used - lib\features\auth\auth_screen.dart:49:11 - unused_local_variable
+warning - The value of the field '_mobile' isn't used - lib\features\auth\auth_screen.dart:243:10 - unused_field
+warning - The value of the local variable 'auth' isn't used - lib\features\auth\auth_screen.dart:306:11 - unused_local_variable
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\auth\auth_screen.dart:511:30 - use_build_context_synchronously
+warning - The value of the field '_shakeKey' isn't used - lib\features\auth\auth_screen.dart:789:9 - unused_field
+warning - Unused import: 'package:google_fonts/google_fonts.dart' - lib\features\auth\screens\auth_screen.dart:5:8 - unused_import
+warning - Unused import: 'package:civic_voice_interface/providers/auth_provider.dart' - lib\features\auth\screens\auth_screen.dart:7:8 - unused_import
+warning - Unused import: 'package:civic_voice_interface/core/constants/app_language.dart' - lib\features\auth\screens\auth_screen.dart:9:8 - unused_import
+warning - The value of the field '_isLogin' isn't used - lib\features\auth\screens\auth_screen.dart:21:14 - unused_field
+warning - The value of the field '_otpController' isn't used - lib\features\auth\screens\auth_screen.dart:23:9 - unused_field
+warning - The value of the field '_selectedLanguage' isn't used - lib\features\auth\screens\authentication_screen.dart:27:16 - unused_field
+warning - The value of the local variable 'angle' isn't used - lib\features\auth\screens\authentication_screen.dart:528:13 - unused_local_variable
+   info - Don't use 'BuildContext's across async gaps - lib\features\auth\screens\login_screen.dart:99:40 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\features\auth\screens\register_screen.dart:93:40 - use_build_context_synchronously
+   info - Use 'const' with the constructor to improve performance - lib\features\dashboard\dashboard_screen.dart:966:7 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\features\dashboard\dashboard_screen.dart:967:7 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\features\dashboard\dashboard_screen.dart:968:7 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\features\dashboard\dashboard_screen.dart:969:7 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\features\dashboard\dashboard_screen.dart:970:7 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\features\dashboard\dashboard_screen.dart:971:7 - prefer_const_constructors
+warning - Unused import: '../../../data/mock/services_data.dart' - lib\features\dashboard\screens\main_dashboard_screen.dart:14:8 - unused_import
+warning - Unused import: 'dart:convert' - lib\features\documents\screens\document_vault_screen.dart:5:8 - unused_import
+   info - Use 'const' with the constructor to improve performance - lib\features\documents\screens\documents_screen.dart:81:69 - prefer_const_constructors
+   info - Don't use 'BuildContext's across async gaps - lib\features\documents\screens\documents_screen.dart:133:56 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\features\documents\screens\documents_screen.dart:136:52 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\features\documents\screens\documents_screen.dart:137:30 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\features\documents\screens\documents_screen.dart:178:30 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\features\documents\screens\documents_screen.dart:189:50 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\features\documents\screens\documents_screen.dart:190:28 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\features\documents\screens\documents_screen.dart:205:56 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\features\documents\screens\documents_screen.dart:237:52 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\features\documents\screens\documents_screen.dart:238:30 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\features\documents\screens\documents_screen.dart:249:50 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\features\documents\screens\documents_screen.dart:250:28 - use_build_context_synchronously
+warning - Unused import: 'dart:io' - lib\features\forms\screens\smart_browser_screen.dart:2:8 - unused_import
+warning - Unused import: '../../../core/services/document_vault_service.dart' - lib\features\forms\screens\smart_browser_screen.dart:10:8 - unused_import
+warning - The value of the local variable 'filePath' isn't used - lib\features\forms\screens\smart_browser_screen.dart:113:13 - unused_local_variable
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\forms\screens\smart_browser_screen.dart:372:63 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\forms\screens\smart_browser_screen.dart:429:40 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\forms\screens\smart_browser_screen.dart:431:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\forms\screens\smart_browser_screen.dart:434:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\forms\screens\smart_browser_screen.dart:581:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\forms\screens\smart_browser_screen.dart:607:41 - deprecated_member_use
+warning - Unused import: 'package:google_fonts/google_fonts.dart' - lib\features\navigation\screens\main_navigation_screen.dart:2:8 - unused_import
+warning - Unused import: '../../../core/constants/app_colors.dart' - lib\features\navigation\screens\main_navigation_screen.dart:4:8 - unused_import
+warning - Unused import: '../../../providers/language_provider.dart' - lib\features\navigation\screens\main_navigation_screen.dart:5:8 - unused_import
+warning - Unused import: '../../profile/screens/family_dashboard_screen.dart' - lib\features\navigation\screens\main_navigation_screen.dart:12:8 - unused_import
+warning - The value of the field '_iconAnimations' isn't used - lib\features\navigation\screens\main_navigation_screen.dart:26:32 - unused_field
+warning - The declaration '_onItemTapped' isn't referenced - lib\features\navigation\screens\main_navigation_screen.dart:70:8 - unused_element
+   info - Use 'const' with the constructor to improve performance - lib\features\notifications\screens\notifications_screen_v2.dart:111:30 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\features\notifications\screens\notifications_screen_v2.dart:111:56 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\features\notifications\screens\notifications_screen_v2.dart:188:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\features\notifications\screens\notifications_screen_v2.dart:188:47 - prefer_const_constructors
+   info - The local variable '_selected' starts with an underscore - lib\features\profile\profile_screen.dart:599:9 - no_leading_underscores_for_local_identifiers
+   info - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre - lib\features\profile\profile_screen.dart:740:13 - deprecated_member_use
+   info - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre - lib\features\profile\profile_screen.dart:884:13 - deprecated_member_use
+   info - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre - lib\features\profile\screens\complete_profile_screen.dart:491:7 - deprecated_member_use
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre - lib\features\profile\screens\family_dashboard_screen.dart:183:19 - deprecated_member_use
+   info - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre - lib\features\profile\screens\family_dashboard_screen.dart:200:19 - deprecated_member_use
+   info - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre - lib\features\profile\screens\user_onboarding_screen.dart:238:29 - deprecated_member_use
+   info - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre - lib\features\profile\screens\user_profile_screen.dart:125:23 - deprecated_member_use
+   info - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre - lib\features\profile\screens\user_profile_screen.dart:190:23 - deprecated_member_use
+   info - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre - lib\features\profile\screens\user_profile_screen.dart:201:25 - deprecated_member_use
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\features\profile\screens\user_profile_screen.dart:567:15 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\features\profile\screens\user_profile_screen.dart:569:15 - deprecated_member_use
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\features\profile\screens\user_profile_screen.dart:641:16 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\features\profile\screens\user_profile_screen.dart:643:16 - deprecated_member_use
+  error - Undefined class 'CitizenProfileModel' - lib\features\recommendations\screens\recommendations_screen.dart:125:31 - undefined_class
+warning - The value of the local variable 'categoryNames' isn't used - lib\features\services\screens\schemes_screen.dart:19:11 - unused_local_variable
+  error - Expected to find ']' - lib\features\voice\screens\voice_complaint_screen.dart:229:11 - expected_token
+warning - The value of the local variable 'baseSpeed' isn't used - lib\features\voice\widgets\ai_visualizer.dart:107:11 - unused_local_variable
+warning - Unused import: '../data/mock/services_data.dart' - lib\providers\conversation_provider.dart:3:8 - unused_import
+warning - The declaration '_localizedGreeting' isn't referenced - lib\providers\conversation_provider.dart:110:10 - unused_element
+warning - The declaration '_localizedGoodbye' isn't referenced - lib\providers\conversation_provider.dart:117:10 - unused_element
+warning - The declaration '_localizedUnknown' isn't referenced - lib\providers\conversation_provider.dart:124:10 - unused_element
+warning - The declaration '_localizedAskService' isn't referenced - lib\providers\conversation_provider.dart:131:10 - unused_element
+   info - The import of 'dart:typed_data' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/foundation.dart' - lib\providers\document_scanner_provider.dart:3:8 - unnecessary_import
+warning - Unused import: 'dart:io' - lib\providers\document_vault_provider.dart:5:8 - unused_import
+warning - Unused import: '../models/eligibility_model.dart' - lib\providers\eligibility_checker_provider.dart:2:8 - unused_import
+warning - The value of the field '_currentRecordingPath' isn't used - lib\providers\notes_provider.dart:31:11 - unused_field
+warning - Unused import: '../core/theme/app_theme.dart' - lib\providers\user_provider.dart:5:8 - unused_import
+warning - The value of the field '_waveAnimation' isn't used - lib\widgets\animated\animated_hero_greeting.dart:24:26 - unused_field
+warning - The declaration '_buildEye' isn't referenced - lib\widgets\animated\animated_hero_greeting.dart:242:10 - unused_element
+warning - The value of the local variable 'random' isn't used - lib\widgets\animated\progress_indicators.dart:232:11 - unused_local_variable
+warning - The value of the local variable 'rimPt' isn't used - lib\widgets\decorative\chakra_painter.dart:56:13 - unused_local_variable
+warning - Unused import: 'dart:math' - lib\widgets\navigation\cvi_bottom_nav.dart:3:8 - unused_import
+   info - Use 'const' with the constructor to improve performance - lib\widgets\navigation\cvi_bottom_nav.dart:31:5 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\widgets\navigation\cvi_bottom_nav.dart:33:5 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\widgets\navigation\cvi_bottom_nav.dart:35:5 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\widgets\navigation\cvi_bottom_nav.dart:37:5 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\widgets\navigation\cvi_bottom_nav.dart:39:5 - prefer_const_constructors
+   info - Don't invoke 'print' in production code - list_models.dart:17:7 - avoid_print
+   info - Don't invoke 'print' in production code - list_models.dart:19:9 - avoid_print
+   info - Don't invoke 'print' in production code - list_models.dart:22:7 - avoid_print
+   info - Don't invoke 'print' in production code - list_models.dart:25:5 - avoid_print
+   info - Don't invoke 'print' in production code - replace_opacity.dart:20:9 - avoid_print
+   info - Don't invoke 'print' in production code - replace_opacity.dart:25:3 - avoid_print
+
+flutter : 121 issues found. (ran in 2.4s)
+At line:1 char:1
++ flutter analyze > full_analyze.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (121 issues found. (ran in 2.4s):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

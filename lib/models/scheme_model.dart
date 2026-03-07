@@ -1,4 +1,5 @@
 import '../providers/user_provider.dart';
+import 'service_model.dart';
 
 class EligibilityRule {
   final Map<String, String> question;
@@ -123,5 +124,56 @@ class GovernmentScheme {
       if (!rule.check(userValue)) return false;
     }
     return true;
+  }
+
+  ServiceModel toServiceModel() {
+    return ServiceModel(
+      id: id,
+      name: names,
+      description: {
+        'en': description,
+        'hi': description,
+      },
+      eligibilityCriteria: eligibilityRules.map((r) => r.explanation['en'] ?? '').where((s) => s.isNotEmpty).toList(),
+      requiredDocuments: requiredDocuments.map((d) => DocumentItem(
+        name: d.name['en'] ?? 'Document',
+        description: d.reason['en'] ?? '',
+      )).toList(),
+      steps: steps.map((s) => StepItem(
+        number: s.number,
+        title: s.title['en'] ?? 'Step',
+        description: s.instruction['en'] ?? '',
+      )).toList(),
+      estimatedTimeline: 'Varies',
+      fees: 'Free / Minimum',
+      officialLink: officialWebsite ?? '',
+      helplineNumber: helplineNumber ?? '1800-XXX-XXXX',
+      category: _mapCategory(category),
+      iconEmoji: _mapEmoji(category),
+      isAvailable: true,
+      isPopular: false,
+    );
+  }
+
+  ServiceCategory _mapCategory(String cat) {
+    switch (cat.toLowerCase()) {
+      case 'health': return ServiceCategory.health;
+      case 'students': return ServiceCategory.education;
+      case 'farmers': return ServiceCategory.agriculture;
+      case 'senior_citizens': return ServiceCategory.welfare;
+      case 'finance': return ServiceCategory.finance;
+      default: return ServiceCategory.welfare;
+    }
+  }
+
+  String _mapEmoji(String cat) {
+    switch (cat.toLowerCase()) {
+      case 'health': return '🏥';
+      case 'students': return '🎓';
+      case 'farmers': return '🚜';
+      case 'senior_citizens': return '👴';
+      case 'finance': return '💰';
+      default: return '🏛️';
+    }
   }
 }
