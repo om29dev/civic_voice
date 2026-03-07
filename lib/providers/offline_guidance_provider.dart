@@ -54,6 +54,58 @@ class OfflineGuidanceProvider with ChangeNotifier {
           requiredDocuments: ['Aadhaar Card or Voter ID'],
           tip: 'No minimum balance required for this account.',
         ),
+        OfflineGuideModel(
+          id: 'G3',
+          title: 'Applying for PM Kisan Yojana',
+          category: 'Agriculture',
+          steps: [
+            'Visit the PM Kisan portal or nearest CSC (Common Service Center)',
+            'Provide landholding details and bank account number',
+            'Verify Aadhaar authentication via OTP or fingerprint',
+            'Submit the registration form'
+          ],
+          requiredDocuments: ['Aadhaar Card', 'Land Record (Khatauni)', 'Bank Passbook'],
+          tip: 'Ensure your Aadhaar is linked to your bank account to receive the ₹6000/year benefit directly.',
+        ),
+        OfflineGuideModel(
+          id: 'G4',
+          title: 'Registering for Ayushman Bharat',
+          category: 'Healthcare',
+          steps: [
+            'Check eligibility via PMJAY portal using mobile number or ration card',
+            'Visit the nearest empaneled hospital or Ayushman Mitra',
+            'Provide KYC documents for verification',
+            'Collect your printed Ayushman Card (Golden Card)'
+          ],
+          requiredDocuments: ['Ration Card', 'Aadhaar Card', 'Active Mobile Number'],
+          tip: 'This card provides free healthcare coverage up to ₹5 Lakhs per family per year.',
+        ),
+        OfflineGuideModel(
+          id: 'G5',
+          title: 'Filing an FIR Online',
+          category: 'Legal/Police',
+          steps: [
+            'Visit your State Police official website or CCTNS portal',
+            'Create a citizen account and log in',
+            'Select "E-FIR" and fill in the incident details',
+            'Submit the form and download the PDF copy of the FIR'
+          ],
+          requiredDocuments: ['Valid ID Proof', 'Details of the Incident'],
+          tip: 'E-FIRs are currently accepted primarily for non-heinous crimes like theft of vehicles or lost property.',
+        ),
+        OfflineGuideModel(
+          id: 'G6',
+          title: 'PM Awas Yojana (Urban) Application',
+          category: 'Housing',
+          steps: [
+            'Log into the PMAY(U) official website',
+            'Select "Citizen Assessment" and choose appropriate component',
+            'Enter Aadhaar details for verification',
+            'Fill personal, income, and bank details, then save'
+          ],
+          requiredDocuments: ['Aadhaar Card', 'Income Certificate', 'Proof of Residence'],
+          tip: 'Keep your bank details ready, as subsidies are transferred directly to the beneficiary account.',
+        ),
       ];
 
       // Cache it for future offline use

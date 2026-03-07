@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../models/complaint_model.dart';
 import '../../../../providers/complaint_provider.dart';
@@ -23,10 +23,18 @@ class VoiceComplaintScreen extends StatefulWidget {
 
 class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
   final TextEditingController _mockVoiceInput = TextEditingController();
-  GoogleMapController? _mapController;
+  
+  // 0 = Record Complaint, 1 = Provide Location
+  int _step = 0;
+  String _capturedComplaint = '';
 
-  void _onMicTap(BuildContext context) async {
-    final cp = context.read<ComplaintProvider>();
+  @override
+  void dispose() {
+    _mockVoiceInput.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onComplaintMicTap(BuildContext context) async {
     final voice = context.read<VoiceProvider>();
     final lang = context.read<LanguageProvider>().currentLanguage;
 
@@ -37,14 +45,89 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
           : (voice.partialText.isNotEmpty ? voice.partialText : _mockVoiceInput.text);
       
       final finalText = text.isNotEmpty ? text : 'Road is completely broken in XYZ area';
-      await cp.processVoiceComplaint(finalText, 'Simulated Location');
+      setState(() {
+        _capturedComplaint = finalText;
+        _step = 1;
+        _mockVoiceInput.clear();
+      });
     } else {
       await voice.startListening(
         localeId: lang == 'hi' ? 'hi_IN' : 'en_IN',
         onFinalResult: (text) async {
-          await cp.processVoiceComplaint(text, 'Simulated Location');
+          setState(() {
+            _capturedComplaint = text.isNotEmpty ? text : 'Road is completely broken in XYZ area';
+            _step = 1;
+            _mockVoiceInput.clear();
+          });
         },
       );
+    }
+  }
+
+  Future<void> _onLocationMicTap(BuildContext context) async {
+    final cp = context.read<ComplaintProvider>();
+    final voice = context.read<VoiceProvider>();
+    final lang = context.read<LanguageProvider>().currentLanguage;
+
+    if (voice.state == VoiceState.listening) {
+      await voice.stopListening();
+      final text = voice.transcribedText.isNotEmpty 
+          ? voice.transcribedText 
+          : (voice.partialText.isNotEmpty ? voice.partialText : _mockVoiceInput.text);
+      
+      final finalText = text.isNotEmpty ? text : 'Unknown Location';
+      await cp.processVoiceComplaint(_capturedComplaint, finalText);
+    } else {
+      await voice.startListening(
+        localeId: lang == 'hi' ? 'hi_IN' : 'en_IN',
+        onFinalResult: (text) async {
+          await cp.processVoiceComplaint(_capturedComplaint, text);
+        },
+      );
+    }
+  }
+
+  Future<void> _fetchGpsLocation(BuildContext context) async {
+    final cp = context.read<ComplaintProvider>();
+    
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location services are disabled.')));
+      return;
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location permissions are denied')));
+        return;
+      }
+    }
+    
+    if (permission == LocationPermission.deniedForever) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location permissions are permanently denied.')));
+      return;
+    }
+
+    // Show loading indicator
+    if (mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => const Center(child: CircularProgressIndicator(color: AppColors.emerald)),
+      );
+    }
+
+    try {
+      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      if (mounted) Navigator.pop(context); // hide loading
+      
+      // Pass the GPS coordinates as the location string
+      await cp.processVoiceComplaint(_capturedComplaint, 'GPS: ${position.latitude}, ${position.longitude}');
+    } catch (e) {
+      if (mounted) Navigator.pop(context); // hide loading
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to get location: $e')));
     }
   }
 
@@ -106,7 +189,7 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: provider.draftComplaint == null 
-                  ? _buildInitialView(voice, isRecording) 
+                  ? (_step == 0 ? _buildComplaintInputView(voice, isRecording) : _buildLocationInputView(voice, isRecording))
                   : _buildReviewView(provider),
               ),
             ),
@@ -148,7 +231,7 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
     );
   }
 
-  Widget _buildInitialView(VoiceProvider voice, bool isRecording) {
+  Widget _buildComplaintInputView(VoiceProvider voice, bool isRecording) {
     return Column(
       children: [
         const SizedBox(height: 20),
@@ -162,7 +245,7 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
         ).animate().fadeIn().slideY(begin: 0.2),
         const SizedBox(height: 8),
         Text(
-          'Your voice will be analyzed and routed to the appropriate authority automatically.',
+          'Describe your issue clearly. We will ask for the location next.',
           textAlign: TextAlign.center,
           style: GoogleFonts.poppins(color: AppColors.textSecondary, fontSize: 13),
         ).animate().fadeIn(delay: 200.ms),
@@ -171,7 +254,7 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
         
         // Voice Record Interaction Area
         GestureDetector(
-          onTap: () => _onMicTap(context),
+          onTap: () => _onComplaintMicTap(context),
           child: Stack(
             alignment: Alignment.center,
             children: [
@@ -238,6 +321,96 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
     );
   }
 
+  Widget _buildLocationInputView(VoiceProvider voice, bool isRecording) {
+    return Column(
+      children: [
+        const SizedBox(height: 20),
+        Text(
+          'Where is this?',
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ).animate().fadeIn().slideY(begin: 0.2),
+        const SizedBox(height: 8),
+        Text(
+          'Provide the location for: "$_capturedComplaint"',
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: GoogleFonts.poppins(color: AppColors.saffron, fontSize: 13, fontStyle: FontStyle.italic),
+        ).animate().fadeIn(delay: 200.ms),
+        
+        const Spacer(),
+
+        // Voice Record Interaction Area
+        GestureDetector(
+          onTap: () => _onLocationMicTap(context),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              if (isRecording)
+                Container(
+                  width: 140,
+                  height: 140,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.saffron.withValues(alpha: 0.2), width: 1),
+                  ),
+                ).animate(onPlay: (c) => c.repeat()).scale(begin: const Offset(0.8, 0.8), end: const Offset(1.5, 1.5)).fadeOut(),
+              
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: isRecording ? 100 : 80,
+                height: isRecording ? 100 : 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: isRecording 
+                      ? [AppColors.semanticError, const Color(0xFFC0392B)] 
+                      : [AppColors.bgMid, AppColors.bgLight],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  border: Border.all(color: AppColors.surfaceBorder),
+                  boxShadow: [
+                    if (isRecording)
+                      BoxShadow(
+                        color: AppColors.semanticError.withValues(alpha: 0.4),
+                        blurRadius: 20,
+                        spreadRadius: 2,
+                      )
+                  ],
+                ),
+                child: Icon(
+                  isRecording ? Icons.stop_rounded : Icons.mic_rounded,
+                  size: 32,
+                  color: isRecording ? Colors.white : AppColors.saffron,
+                ),
+              ),
+            ],
+          ),
+        ).animate(target: isRecording ? 1 : 0).shimmer(duration: 2.seconds),
+        
+        const Spacer(),
+        
+        if (isRecording)
+          TextField(
+            controller: _mockVoiceInput,
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: 'Simulate location text here...',
+              hintStyle: const TextStyle(color: Colors.white30),
+              filled: true,
+              fillColor: Colors.white.withValues(alpha: 0.05),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+            ),
+          ).animate().fadeIn(),
+      ],
+    );
+  }
+
   Widget _buildTrustIndicators() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -291,8 +464,29 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
         ),
         const SizedBox(height: 24),
         
-        // Map Section
-        _buildMapSection(complaint),
+        // Status Section
+        GlassCard(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              const Icon(Icons.location_on, color: AppColors.emerald),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Location Captured', style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 10, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 2),
+                    Text(
+                      complaint.location ?? 'GPS Coordinates Attached',
+                      style: GoogleFonts.poppins(color: Colors.white, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
         
         const SizedBox(height: 24),
         
@@ -320,49 +514,6 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
         
         const SizedBox(height: 40),
       ],
-    );
-  }
-
-  Widget _buildMapSection(ComplaintModel complaint) {
-    return Container(
-      height: 200,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.surfaceBorder),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: complaint.latitude != null 
-          ? GoogleMap(
-              initialCameraPosition: CameraPosition(
-                target: LatLng(complaint.latitude!, complaint.longitude!),
-                zoom: 15,
-              ),
-              markers: {
-                Marker(
-                  markerId: const MarkerId('complaint_loc'),
-                  position: LatLng(complaint.latitude!, complaint.longitude!),
-                ),
-              },
-              onMapCreated: (c) => _mapController = c,
-              liteModeEnabled: true,
-              myLocationButtonEnabled: false,
-              zoomControlsEnabled: false,
-            )
-          : Container(
-              color: AppColors.bgMid,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.map_outlined, color: AppColors.textMuted, size: 48),
-                    const SizedBox(height: 12),
-                    Text('Visualizing Region...', style: GoogleFonts.poppins(color: AppColors.textMuted, fontSize: 12)),
-                  ],
-                ),
-              ),
-            ),
-      ),
     );
   }
 
@@ -419,7 +570,10 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 18),
             ),
-            onPressed: () => provider.discardDraft(),
+            onPressed: () {
+              setState(() => _step = 0);
+              provider.discardDraft();
+            },
             child: Text('DISCARD', style: GoogleFonts.inter(color: AppColors.textMuted, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
           ),
         ),
@@ -469,6 +623,7 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
                           style: ElevatedButton.styleFrom(backgroundColor: AppColors.emerald, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                           onPressed: () {
                             Navigator.of(ctx).pop();
+                            setState(() => _step = 0);
                             provider.discardDraft();
                           },
                           child: const Text('ACKNOWLEDGE', style: TextStyle(color: Colors.white)),

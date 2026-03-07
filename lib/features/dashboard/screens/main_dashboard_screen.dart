@@ -674,7 +674,6 @@ class _PopularServiceCard extends StatelessWidget {
         context.push(Routes.serviceDetailPath(service.id), extra: service);
       },
       child: Container(
-        height: 140,
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             begin: Alignment.topCenter,
@@ -693,13 +692,14 @@ class _PopularServiceCard extends StatelessWidget {
               // Top — icon box + arrow
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    width: 48,
-                    height: 48,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
                       color: serviceColor.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: serviceColor.withValues(alpha: 0.3),
                         width: 1,
@@ -708,11 +708,10 @@ class _PopularServiceCard extends StatelessWidget {
                     child: Center(
                       child: Text(
                         service.iconEmoji,
-                        style: const TextStyle(fontSize: 24),
+                        style: const TextStyle(fontSize: 20),
                       ),
                     ),
                   ),
-                  const Spacer(),
                   const Padding(
                     padding: EdgeInsets.only(top: 4),
                     child: Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textMuted, size: 12),
@@ -721,11 +720,13 @@ class _PopularServiceCard extends StatelessWidget {
               ),
               const Spacer(),
               // Bottom — name, hindi, views
-              TText(
-                service.localizedName('en'),
-                style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              Flexible(
+                child: TText(
+                  service.localizedName('en'),
+                  style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               if (hindiName.isNotEmpty && hindiName != service.localizedName('en'))
                 Text(

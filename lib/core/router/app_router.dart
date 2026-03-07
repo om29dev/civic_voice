@@ -71,6 +71,7 @@ abstract class Routes {
 class AppRouter {
   final BuildContext _context;
   late final GoRouter router;
+  static bool hasShownSplash = false;
 
   AppRouter(this._context) {
     final authProvider = _context.read<AuthProvider>();
@@ -84,26 +85,25 @@ class AppRouter {
         final auth    = context.read<AuthProvider>();
         final loc     = state.matchedLocation;
 
-        // Still initializing — stay on splash
-        if (auth.isLoading) {
-          return loc == Routes.splash ? null : Routes.splash;
+        // 1. Enforce splash screen at least once per session
+        if (!hasShownSplash) {
+          if (loc != Routes.splash) return Routes.splash;
+          return null; // Let the splash screen play
         }
 
+        // 2. Check auth state and boarding progress
         final isOnSplash      = loc == Routes.splash;
         final isOnOnboarding  = loc == Routes.onboarding;
         final isOnAuth        = loc == Routes.auth;
 
-        // Check first-launch flag
         final prefs        = await SharedPreferences.getInstance();
         final seenOnboard  = prefs.getBool('cvi_onboarded') ?? false;
 
-        // Not authenticated
+        // 3. Not Authenticated Flow
         if (!auth.isAuthenticated) {
-          // First time launch → onboarding
           if (!seenOnboard && !isOnOnboarding) return Routes.onboarding;
-          // Has been onboarded but not authed → auth
           if (seenOnboard && !isOnAuth) return Routes.auth;
-          return null;
+          return null; // Otherwise stay where they are (either Auth or Onboarding)
         }
 
         // Authenticated — send away from auth/onboarding/splash

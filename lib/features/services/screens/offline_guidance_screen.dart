@@ -6,8 +6,15 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../providers/offline_guidance_provider.dart';
 import '../../../../widgets/glass_card.dart';
 
-class OfflineGuidanceScreen extends StatelessWidget {
+class OfflineGuidanceScreen extends StatefulWidget {
   const OfflineGuidanceScreen({super.key});
+
+  @override
+  State<OfflineGuidanceScreen> createState() => _OfflineGuidanceScreenState();
+}
+
+class _OfflineGuidanceScreenState extends State<OfflineGuidanceScreen> {
+  String _selectedCategory = 'All';
 
   @override
   Widget build(BuildContext context) {
@@ -41,11 +48,44 @@ class OfflineGuidanceScreen extends StatelessWidget {
             body: SafeArea(
               child: provider.isLoading
                   ? const Center(child: CircularProgressIndicator(color: AppColors.accentBlue))
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(24),
-                      itemCount: provider.guides.length,
-                      itemBuilder: (context, index) {
-                        final guide = provider.guides[index];
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Categories Filter
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                          child: Row(
+                            children: [
+                              'All',
+                              ...provider.guides.map((g) => g.category).toSet().toList()
+                            ].map((category) {
+                              final isSelected = _selectedCategory == category;
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: ChoiceChip(
+                                  label: Text(category, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600)),
+                                  selected: isSelected,
+                                  onSelected: (selected) {
+                                    if (selected) setState(() => _selectedCategory = category);
+                                  },
+                                  selectedColor: AppColors.saffron,
+                                  backgroundColor: AppColors.bgMid,
+                                  labelStyle: TextStyle(color: isSelected ? Colors.white : AppColors.textSecondary),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide.none),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                        // Filtered List
+                        Expanded(
+                          child: ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                            itemCount: provider.guides.where((g) => _selectedCategory == 'All' || g.category == _selectedCategory).length,
+                            itemBuilder: (context, index) {
+                              final filteredGuides = provider.guides.where((g) => _selectedCategory == 'All' || g.category == _selectedCategory).toList();
+                              final guide = filteredGuides[index];
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 20),
                           child: GlassCard(
@@ -138,9 +178,12 @@ class OfflineGuidanceScreen extends StatelessWidget {
                               ],
                             ),
                           ).animate().slideY(begin: 0.1, end: 0, delay: Duration(milliseconds: 100 * index)),
-                        );
-                      },
+                          ).animate(key: ValueKey(guide.id)).fadeIn().slideY(begin: 0.1, end: 0, delay: Duration(milliseconds: 50 * index));
+                        },
+                      ),
                     ),
+                  ],
+                ),
             ),
           );
         },
