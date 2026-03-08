@@ -1,0 +1,177 @@
+{
+  "serviceId": "pan_card",
+  "formTitle": {
+    "en": "PAN Card Application (Form 49A)",
+    "hi": "पैन कार्ड आवेदन (फॉर्म 49A)",
+    "mr": "पॅन कार्ड अर्ज (फॉर्म 49A)",
+    "ta": "PAN அட்டை விண்ணப்பம் (படிவம் 49A)"
+  },
+  "portalName": "NSDL / Protean",
+  "officialUrl": "https://onlineservices.proteantech.in/paam/endUserRegisterContact.html",
+  "introExplanation": {
+    "en": "This is the PAN Card application form. PAN is required for all financial transactions in India. I will help you fill this form using your uploaded documents.",
+    "hi": "यह पैन कार्ड आवेदन फॉर्म है। भारत में सभी वित्तीय लेनदेन के लिए पैन आवश्यक है। मैं आपके अपलोड किए गए दस्तावेज़ों का उपयोग करके इस फॉर्म को भरने में मदद करूँगा।",
+    "mr": "हा पॅन कार्ड अर्ज आहे। भारतातील सर्व आर्थिक व्यवहारांसाठी पॅन आवश्यक आहे. मी तुमच्या अपलोड केलेल्या कागदपत्रांचा वापर करून हा फॉर्म भरण्यात मदत करेन.",
+    "ta": "இது PAN அட்டை விண்ணப்ப படிவம். இந்தியாவில் அனைத்து நிதி பரிவர்த்தனைகளுக்கும் PAN தேவை. உங்கள் பதிவேற்றிய ஆவணங்களைப் பயன்படுத்தி இந்த படிவத்தை நிரப்ப உதவுவேன்."
+  },
+  "requiredDocuments": ["aadhaar"],
+  "optionalDocuments": ["photo"],
+  "submitSteps": [
+    {
+      "step": 1,
+      "instruction": { "en": "Open the NSDL portal and select 'New PAN - Indian Citizen'", "hi": "NSDL पोर्टल खोलें और 'New PAN - Indian Citizen' चुनें" }
+    },
+    {
+      "step": 2,
+      "instruction": { "en": "Enter your Full Name exactly as shown below", "hi": "अपना पूरा नाम नीचे दिखाए अनुसार दर्ज करें" }
+    },
+    {
+      "step": 3,
+      "instruction": { "en": "Enter Date of Birth, Gender, and Father's Name", "hi": "जन्म तिथि, लिंग और पिता का नाम दर्ज करें" }
+    },
+    {
+      "step": 4,
+      "instruction": { "en": "Enter your Address and PIN Code", "hi": "अपना पता और पिन कोड दर्ज करें" }
+    },
+    {
+      "step": 5,
+      "instruction": { "en": "Enter Aadhaar Number for e-KYC verification", "hi": "ई-केवाईसी सत्यापन के लिए आधार नंबर दर्ज करें" }
+    },
+    {
+      "step": 6,
+      "instruction": { "en": "Pay the fee and submit the application", "hi": "शुल्क का भुगतान करें और आवेदन जमा करें" }
+    }
+  ],
+  "fields": [
+    {
+      "id": "full_name",
+      "label": { "en": "Full Name", "hi": "पूरा नाम", "mr": "पूर्ण नाव", "ta": "முழு பெயர்" },
+      "dataKey": "full_name",
+      "fieldType": "text",
+      "required": false,
+      "sourceDocument": "aadhaar",
+      "voiceExplanation": {
+        "en": "The name field contains your full legal name as it appears on your Aadhaar card.",
+        "hi": "नाम फील्ड में आपका पूरा कानूनी नाम है जैसा कि आधार कार्ड पर दिखता है।",
+        "mr": "नाव फील्डमध्ये तुमचे पूर्ण कायदेशीर नाव आहे जसे आधार कार्डवर दिसते.",
+        "ta": "பெயர் புலத்தில் உங்கள் ஆதார் அட்டையில் தோன்றும் முழு சட்டப்பூர்வ பெயர் உள்ளது."
+      }
+    },
+    {
+      "id": "date_of_birth",
+      "label": { "en": "Date of Birth", "hi": "जन्म तिथि", "mr": "जन्म तारीख", "ta": "பிறந்த தேதி" },
+      "dataKey": "date_of_birth",
+      "fieldType": "date",
+      "required": false,
+      "sourceDocument": "aadhaar",
+      "voiceExplanation": {
+        "en": "The date of birth has been filled using your Aadhaar document.",
+        "hi": "जन्म तिथि आपके आधार दस्तावेज़ से भरी गई है।",
+        "mr": "जन्म तारीख तुमच्या आधार दस्तऐवजातून भरली गेली आहे.",
+        "ta": "பிறந்த தேதி உங்கள் ஆதார் ஆவணத்திலிருந்து நிரப்பப்பட்டுள்ளது."
+      }
+    },
+    {
+      "id": "gender",
+      "label": { "en": "Gender", "hi": "लिंग", "mr": "लिंग", "ta": "பாலினம்" },
+      "dataKey": "gender",
+      "fieldType": "dropdown",
+      "required": false,
+      "options": ["Male", "Female", "Other"],
+      "sourceDocument": "aadhaar",
+      "voiceExplanation": {
+        "en": "Your gender has been automatically selected from your Aadhaar card.",
+        "hi": "आपका लिंग आपके आधार कार्ड से स्वचालित रूप से चुना गया है।",
+        "mr": "तुमचे लिंग तुमच्या आधार कार्डवरून आपोआप निवडले गेले आहे.",
+        "ta": "உங்கள் பாலினம் உங்கள் ஆதார் அட்டையிலிருந்து தானாகவே தேர்ந்தெடுக்கப்பட்டுள்ளது."
+      }
+    },
+    {
+      "id": "father_name",
+      "label": { "en": "Father's Name", "hi": "पिता का नाम", "mr": "वडिलांचे नाव", "ta": "தந்தையின் பெயர்" },
+      "dataKey": "father_name",
+      "fieldType": "text",
+      "required": false,
+      "sourceDocument": "aadhaar",
+      "voiceExplanation": {
+        "en": "Father's name is required for PAN card. This has been filled from your documents.",
+        "hi": "पैन कार्ड के लिए पिता का नाम आवश्यक है। यह आपके दस्तावेज़ों से भरा गया है।",
+        "mr": "पॅन कार्डसाठी वडिलांचे नाव आवश्यक आहे. हे तुमच्या कागदपत्रांमधून भरले गेले आहे.",
+        "ta": "PAN அட்டைக்கு தந்தையின் பெயர் தேவை. இது உங்கள் ஆவணங்களிலிருந்து நிரப்பப்பட்டுள்ளது."
+      }
+    },
+    {
+      "id": "address",
+      "label": { "en": "Address", "hi": "पता", "mr": "पत्ता", "ta": "முகவரி" },
+      "dataKey": "address_line1",
+      "fieldType": "text",
+      "required": false,
+      "sourceDocument": "aadhaar",
+      "voiceExplanation": {
+        "en": "Your residential address has been filled from your Aadhaar card.",
+        "hi": "आपका आवासीय पता आधार कार्ड से भरा गया है।",
+        "mr": "तुमचा निवासी पत्ता आधार कार्डवरून भरला गेला आहे.",
+        "ta": "உங்கள் குடியிருப்பு முகவரி ஆதார் அட்டையிலிருந்து நிரப்பப்பட்டுள்ளது."
+      }
+    },
+    {
+      "id": "pincode",
+      "label": { "en": "PIN Code", "hi": "पिन कोड", "mr": "पिन कोड", "ta": "அஞ்சல் குறியீடு" },
+      "dataKey": "pincode",
+      "fieldType": "text",
+      "required": false,
+      "validationPattern": "^\\d{6}$",
+      "sourceDocument": "aadhaar",
+      "voiceExplanation": {
+        "en": "The 6-digit PIN code for your area.",
+        "hi": "आपके क्षेत्र का 6 अंकों का पिन कोड।",
+        "mr": "तुमच्या भागाचा 6 अंकी पिन कोड.",
+        "ta": "உங்கள் பகுதிக்கான 6 இலக்க அஞ்சல் குறியீடு."
+      }
+    },
+    {
+      "id": "mobile",
+      "label": { "en": "Mobile Number", "hi": "मोबाइल नंबर", "mr": "मोबाइल नंबर", "ta": "கைபேசி எண்" },
+      "dataKey": "mobile_number",
+      "fieldType": "text",
+      "required": false,
+      "validationPattern": "^\\d{10}$",
+      "sourceDocument": "profile",
+      "voiceExplanation": {
+        "en": "Your mobile number from your profile. OTP will be sent to this number.",
+        "hi": "आपकी प्रोफ़ाइल से मोबाइल नंबर। इस नंबर पर OTP भेजा जाएगा।",
+        "mr": "तुमच्या प्रोफाइलमधून मोबाइल नंबर. या नंबरवर OTP पाठवला जाईल.",
+        "ta": "உங்கள் சுயவிவரத்தில் உள்ள கைபேசி எண். இந்த எண்ணுக்கு OTP அனுப்பப்படும்."
+      }
+    },
+    {
+      "id": "email",
+      "label": { "en": "Email", "hi": "ईमेल", "mr": "ईमेल", "ta": "மின்னஞ்சல்" },
+      "dataKey": "email_address",
+      "fieldType": "text",
+      "required": false,
+      "sourceDocument": "profile",
+      "voiceExplanation": {
+        "en": "Your email address from your profile for communication.",
+        "hi": "संचार के लिए आपकी प्रोफ़ाइल से ईमेल पता।",
+        "mr": "संवादासाठी तुमच्या प्रोफाइलमधून ईमेल पत्ता.",
+        "ta": "தொடர்புக்கான உங்கள் சுயவிவரத்தில் உள்ள மின்னஞ்சல் முகவரி."
+      }
+    },
+    {
+      "id": "aadhaar_number",
+      "label": { "en": "Aadhaar Number", "hi": "आधार नंबर", "mr": "आधार क्रमांक", "ta": "ஆதார் எண்" },
+      "dataKey": "aadhaar_number",
+      "fieldType": "text",
+      "required": true,
+      "sourceDocument": "aadhaar",
+      "sensitive": true,
+      "voiceExplanation": {
+        "en": "Your Aadhaar number is required for e-KYC verification. This has been filled from your Aadhaar card document.",
+        "hi": "ई-केवाईसी सत्यापन के लिए आपका आधार नंबर आवश्यक है। यह आपके आधार कार्ड दस्तावेज़ से भरा गया है।",
+        "mr": "ई-केवायसी सत्यापनासाठी तुमचा आधार क्रमांक आवश्यक आहे. हे तुमच्या आधार कार्ड दस्तऐवजातून भरले गेले आहे.",
+        "ta": "e-KYC சரிபார்ப்புக்கு உங்கள் ஆதார் எண் தேவை. இது உங்கள் ஆதார் அட்டை ஆவணத்திலிருந்து நிரப்பப்பட்டுள்ளது."
+      }
+    }
+  ]
+}

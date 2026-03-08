@@ -25,6 +25,7 @@ import 'providers/scheme_discovery_provider.dart';
 import 'providers/application_tracker_provider.dart';
 import 'providers/offline_guidance_provider.dart';
 import 'providers/citizen_profile_provider.dart';
+import 'features/auto_form/providers/auto_form_provider.dart';
 import 'core/services/csv_scheme_service.dart';
 import 'app.dart';
 
@@ -64,6 +65,7 @@ void main() {
           ChangeNotifierProvider(create: (_) => AnalyticsProvider()),
           ChangeNotifierProvider(create: (_) => AccessibilityProvider()),
           ChangeNotifierProvider(create: (_) => DocumentVaultProvider()..loadDocuments()),
+          ChangeNotifierProvider(create: (_) => AutoFormProvider()),
         ],
         child: const CVIApp(),
       ),

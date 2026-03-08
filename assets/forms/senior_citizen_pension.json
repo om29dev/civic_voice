@@ -1,0 +1,275 @@
+{
+    "serviceId": "senior_citizen_pension",
+    "formTitle": {
+        "en": "Old Age Pension (IGNOAPS)",
+        "hi": "वृद्धावस्था पेंशन (IGNOAPS)",
+        "mr": "वृद्धापकाळ पेन्शन",
+        "ta": "முதியோர் ஓய்வூதியம்"
+    },
+    "portalName": "NSAP Portal",
+    "officialUrl": "https://nsap.nic.in",
+    "introExplanation": {
+        "en": "Old Age Pension form. Apply at District Social Welfare Office or CSC.",
+        "hi": "वृद्धावस्था पेंशन फॉर्म। जिला समाज कल्याण कार्यालय में आवेदन करें।",
+        "mr": "वृद्धापकाळ पेन्शन अर्ज. जिल्हा समाजकल्याण कार्यालयात अर्ज करा.",
+        "ta": "முதியோர் ஓய்வூதிய படிவம். மாவட்ட சமூக நல அலுவலகத்தில் விண்ணப்பிக்கவும்."
+    },
+    "requiredDocuments": [
+        "aadhaar"
+    ],
+    "optionalDocuments": [
+        "bankPassbook",
+        "incomeCertificate"
+    ],
+    "submitSteps": [
+        {
+            "step": 1,
+            "instruction": {
+                "en": "Visit District Social Welfare Office or CSC",
+                "hi": "जिला समाज कल्याण कार्यालय या CSC जाएं"
+            }
+        },
+        {
+            "step": 2,
+            "instruction": {
+                "en": "Fill personal and bank details",
+                "hi": "व्यक्तिगत और बैंक विवरण भरें"
+            }
+        },
+        {
+            "step": 3,
+            "instruction": {
+                "en": "Submit Aadhaar and age proof",
+                "hi": "आधार और आयु प्रमाण जमा करें"
+            }
+        },
+        {
+            "step": 4,
+            "instruction": {
+                "en": "Collect acknowledgment receipt",
+                "hi": "पावती रसीद प्राप्त करें"
+            }
+        }
+    ],
+    "fields": [
+        {
+            "id": "full_name",
+            "label": {
+                "en": "Full Name",
+                "hi": "पूरा नाम"
+            },
+            "dataKey": "full_name",
+            "fieldType": "text",
+            "required": false,
+            "sourceDocument": "aadhaar",
+            "voiceExplanation": {
+                "en": "Your full name from Aadhaar.",
+                "hi": "आधार से पूरा नाम।"
+            }
+        },
+        {
+            "id": "date_of_birth",
+            "label": {
+                "en": "Date of Birth",
+                "hi": "जन्म तिथि"
+            },
+            "dataKey": "date_of_birth",
+            "fieldType": "date",
+            "required": false,
+            "sourceDocument": "aadhaar",
+            "voiceExplanation": {
+                "en": "Date of birth. You must be 60 or older for this pension.",
+                "hi": "जन्म तिथि। इस पेंशन के लिए आपकी उम्र 60 वर्ष या अधिक होनी चाहिए।"
+            }
+        },
+        {
+            "id": "gender",
+            "label": {
+                "en": "Gender",
+                "hi": "लिंग"
+            },
+            "dataKey": "gender",
+            "fieldType": "dropdown",
+            "required": false,
+            "options": [
+                "Male",
+                "Female",
+                "Other"
+            ],
+            "sourceDocument": "aadhaar",
+            "voiceExplanation": {
+                "en": "Gender from Aadhaar.",
+                "hi": "आधार से लिंग।"
+            }
+        },
+        {
+            "id": "father_name",
+            "label": {
+                "en": "Father's Name",
+                "hi": "पिता का नाम"
+            },
+            "dataKey": "father_name",
+            "fieldType": "text",
+            "required": false,
+            "sourceDocument": "aadhaar",
+            "voiceExplanation": {
+                "en": "Father's name.",
+                "hi": "पिता का नाम।"
+            }
+        },
+        {
+            "id": "address",
+            "label": {
+                "en": "Address",
+                "hi": "पता"
+            },
+            "dataKey": "address_line1",
+            "fieldType": "text",
+            "required": false,
+            "sourceDocument": "aadhaar",
+            "voiceExplanation": {
+                "en": "Address from Aadhaar.",
+                "hi": "आधार से पता।"
+            }
+        },
+        {
+            "id": "district",
+            "label": {
+                "en": "District",
+                "hi": "जिला"
+            },
+            "dataKey": "district",
+            "fieldType": "text",
+            "required": false,
+            "sourceDocument": "aadhaar",
+            "voiceExplanation": {
+                "en": "District.",
+                "hi": "जिला।"
+            }
+        },
+        {
+            "id": "state",
+            "label": {
+                "en": "State",
+                "hi": "राज्य"
+            },
+            "dataKey": "state",
+            "fieldType": "dropdown",
+            "required": false,
+            "sourceDocument": "aadhaar",
+            "options": [
+                "Andhra Pradesh",
+                "Bihar",
+                "Delhi",
+                "Gujarat",
+                "Karnataka",
+                "Kerala",
+                "Madhya Pradesh",
+                "Maharashtra",
+                "Punjab",
+                "Rajasthan",
+                "Tamil Nadu",
+                "Telangana",
+                "Uttar Pradesh",
+                "West Bengal"
+            ],
+            "voiceExplanation": {
+                "en": "State.",
+                "hi": "राज्य।"
+            }
+        },
+        {
+            "id": "pincode",
+            "label": {
+                "en": "PIN Code",
+                "hi": "पिन कोड"
+            },
+            "dataKey": "pincode",
+            "fieldType": "text",
+            "required": false,
+            "validationPattern": "^\\d{6}$",
+            "sourceDocument": "aadhaar",
+            "voiceExplanation": {
+                "en": "PIN code.",
+                "hi": "पिन कोड।"
+            }
+        },
+        {
+            "id": "aadhaar_number",
+            "label": {
+                "en": "Aadhaar Number",
+                "hi": "आधार नंबर"
+            },
+            "dataKey": "aadhaar_number",
+            "fieldType": "text",
+            "required": true,
+            "sourceDocument": "aadhaar",
+            "sensitive": true,
+            "voiceExplanation": {
+                "en": "Aadhaar number for verification.",
+                "hi": "सत्यापन के लिए आधार नंबर।"
+            }
+        },
+        {
+            "id": "bank_account",
+            "label": {
+                "en": "Bank Account",
+                "hi": "बैंक खाता"
+            },
+            "dataKey": "account_number",
+            "fieldType": "text",
+            "required": false,
+            "sourceDocument": "bankPassbook",
+            "sensitive": true,
+            "voiceExplanation": {
+                "en": "Bank account for pension transfer.",
+                "hi": "पेंशन हस्तांतरण के लिए बैंक खाता।"
+            }
+        },
+        {
+            "id": "ifsc_code",
+            "label": {
+                "en": "IFSC Code",
+                "hi": "IFSC कोड"
+            },
+            "dataKey": "ifsc_code",
+            "fieldType": "text",
+            "required": false,
+            "sourceDocument": "bankPassbook",
+            "voiceExplanation": {
+                "en": "Bank IFSC code.",
+                "hi": "बैंक IFSC कोड।"
+            }
+        },
+        {
+            "id": "annual_income",
+            "label": {
+                "en": "Annual Income",
+                "hi": "वार्षिक आय"
+            },
+            "dataKey": "annual_income",
+            "fieldType": "text",
+            "required": false,
+            "sourceDocument": "incomeCertificate",
+            "voiceExplanation": {
+                "en": "Annual income for eligibility.",
+                "hi": "पात्रता के लिए वार्षिक आय।"
+            }
+        },
+        {
+            "id": "mobile",
+            "label": {
+                "en": "Mobile",
+                "hi": "मोबाइल"
+            },
+            "dataKey": "mobile_number",
+            "fieldType": "text",
+            "required": false,
+            "sourceDocument": "profile",
+            "voiceExplanation": {
+                "en": "Mobile number.",
+                "hi": "मोबाइल नंबर।"
+            }
+        }
+    ]
+}

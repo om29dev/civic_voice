@@ -157,13 +157,8 @@ class _ServiceDetailScreenV2State extends State<ServiceDetailScreenV2>
           _StickyBar(
             accentColor: _accentColor,
             onApplyNow: () {
-              // Check if a form definition exists for this service
-              final formDef = FormFillerService.getForm(s.id);
-              if (formDef != null) {
-                context.push(Routes.autoFillFormPath(s.id), extra: s);
-              } else {
-                _launch(s.officialLink);
-              }
+              // Route to Smart AI Form (with voice readout + profile auto-fill)
+              context.push(Routes.smartFormPath(s.id), extra: s);
             },
             onAskCVI: _openVoiceWithContext,
           ),

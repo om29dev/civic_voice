@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -233,6 +234,32 @@ class VoiceProvider extends ChangeNotifier {
     if (isSpeaking) await _tts.stop();
     final cleanText = _sanitizeForSpeech(text);
     await _tts.speak(cleanText);
+  }
+
+  /// Speaks text and waits for TTS to fully complete before returning.
+  /// This prevents the next speak() call from canceling current speech.
+  Future<void> speakAndWait(String text) async {
+    if (!_isTTSEnabled || text.trim().isEmpty) return;
+    if (isSpeaking) await _tts.stop();
+    final cleanText = _sanitizeForSpeech(text);
+
+    final completer = Completer<void>();
+
+    // Temporarily override the completion handler
+    _tts.setCompletionHandler(() {
+      _state = VoiceState.idle;
+      notifyListeners();
+      if (!completer.isCompleted) completer.complete();
+    });
+    _tts.setErrorHandler((msg) {
+      _errorMessage = msg;
+      _state = VoiceState.idle;
+      notifyListeners();
+      if (!completer.isCompleted) completer.complete();
+    });
+
+    await _tts.speak(cleanText);
+    await completer.future;
   }
 
   Future<void> stopSpeaking() async {

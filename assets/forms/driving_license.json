@@ -1,0 +1,327 @@
+{
+    "serviceId": "driving_license",
+    "formTitle": {
+        "en": "Driving License Application",
+        "hi": "ड्राइविंग लाइसेंस आवेदन",
+        "mr": "वाहन चालक परवाना अर्ज",
+        "ta": "ஓட்டுநர் உரிமம் விண்ணப்பம்"
+    },
+    "portalName": "Parivahan (Sarathi)",
+    "officialUrl": "https://parivahan.gov.in",
+    "introExplanation": {
+        "en": "This is the Driving License application form. Apply through the Parivahan Sarathi portal and book an RTO appointment.",
+        "hi": "यह ड्राइविंग लाइसेंस आवेदन फॉर्म है। परिवहन सारथी पोर्टल के माध्यम से आवेदन करें।",
+        "mr": "हा वाहन चालक परवाना अर्ज आहे. परिवहन सारथी पोर्टलद्वारे अर्ज करा.",
+        "ta": "இது ஓட்டுநர் உரிமம் விண்ணப்ப படிவம். பரிவாகன் சாரதி போர்ட்டல் மூலம் விண்ணப்பிக்கவும்."
+    },
+    "requiredDocuments": [
+        "aadhaar"
+    ],
+    "optionalDocuments": [
+        "photo"
+    ],
+    "submitSteps": [
+        {
+            "step": 1,
+            "instruction": {
+                "en": "Go to Parivahan Sarathi portal",
+                "hi": "परिवहन सारथी पोर्टल पर जाएं"
+            }
+        },
+        {
+            "step": 2,
+            "instruction": {
+                "en": "Select your state and 'New Driving License'",
+                "hi": "अपना राज्य और 'नया ड्राइविंग लाइसेंस' चुनें"
+            }
+        },
+        {
+            "step": 3,
+            "instruction": {
+                "en": "Fill personal details from the data below",
+                "hi": "नीचे दिए गए डेटा से व्यक्तिगत विवरण भरें"
+            }
+        },
+        {
+            "step": 4,
+            "instruction": {
+                "en": "Upload photo and documents",
+                "hi": "फोटो और दस्तावेज़ अपलोड करें"
+            }
+        },
+        {
+            "step": 5,
+            "instruction": {
+                "en": "Book slot at nearest RTO",
+                "hi": "निकटतम आरटीओ पर स्लॉट बुक करें"
+            }
+        }
+    ],
+    "fields": [
+        {
+            "id": "full_name",
+            "label": {
+                "en": "Full Name",
+                "hi": "पूरा नाम",
+                "mr": "पूर्ण नाव",
+                "ta": "முழு பெயர்"
+            },
+            "dataKey": "full_name",
+            "fieldType": "text",
+            "required": false,
+            "sourceDocument": "aadhaar",
+            "voiceExplanation": {
+                "en": "Your full name from Aadhaar card.",
+                "hi": "आधार कार्ड से पूरा नाम।",
+                "mr": "आधार कार्डवरून पूर्ण नाव.",
+                "ta": "ஆதார் அட்டையிலிருந்து முழு பெயர்."
+            }
+        },
+        {
+            "id": "date_of_birth",
+            "label": {
+                "en": "Date of Birth",
+                "hi": "जन्म तिथि",
+                "mr": "जन्म तारीख",
+                "ta": "பிறந்த தேதி"
+            },
+            "dataKey": "date_of_birth",
+            "fieldType": "date",
+            "required": false,
+            "sourceDocument": "aadhaar",
+            "voiceExplanation": {
+                "en": "Date of birth from Aadhaar. You must be 18 or older.",
+                "hi": "आधार से जन्म तिथि। आपकी उम्र 18 वर्ष या अधिक होनी चाहिए।",
+                "mr": "आधारवरून जन्म तारीख. तुमचे वय 18 किंवा अधिक असावे.",
+                "ta": "ஆதாரிலிருந்து பிறந்த தேதி. நீங்கள் 18 வயது அல்லது அதற்கு மேல் இருக்க வேண்டும்."
+            }
+        },
+        {
+            "id": "gender",
+            "label": {
+                "en": "Gender",
+                "hi": "लिंग",
+                "mr": "लिंग",
+                "ta": "பாலினம்"
+            },
+            "dataKey": "gender",
+            "fieldType": "dropdown",
+            "required": false,
+            "options": [
+                "Male",
+                "Female",
+                "Other"
+            ],
+            "sourceDocument": "aadhaar",
+            "voiceExplanation": {
+                "en": "Gender from Aadhaar.",
+                "hi": "आधार से लिंग।",
+                "mr": "आधारवरून लिंग.",
+                "ta": "ஆதாரிலிருந்து பாலினம்."
+            }
+        },
+        {
+            "id": "father_name",
+            "label": {
+                "en": "Father's Name",
+                "hi": "पिता का नाम",
+                "mr": "वडिलांचे नाव",
+                "ta": "தந்தையின் பெயர்"
+            },
+            "dataKey": "father_name",
+            "fieldType": "text",
+            "required": false,
+            "sourceDocument": "aadhaar",
+            "voiceExplanation": {
+                "en": "Father's name from documents.",
+                "hi": "दस्तावेज़ों से पिता का नाम।",
+                "mr": "कागदपत्रांमधून वडिलांचे नाव.",
+                "ta": "ஆவணங்களிலிருந்து தந்தையின் பெயர்."
+            }
+        },
+        {
+            "id": "blood_group",
+            "label": {
+                "en": "Blood Group",
+                "hi": "रक्त समूह",
+                "mr": "रक्तगट",
+                "ta": "இரத்த வகை"
+            },
+            "dataKey": "blood_group",
+            "fieldType": "dropdown",
+            "required": false,
+            "options": [
+                "A+",
+                "A-",
+                "B+",
+                "B-",
+                "AB+",
+                "AB-",
+                "O+",
+                "O-"
+            ],
+            "sourceDocument": "manual",
+            "voiceExplanation": {
+                "en": "Your blood group. Please select manually if not available.",
+                "hi": "आपका रक्त समूह। कृपया मैन्युअल रूप से चुनें।",
+                "mr": "तुमचा रक्तगट. कृपया स्वतः निवडा.",
+                "ta": "உங்கள் இரத்த வகை. கிடைக்கவில்லை என்றால் கைமுறையாக தேர்ந்தெடுக்கவும்."
+            }
+        },
+        {
+            "id": "address",
+            "label": {
+                "en": "Address",
+                "hi": "पता",
+                "mr": "पत्ता",
+                "ta": "முகவரி"
+            },
+            "dataKey": "address_line1",
+            "fieldType": "text",
+            "required": false,
+            "sourceDocument": "aadhaar",
+            "voiceExplanation": {
+                "en": "Residential address from Aadhaar.",
+                "hi": "आधार से आवासीय पता।",
+                "mr": "आधारवरून निवासी पत्ता.",
+                "ta": "ஆதாரிலிருந்து குடியிருப்பு முகவரி."
+            }
+        },
+        {
+            "id": "district",
+            "label": {
+                "en": "District",
+                "hi": "जिला",
+                "mr": "जिल्हा",
+                "ta": "மாவட்டம்"
+            },
+            "dataKey": "district",
+            "fieldType": "text",
+            "required": false,
+            "sourceDocument": "aadhaar",
+            "voiceExplanation": {
+                "en": "District from Aadhaar.",
+                "hi": "आधार से जिला।",
+                "mr": "आधारवरून जिल्हा.",
+                "ta": "ஆதாரிலிருந்து மாவட்டம்."
+            }
+        },
+        {
+            "id": "state",
+            "label": {
+                "en": "State",
+                "hi": "राज्य",
+                "mr": "राज्य",
+                "ta": "மாநிலம்"
+            },
+            "dataKey": "state",
+            "fieldType": "dropdown",
+            "required": false,
+            "sourceDocument": "aadhaar",
+            "options": [
+                "Andhra Pradesh",
+                "Arunachal Pradesh",
+                "Assam",
+                "Bihar",
+                "Chhattisgarh",
+                "Goa",
+                "Gujarat",
+                "Haryana",
+                "Himachal Pradesh",
+                "Jharkhand",
+                "Karnataka",
+                "Kerala",
+                "Madhya Pradesh",
+                "Maharashtra",
+                "Manipur",
+                "Meghalaya",
+                "Mizoram",
+                "Nagaland",
+                "Odisha",
+                "Punjab",
+                "Rajasthan",
+                "Sikkim",
+                "Tamil Nadu",
+                "Telangana",
+                "Tripura",
+                "Uttar Pradesh",
+                "Uttarakhand",
+                "West Bengal",
+                "Delhi",
+                "Chandigarh",
+                "Puducherry",
+                "Ladakh",
+                "Jammu & Kashmir",
+                "Andaman & Nicobar",
+                "Lakshadweep",
+                "Dadra & Nagar Haveli and Daman & Diu"
+            ],
+            "voiceExplanation": {
+                "en": "State from Aadhaar address.",
+                "hi": "आधार पते से राज्य।",
+                "mr": "आधार पत्त्यावरून राज्य.",
+                "ta": "ஆதார் முகவரியிலிருந்து மாநிலம்."
+            }
+        },
+        {
+            "id": "pincode",
+            "label": {
+                "en": "PIN Code",
+                "hi": "पिन कोड",
+                "mr": "पिन कोड",
+                "ta": "அஞ்சல் குறியீடு"
+            },
+            "dataKey": "pincode",
+            "fieldType": "text",
+            "required": false,
+            "validationPattern": "^\\d{6}$",
+            "sourceDocument": "aadhaar",
+            "voiceExplanation": {
+                "en": "6-digit PIN code.",
+                "hi": "6 अंकों का पिन कोड।",
+                "mr": "6 अंकी पिन कोड.",
+                "ta": "6 இலக்க அஞ்சல் குறியீடு."
+            }
+        },
+        {
+            "id": "mobile",
+            "label": {
+                "en": "Mobile",
+                "hi": "मोबाइल",
+                "mr": "मोबाइल",
+                "ta": "கைபேசி"
+            },
+            "dataKey": "mobile_number",
+            "fieldType": "text",
+            "required": false,
+            "validationPattern": "^\\d{10}$",
+            "sourceDocument": "profile",
+            "voiceExplanation": {
+                "en": "Mobile number for OTP.",
+                "hi": "ओटीपी के लिए मोबाइल नंबर।",
+                "mr": "ओटीपीसाठी मोबाइल नंबर.",
+                "ta": "OTP க்கான கைபேசி எண்."
+            }
+        },
+        {
+            "id": "aadhaar_number",
+            "label": {
+                "en": "Aadhaar Number",
+                "hi": "आधार नंबर",
+                "mr": "आधार क्रमांक",
+                "ta": "ஆதார் எண்"
+            },
+            "dataKey": "aadhaar_number",
+            "fieldType": "text",
+            "required": true,
+            "sourceDocument": "aadhaar",
+            "sensitive": true,
+            "voiceExplanation": {
+                "en": "Aadhaar number for identity verification.",
+                "hi": "पहचान सत्यापन के लिए आधार नंबर।",
+                "mr": "ओळख सत्यापनासाठी आधार क्रमांक.",
+                "ta": "அடையாள சரிபார்ப்புக்கான ஆதார் எண்."
+            }
+        }
+    ]
+}

@@ -94,6 +94,7 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/data/
+    - assets/forms/
     - assets/flag/flag.html
 
   # Fonts are loaded via the google_fonts package (no local font files needed)

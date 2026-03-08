@@ -29,6 +29,10 @@ import '../../features/documents/screens/documents_screen.dart';
 import '../../features/documents/screens/document_vault_screen.dart';
 import '../../features/forms/screens/auto_fill_form_screen.dart';
 import '../../features/forms/screens/smart_browser_screen.dart';
+import '../../features/auto_form/screens/smart_form_screen.dart';
+import '../../features/auto_form/screens/form_review_screen.dart';
+import '../../features/auto_form/screens/guided_submission_screen.dart';
+import '../../features/auto_form/models/auto_form_model.dart';
 import '../../providers/notification_provider.dart';
 import '../../providers/document_vault_provider.dart';
 import '../../features/profile/screens/family_dashboard_screen.dart';
@@ -60,11 +64,15 @@ abstract class Routes {
   static const offlineGuidance = '/offline-guidance';
   static const citizenProfile  = '/citizen-profile';
   static const recommendations = '/recommendations';
+  static const smartForm       = '/smart-form/:serviceId';
+  static const formReview      = '/form-review';
+  static const guidedSubmit    = '/guided-submit';
 
 
   static String serviceDetailPath(String id) => '/service/$id';
   static String eligibilityPath(String id) => '/service/$id/eligibility';
   static String autoFillFormPath(String serviceId) => '/auto-fill/$serviceId';
+  static String smartFormPath(String serviceId) => '/smart-form/$serviceId';
 }
 
 /// Manages the GoRouter instance and listens to auth state for redirects.
@@ -330,6 +338,55 @@ class AppRouter {
           path: Routes.citizenProfile,
           name: 'citizenProfile',
           pageBuilder: (context, state) => _buildPage(state, CitizenProfileDashboard()),
+        ),
+
+        // ── Smart AI Form (new auto_form module) ────────────────────────────
+        GoRoute(
+          path: Routes.smartForm,
+          name: 'smartForm',
+          pageBuilder: (context, state) {
+            final serviceId = state.pathParameters['serviceId'] ?? '';
+            final service = state.extra as ServiceModel?;
+            return _buildPage(
+              state,
+              SmartFormScreen(
+                serviceId: serviceId,
+                service: service,
+              ),
+            );
+          },
+        ),
+
+        // ── Form Review ────────────────────────────────────────────────────
+        GoRoute(
+          path: Routes.formReview,
+          name: 'formReview',
+          pageBuilder: (context, state) {
+            final service = state.extra as ServiceModel?;
+            return _buildPage(
+              state,
+              FormReviewScreen(service: service),
+            );
+          },
+        ),
+
+        // ── Guided Submission ──────────────────────────────────────────────
+        GoRoute(
+          path: Routes.guidedSubmit,
+          name: 'guidedSubmit',
+          pageBuilder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>;
+            return _buildPage(
+              state,
+              GuidedSubmissionScreen(
+                url: extra['url'] as String,
+                title: extra['title'] as String,
+                formData: extra['formData'] as Map<String, String>,
+                submitSteps: (extra['submitSteps'] as List<dynamic>?)?.cast<SubmitStep>() ?? [],
+                portalName: extra['portalName'] as String? ?? '',
+              ),
+            );
+          },
         ),
 
       ],
