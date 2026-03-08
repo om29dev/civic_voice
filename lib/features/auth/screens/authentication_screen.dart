@@ -24,12 +24,11 @@ class _AuthenticationScreenState extends State<AuthenticationScreen>
 
   final TextEditingController _phoneController = TextEditingController();
   bool _isLoading = false;
-  final String _selectedLanguage = 'English';
 
   @override
   void initState() {
     super.initState();
-    
+
     _logoController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2000),
@@ -94,7 +93,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen>
               ),
             ),
           ),
-          
+
           // Particle field
           const Positioned.fill(
             child: ParticleBackground(
@@ -103,7 +102,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen>
               connectParticles: true,
             ),
           ),
-          
+
           // Main content
           SafeArea(
             child: Center(
@@ -113,20 +112,20 @@ class _AuthenticationScreenState extends State<AuthenticationScreen>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const SizedBox(height: 40),
-                    
+
                     // Animated Logo
                     _buildAnimatedLogo(),
-                    
+
                     const SizedBox(height: 60),
-                    
+
                     // Auth Card
                     _buildAuthCard(),
-                    
+
                     const SizedBox(height: 30),
-                    
+
                     // Language Selector
                     _buildLanguageSelector(),
-                    
+
                     const SizedBox(height: 40),
                   ],
                 ),
@@ -160,7 +159,8 @@ class _AuthenticationScreenState extends State<AuthenticationScreen>
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.electricBlue.withValues(alpha: 0.6 * _glowAnimation.value),
+                    color: AppTheme.electricBlue
+                        .withValues(alpha: 0.6 * _glowAnimation.value),
                     blurRadius: 60,
                     spreadRadius: 20,
                   ),
@@ -176,7 +176,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen>
                       ),
                     ),
                   ),
-                  
+
                   // Center icon
                   Center(
                     child: Column(
@@ -216,7 +216,8 @@ class _AuthenticationScreenState extends State<AuthenticationScreen>
         children: [
           // Title
           ShaderMask(
-            shaderCallback: (bounds) => AppTheme.accentGradient.createShader(bounds),
+            shaderCallback: (bounds) =>
+                AppTheme.accentGradient.createShader(bounds),
             child: Text(
               'Welcome to CVI',
               textAlign: TextAlign.center,
@@ -227,9 +228,9 @@ class _AuthenticationScreenState extends State<AuthenticationScreen>
               ),
             ),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           Text(
             'Your AI-powered civic assistant',
             textAlign: TextAlign.center,
@@ -238,9 +239,9 @@ class _AuthenticationScreenState extends State<AuthenticationScreen>
               color: AppTheme.pureWhite.withValues(alpha: 0.7),
             ),
           ),
-          
+
           const SizedBox(height: 40),
-          
+
           // Phone Input
           Container(
             decoration: BoxDecoration(
@@ -278,14 +279,14 @@ class _AuthenticationScreenState extends State<AuthenticationScreen>
               ),
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // OTP Button
           _buildGlowingButton(),
-          
+
           const SizedBox(height: 20),
-          
+
           // Terms
           Text(
             'By continuing, you agree to our Terms & Privacy Policy',
@@ -325,7 +326,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen>
 
   Widget _buildLanguageSelector() {
     final langProvider = Provider.of<LanguageProvider>(context);
-    
+
     final languages = [
       {'name': 'English', 'flag': '🇬🇧', 'lang': 'en'},
       {'name': 'हिंदी', 'flag': '🇮🇳', 'lang': 'hi'},
@@ -413,7 +414,8 @@ class _GlowingButtonState extends State<_GlowingButton>
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.electricBlue.withValues(alpha: 0.5 * _glowAnimation.value),
+                color: AppTheme.electricBlue
+                    .withValues(alpha: 0.5 * _glowAnimation.value),
                 blurRadius: 30,
                 spreadRadius: 5,
               ),
@@ -436,7 +438,8 @@ class _GlowingButtonState extends State<_GlowingButton>
                     width: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation(AppTheme.deepSpaceBlue),
+                      valueColor:
+                          AlwaysStoppedAnimation(AppTheme.deepSpaceBlue),
                     ),
                   )
                 : widget.child,
@@ -525,7 +528,6 @@ class _LogoParticlesPainter extends CustomPainter {
     final radius = size.width / 2;
 
     for (int i = 0; i < 8; i++) {
-      final angle = (i * 45 + animation.value * 360) * 3.14159 / 180;
       final x = center.dx + radius * 0.8 * (i / 8) * (i.isEven ? 1 : -1) * 0.5;
       final y = center.dy + radius * 0.8 * (i / 8) * (i.isEven ? -1 : 1) * 0.5;
 

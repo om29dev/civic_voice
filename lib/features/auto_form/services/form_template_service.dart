@@ -25,6 +25,8 @@ class FormTemplateService {
     'driving_license': 'assets/forms/driving_license.json',
     'ration_card': 'assets/forms/ration_card.json',
     'senior_citizen_pension': 'assets/forms/senior_citizen_pension.json',
+    'bpl_certificate': 'assets/forms/bpl_certificate.json',
+    'caste_certificate': 'assets/forms/caste_certificate.json',
   };
 
   /// Load a form template by serviceId.  Returns cached version if available.
@@ -36,8 +38,9 @@ class FormTemplateService {
 
     final assetPath = _templateFiles[serviceId];
     if (assetPath == null) {
-      debugPrint('[FormTemplateService] No template for serviceId: $serviceId');
-      return null;
+      debugPrint(
+          '[FormTemplateService] No specific template for $serviceId. Using generic fallback.');
+      return _getGenericFallback(serviceId);
     }
 
     try {
@@ -61,4 +64,43 @@ class FormTemplateService {
 
   /// Clear the template cache (useful for hot reload during development).
   static void clearCache() => _cache.clear();
+
+  static SmartFormTemplate _getGenericFallback(String serviceId) {
+    return SmartFormTemplate(
+      serviceId: serviceId,
+      formTitle: {
+        'en': 'Standard Civic Application',
+        'hi': 'मानक नागरिक आवेदन'
+      },
+      portalName: 'Direct Government Portal',
+      officialUrl: 'https://india.gov.in',
+      introExplanation: {
+        'en': 'Standard application for civic services.',
+        'hi': 'नागरिक सेवाओं के लिए मानक आवेदन।'
+      },
+      fields: [
+        SmartFormField(
+          id: 'full_name',
+          dataKey: 'full_name',
+          fieldType: 'text',
+          label: {'en': 'Full Name', 'hi': 'पूरा नाम'},
+          required: true,
+        ),
+        SmartFormField(
+          id: 'aadhaar_number',
+          dataKey: 'aadhaar_number',
+          fieldType: 'text',
+          label: {'en': 'Aadhaar Number', 'hi': 'आधार संख्या'},
+          required: true,
+        ),
+        SmartFormField(
+          id: 'address',
+          dataKey: 'address',
+          fieldType: 'text',
+          label: {'en': 'Address', 'hi': 'पता'},
+          required: true,
+        ),
+      ],
+    );
+  }
 }

@@ -9,7 +9,6 @@ import 'package:civic_voice_interface/providers/language_provider.dart';
 import 'package:civic_voice_interface/providers/user_provider.dart';
 import 'package:civic_voice_interface/providers/auth_provider.dart';
 
-
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -22,8 +21,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
-  
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -50,7 +50,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
       return;
     }
-    
+
     if (_passwordController.text != _confirmPasswordController.text) {
       final lang = Provider.of<LanguageProvider>(context, listen: false);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -63,7 +63,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     setState(() => _isLoading = true);
-    
+
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final success = await authProvider.signup(
       _nameController.text.trim(),
@@ -71,31 +71,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _passwordController.text,
       phone: _phoneController.text.trim(),
     );
-    
+
     if (mounted) {
       setState(() => _isLoading = false);
-      
+
       if (success) {
         final userProvider = Provider.of<UserProvider>(context, listen: false);
-        
+
         // Fetch the newly created profile to ensure all data is synced
         if (authProvider.userId != null) {
           await userProvider.fetchUserProfile(authProvider.userId!);
         } else {
-           // Fallback to manual login if userId is null (shouldn't happen)
-           userProvider.login(
+          // Fallback to manual login if userId is null (shouldn't happen)
+          userProvider.login(
             name: _nameController.text.trim(),
             email: _emailController.text.trim(),
             phone: _phoneController.text.trim(),
           );
         }
 
+        if (!mounted) return;
         Navigator.pushReplacementNamed(context, '/dashboard');
       } else {
         final lang = Provider.of<LanguageProvider>(context, listen: false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(authProvider.errorMessage ?? lang.translate('registration_failed')),
+            content: Text(authProvider.errorMessage ??
+                lang.translate('registration_failed')),
             backgroundColor: AppTheme.error,
           ),
         );
@@ -112,7 +114,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
           const Positioned.fill(
             child: AnimatedGradientBackground(),
           ),
-          
           const Positioned.fill(
             child: ParticleBackground(
               numberOfParticles: 60,
@@ -120,7 +121,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               connectParticles: true,
             ),
           ),
-          
           SafeArea(
             child: Column(
               children: [
@@ -130,7 +130,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back, color: AppTheme.pureWhite),
+                        icon: const Icon(Icons.arrow_back,
+                            color: AppTheme.pureWhite),
                         onPressed: () => Navigator.pop(context),
                       ),
                       Text(
@@ -144,7 +145,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ],
                   ),
                 ),
-                
+
                 // Scrollable Content
                 Expanded(
                   child: SingleChildScrollView(
@@ -165,7 +166,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: AppTheme.electricBlue.withValues(alpha: 0.5),
+                                color: AppTheme.electricBlue
+                                    .withValues(alpha: 0.5),
                                 blurRadius: 40,
                                 spreadRadius: 10,
                               ),
@@ -177,14 +179,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             color: AppTheme.pureWhite,
                           ),
                         ),
-                        
+
                         const SizedBox(height: 32),
-                        
+
                         // Register Card
                         _buildRegisterCard(),
-                        
+
                         const SizedBox(height: 24),
-                        
+
                         // Login Link
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -193,7 +195,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               'Already have an account? ',
                               style: GoogleFonts.inter(
                                 fontSize: 14,
-                                color: AppTheme.pureWhite.withValues(alpha: 0.7),
+                                color:
+                                    AppTheme.pureWhite.withValues(alpha: 0.7),
                               ),
                             ),
                             TextButton(
@@ -227,7 +230,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           ShaderMask(
-            shaderCallback: (bounds) => AppTheme.accentGradient.createShader(bounds),
+            shaderCallback: (bounds) =>
+                AppTheme.accentGradient.createShader(bounds),
             child: Text(
               'Join CVI',
               textAlign: TextAlign.center,
@@ -238,9 +242,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
             ),
           ),
-          
+
           const SizedBox(height: 8),
-          
+
           Text(
             'Get access to all civic services',
             textAlign: TextAlign.center,
@@ -249,18 +253,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
               color: AppTheme.pureWhite.withValues(alpha: 0.7),
             ),
           ),
-          
+
           const SizedBox(height: 32),
-          
+
           // Full Name
           _buildInputField(
             controller: _nameController,
             hint: 'Full Name',
             icon: Icons.person_outline,
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Email
           _buildInputField(
             controller: _emailController,
@@ -268,9 +272,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
             icon: Icons.email_outlined,
             keyboardType: TextInputType.emailAddress,
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Phone
           _buildInputField(
             controller: _phoneController,
@@ -278,9 +282,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
             icon: Icons.phone_outlined,
             keyboardType: TextInputType.phone,
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Password
           _buildInputField(
             controller: _passwordController,
@@ -292,12 +296,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 _obscurePassword ? Icons.visibility_off : Icons.visibility,
                 color: AppTheme.electricBlue,
               ),
-              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+              onPressed: () =>
+                  setState(() => _obscurePassword = !_obscurePassword),
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Confirm Password
           _buildInputField(
             controller: _confirmPasswordController,
@@ -306,21 +311,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
             obscureText: _obscureConfirmPassword,
             suffixIcon: IconButton(
               icon: Icon(
-                _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                _obscureConfirmPassword
+                    ? Icons.visibility_off
+                    : Icons.visibility,
                 color: AppTheme.electricBlue,
               ),
-              onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+              onPressed: () => setState(
+                  () => _obscureConfirmPassword = !_obscureConfirmPassword),
             ),
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           // Terms & Conditions
           Row(
             children: [
               Checkbox(
                 value: _agreeToTerms,
-                onChanged: (value) => setState(() => _agreeToTerms = value ?? false),
+                onChanged: (value) =>
+                    setState(() => _agreeToTerms = value ?? false),
                 activeColor: AppTheme.electricBlue,
                 checkColor: AppTheme.deepSpaceBlue,
               ),
@@ -357,18 +366,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Register Button
           _buildRegisterButton(),
-          
+
           const SizedBox(height: 20),
-          
+
           // Divider
           Row(
             children: [
-              Expanded(child: Divider(color: AppTheme.pureWhite.withValues(alpha: 0.2))),
+              Expanded(
+                  child: Divider(
+                      color: AppTheme.pureWhite.withValues(alpha: 0.2))),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
@@ -379,12 +390,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
               ),
-              Expanded(child: Divider(color: AppTheme.pureWhite.withValues(alpha: 0.2))),
+              Expanded(
+                  child: Divider(
+                      color: AppTheme.pureWhite.withValues(alpha: 0.2))),
             ],
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           // Social Register
           Row(
             children: [

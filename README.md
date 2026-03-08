@@ -1,303 +1,63 @@
-# 🚀 Civic Voice Interface (CVI)
-## Voice-First AI Decision Intelligence for Bharat 🇮🇳
+# Civic Voice
 
-> Reimagining how citizens access government services — through Conversational AI.
+Civic Voice is a modern, premium flutter application designed to empower citizens by providing a centralized platform for accessing government services, schemes, and a groundbreaking AI-powered assistant (CVI). Built with a focus on accessibility and user experience, Civic Voice bridges the gap between citizens and essential services through an intuitive, bilingual interface.
 
----
+## 🌟 Key Features
 
-# 🌍 Problem
+*   **Premium, Responsive UI**: A meticulously crafted interface featuring glassmorphism, dynamic gradients, elegant animations, and a rich color palette inspired by Indian aesthetics.
+*   **CVI - Your AI Assistant**: A completely custom, intelligent voice and text assistant that can answer questions about government schemes, services, and procedures in multiple languages.
+*   **Bilingual Support**: Full support for both English and Hindi, allowing users to seamlessly switch languages at any point for enhanced accessibility.
+*   **Government Services Hub**: A comprehensive directory of public services (Aadhaar, PAN, Passport, etc.) with detailed guides, prerequisites, timelines, and application links.
+*   **Citizen Profile**: A centralized digital profile to manage personal information and track application statuses.
+*   **AWS Cloud Backend**: Robust and scalable backend architecture powered by AWS Amplify, incorporating Cognito for secure authentication and DynamoDB for reliable data storage.
 
-India’s public service ecosystem is powerful — but difficult to navigate.
+## 🚀 Getting Started
 
-Government portals are often:
+### Prerequisites
 
-- Complex and documentation-heavy  
-- Hard to understand for first-time users  
-- Not optimized for voice interaction  
-- Limited in multilingual accessibility  
-- Dependent on digital literacy  
+*   Flutter SDK (stable channel)
+*   Dart SDK
+*   Android Studio / Xcode (for emulation and building)
+*   AWS CLI and Amplify CLI (for backend configuration)
 
-For millions of citizens, applying for essential services like Aadhaar, PAN, Passport, or Pension feels overwhelming.
+### Installation
 
-The result?
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/yourusername/civic_voice.git
+    cd civic_voice
+    ```
 
-❌ Confusion  
-❌ Middlemen dependency  
-❌ Application errors  
-❌ Missed welfare opportunities  
+2.  **Install dependencies:**
+    ```bash
+    flutter pub get
+    ```
 
----
+3.  **Run the application:**
+    ```bash
+    flutter run
+    ```
 
-# 💡 Solution — Civic Voice Interface (CVI)
+## 🛠️ Technology Stack
 
-CVI is a **Voice-First AI Civic Assistant** built using Flutter.
+*   **Frontend**: Flutter, Dart
+*   **State Management**: Provider
+*   **Routing**: GoRouter
+*   **Styling & UI**: Google Fonts, Flutter Animate
+*   **Backend & Auth**: AWS Amplify, Amazon Cognito
+*   **Database**: Amazon DynamoDB
+*   **AI Integration**: Amazon Bedrock (via API Gateway/Lambda)
 
-It converts complex government processes into:
+## 📁 Project Structure
 
-> Conversational, Multilingual, Decision-Driven Guidance.
+The project follows a feature-first architectural pattern:
 
-Instead of navigating portals, citizens simply speak.
+*   `lib/core/`: Application-wide constants, networking, routing, and theme definitions.
+*   `lib/features/`: Individual feature modules (auth, dashboard, services, voice, profile).
+*   `lib/models/`: Data structures representing application entities.
+*   `lib/providers/`: State management controllers handling business logic.
+*   `lib/widgets/`: Reusable, custom UI components.
 
-CVI listens, understands intent, and provides structured guidance.
+## 🤝 Contributing
 
----
-
-# 🧠 Where AI is Used
-
-CVI integrates AI across multiple layers:
-
-- 🎤 Speech-to-Text (Voice Recognition)
-- 🔊 Text-to-Speech (AI Responses)
-- 🌐 On-device ML Translation
-- 🧩 Intent Interpretation & Structured Response Logic
-- 📊 Intelligent Query Tracking & Usage Insights
-
-This transforms:
-
-Information Access → Actionable Civic Decision Intelligence
-
----
-
-# 🎤 Core Features
-
-## 1️⃣ Voice AI Assistant
-
-- Real-time Speech-to-Text (STT)
-- Text-to-Speech (TTS)
-- AI Core animated visualizer
-- Real-time waveform feedback
-- Hands-free navigation
-
-Users don’t search.
-
-They ask:
-> “How do I apply for a passport?”  
-> “Am I eligible for senior citizen pension?”  
-
----
-
-## 2️⃣ Government Services Integration
-
-Currently integrated:
-
-- Aadhaar Card  
-- PAN Card  
-- Passport  
-- Driving License  
-- Land Records  
-- Birth Certificate  
-- Ration Card  
-- Senior Citizen Pension  
-
-Each service provides:
-
-- Eligibility criteria  
-- Required documents  
-- Step-by-step process  
-- Estimated timelines  
-- Direct official application links  
-
----
-
-## 3️⃣ Multilingual Bharat Support
-
-Supports:
-
-- English  
-- Hindi  
-- Marathi  
-- Tamil  
-
-Designed for:
-
-- Rural populations  
-- Senior citizens  
-- Low-literacy users  
-- First-time smartphone users  
-
-Voice-first interaction removes typing barriers and improves inclusion.
-
----
-
-## 4️⃣ Smart Authentication
-
-- Email & Password Login  
-- Google Authentication (Mock Flow)  
-- OTP Mobile Login  
-- Guest Mode (Instant access)  
-
-Guest Mode ensures zero entry barrier.
-
----
-
-## 5️⃣ Intelligent Dashboard
-
-- Query statistics  
-- Application progress tracking  
-- Recent activity timeline  
-- Interactive charts  
-- Quick-access service grid  
-- Floating “Ask CVI” AI Button  
-
----
-
-# 🎨 Design Philosophy
-
-CVI follows a premium, high-performance design system.
-
-### Visual Identity
-
-- Glassmorphism UI architecture  
-- Deep Space Blue (#0A192F) base  
-- Electric Blue & Neon Cyan accents  
-- Gradient typography  
-- Particle animations (40–80 elements)  
-- Micro-interactions & staggered transitions  
-- Optimized for 60 FPS performance  
-
-Fully responsive. Zero overflow.
-
----
-
-# 🛠 Technical Stack
-
-## Core
-- Flutter SDK >= 3.0.0 < 4.0.0  
-- Dart >= 3.0.0  
-
-## State Management
-- Provider Pattern  
-  - VoiceProvider  
-  - ConversationProvider  
-  - LanguageProvider  
-
-## AI & Voice
-- speech_to_text  
-- flutter_tts  
-- google_mlkit_translation  
-
-## UI & Animation
-- lottie  
-- flutter_animate  
-- animate_do  
-- glassmorphism  
-
-## Backend & Storage
-- supabase_flutter  
-- shared_preferences  
-- http  
-
-## Data Visualization
-- syncfusion_flutter_charts  
-- fl_chart  
-
----
-
-# 📂 Project Structure
-
-```
-
-lib/
-│
-├── core/              # Theme, constants, utilities
-├── features/
-│   ├── auth/
-│   ├── dashboard/
-│   ├── services/
-│   ├── voice/
-│   └── profile/
-│
-├── models/            # Service & conversation models
-├── providers/         # State management logic
-├── widgets/           # Reusable UI components
-└── main.dart
-
-````
-
----
-
-# ⚙️ Getting Started
-
-## 1️⃣ Clone Repository
-
-```bash
-git clone https://github.com/yourusername/civic_voice_interface.git
-cd civic_voice_interface
-````
-
-## 2️⃣ Install Dependencies
-
-```bash
-flutter pub get
-```
-
-## 3️⃣ Configure Environment
-
-Create a `.env` file:
-
-```
-SUPABASE_URL=your_supabase_url
-SUPABASE_ANON_KEY=your_supabase_key
-```
-
-## 4️⃣ Run the App
-
-```bash
-flutter run
-```
-
----
-
-# 🎯 Problem Statement Alignment
-
-## Official PS
-
-Build an AI-powered solution that improves access to information, resources, or opportunities for communities and public systems.
-
----
-
-## How CVI Aligns
-
-✔ AI-powered civic assistant
-✔ Public system integration
-✔ Voice-first accessibility
-✔ Multilingual inclusion
-✔ Designed for underserved communities
-✔ Scalable across India
-
-CVI directly improves access to public systems through conversational AI.
-
----
-
-# 📈 Impact Potential
-
-* Designed for 1.4B+ citizens
-* Reduces dependency on middlemen
-* Improves awareness of welfare programs
-* Increases digital accessibility
-* Expandable to 22+ Indian languages
-* Scalable to farmer schemes, MSME registration, scholarships, and subsidies
-
----
-
-# 🔮 Future Roadmap
-
-* AI-based eligibility prediction engine
-* Document upload & smart validation
-* Offline voice mode
-* WhatsApp integration
-* IVR rural access support
-* State-specific scheme database
-* Voice biometrics authentication
-
----
-
-# 📊 Project Metrics
-
-* 8 Government Services Integrated
-* 4 Regional Languages Supported
-* 15+ Custom Animations
-* 100% Responsive UI
-* 60 FPS Optimized Performance
-
----
+We welcome contributions to make Civic Voice even better! Please feel free to submit pull requests or open issues to suggest improvements or report bugs.

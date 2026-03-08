@@ -90,7 +90,7 @@ class AutoFormProvider extends ChangeNotifier {
 
   // ─── Auto-Fill from Document Vault (FormAutoFillMapper) ─────────────────────
 
-  /// Pulls data from Supabase extracted data and maps to form fields.
+  /// Pulls data from AWS Amplify extracted data and maps to form fields.
   /// This is the FormAutoFillMapper layer — converts extracted data → field values.
   Future<void> autoFillFromVault() async {
     if (_template == null) return;
@@ -334,12 +334,17 @@ class AutoFormProvider extends ChangeNotifier {
 
     if (requiredFields.isNotEmpty) {
       final reqIntroMap = {
-        'en': 'For filling this form, you will need the following: ${requiredFields.join(", ")}.',
-        'hi': 'इस फॉर्म को भरने के लिए आपको चाहिए: ${requiredFields.join(", ")}.',
-        'ta': 'இந்தப் படிவத்தை நிரப்ப உங்களுக்குத் தேவை: ${requiredFields.join(", ")}.',
-        'mr': 'हा फॉर्म भरण्यासाठी तुम्हाला लागेल: ${requiredFields.join(", ")}.',
+        'en':
+            'For filling this form, you will need the following: ${requiredFields.join(", ")}.',
+        'hi':
+            'इस फॉर्म को भरने के लिए आपको चाहिए: ${requiredFields.join(", ")}.',
+        'ta':
+            'இந்தப் படிவத்தை நிரப்ப உங்களுக்குத் தேவை: ${requiredFields.join(", ")}.',
+        'mr':
+            'हा फॉर्म भरण्यासाठी तुम्हाला लागेल: ${requiredFields.join(", ")}.',
       };
-      await voiceProvider.speakAndWait(reqIntroMap[langCode] ?? reqIntroMap['en']!);
+      await voiceProvider
+          .speakAndWait(reqIntroMap[langCode] ?? reqIntroMap['en']!);
       await Future.delayed(const Duration(milliseconds: 400));
     }
 
@@ -352,7 +357,8 @@ class AutoFormProvider extends ChangeNotifier {
       'ta': 'இப்போது ஒவ்வொரு புலத்தையும் விளக்குகிறேன்.',
       'mr': 'आता प्रत्येक फील्ड समजावतो.',
     };
-    await voiceProvider.speakAndWait(explainIntroMap[langCode] ?? explainIntroMap['en']!);
+    await voiceProvider
+        .speakAndWait(explainIntroMap[langCode] ?? explainIntroMap['en']!);
     await Future.delayed(const Duration(milliseconds: 300));
 
     for (int i = 0; i < _template!.fields.length; i++) {
@@ -444,9 +450,12 @@ class AutoFormProvider extends ChangeNotifier {
 
     // Summary
     final summaryMap = {
-      'en': '$_filledCount out of $_totalCount fields filled. ${_emptyFieldIds.length} fields need manual input.',
-      'hi': '$_filledCount में से $_totalCount फ़ील्ड भरे गए। ${_emptyFieldIds.length} फ़ील्ड में मैन्युअल इनपुट आवश्यक है।',
-      'ta': '$_totalCount புலங்களில் $_filledCount நிரப்பப்பட்டது. ${_emptyFieldIds.length} புலங்களுக்கு கையமுறை உள்ளீடு தேவை.',
+      'en':
+          '$_filledCount out of $_totalCount fields filled. ${_emptyFieldIds.length} fields need manual input.',
+      'hi':
+          '$_filledCount में से $_totalCount फ़ील्ड भरे गए। ${_emptyFieldIds.length} फ़ील्ड में मैन्युअल इनपुट आवश्यक है।',
+      'ta':
+          '$_totalCount புலங்களில் $_filledCount நிரப்பப்பட்டது. ${_emptyFieldIds.length} புலங்களுக்கு கையமுறை உள்ளீடு தேவை.',
     };
     if (_isReadingFilledData) {
       await voiceProvider.speak(summaryMap[langCode] ?? summaryMap['en']!);

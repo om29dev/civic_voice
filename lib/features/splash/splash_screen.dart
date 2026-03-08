@@ -1,17 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../core/constants/app_colors.dart';
 import '../../core/router/app_router.dart';
 import '../../providers/auth_provider.dart';
-import '../../widgets/decorative/chakra_painter.dart';
-import '../../widgets/particle_background.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -29,7 +25,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     debugPrint('[CVI_SPLASH] Initializing Direct Intro Sequence');
-    
+
     // We set a 4-second fallback timer just in case the TTS engine
     // on the phone is completely broken and never fires completion handlers,
     // to ensure the user isn't permanently stuck on the splash screen.
@@ -53,14 +49,16 @@ class _SplashScreenState extends State<SplashScreen> {
       // 1800ms timer to navigate. This bypasses a common Android TTS bug where
       // the engine returns 'completed' seconds after the audio actually finishes due to trailing silence.
       _tts.setStartHandler(() {
-        debugPrint('[CVI_SPLASH] TTS Audio Started. Queueing 1.8s timer for navigation.');
+        debugPrint(
+            '[CVI_SPLASH] TTS Audio Started. Queueing 1.8s timer for navigation.');
         Future.delayed(const Duration(milliseconds: 1800), () {
           _navigate();
         });
       });
 
       _tts.setErrorHandler((msg) {
-        debugPrint('[CVI_SPLASH] TTS Error Event: $msg. Triggering Navigation.');
+        debugPrint(
+            '[CVI_SPLASH] TTS Error Event: $msg. Triggering Navigation.');
         _navigate();
       });
 
@@ -69,7 +67,6 @@ class _SplashScreenState extends State<SplashScreen> {
 
       // Speak immediately; animations will play concurrently
       _tts.speak("Jago Bharat Jago");
-      
     } catch (e) {
       debugPrint('[CVI_SPLASH] TTS Exception: $e');
       _navigate();
@@ -88,7 +85,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (_isNavigated) return;
     _isNavigated = true;
     _fallbackTimer?.cancel();
-    
+
     debugPrint('[CVI_SPLASH] Nav: Starting transition flow...');
 
     final auth = context.read<AuthProvider>();
@@ -99,7 +96,7 @@ class _SplashScreenState extends State<SplashScreen> {
       AppRouter.hasShownSplash = true; // Fallback unlock
       return;
     }
-    
+
     String target;
     if (auth.isAuthenticated) {
       target = Routes.dashboard;
@@ -109,7 +106,7 @@ class _SplashScreenState extends State<SplashScreen> {
       target = Routes.auth;
     }
     AppRouter.hasShownSplash = true; // Unlock the router redirect
-    
+
     if (mounted) {
       context.go(target);
     }
@@ -153,4 +150,3 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 }
-

@@ -214,76 +214,81 @@ class ExtractedUserData {
   int get totalFieldCount => toJson().length;
 
   Map<String, dynamic> toJson() => {
-        'fullName': fullName,
-        'fatherName': fatherName,
-        'motherName': motherName,
-        'spouseName': spouseName,
-        'dateOfBirth': dateOfBirth?.toIso8601String(),
+        'full_name': fullName,
+        'father_name': fatherName,
+        'mother_name': motherName,
+        'spouse_name': spouseName,
+        'date_of_birth': dateOfBirth?.toIso8601String(),
         'gender': gender,
-        'bloodGroup': bloodGroup,
-        'aadhaarNumber': aadhaarNumber,
-        'panNumber': panNumber,
-        'passportNumber': passportNumber,
-        'voterIdNumber': voterIdNumber,
-        'drivingLicenseNumber': drivingLicenseNumber,
-        'addressLine1': addressLine1,
-        'addressLine2': addressLine2,
+        'blood_group': bloodGroup,
+        'aadhaar_number': aadhaarNumber,
+        'pan_number': panNumber,
+        'passport_number': passportNumber,
+        'voter_id_number': voterIdNumber,
+        'driving_license_number': drivingLicenseNumber,
+        'address_line1': addressLine1,
+        'address_line2': addressLine2,
         'village': village,
         'tehsil': tehsil,
         'district': district,
         'state': state,
         'pincode': pincode,
-        'mobileNumber': mobileNumber,
-        'emailAddress': emailAddress,
-        'bankName': bankName,
-        'accountNumber': accountNumber,
-        'ifscCode': ifscCode,
-        'branchName': branchName,
+        'mobile_number': mobileNumber,
+        'email_address': emailAddress,
+        'bank_name': bankName,
+        'account_number': accountNumber,
+        'ifsc_code': ifscCode,
+        'branch_name': branchName,
         'caste': caste,
         'religion': religion,
         'nationality': nationality,
         'occupation': occupation,
-        'annualIncome': annualIncome,
-        'rationCardNumber': rationCardNumber,
-        'passportExpiryDate': passportExpiryDate,
+        'annual_income': annualIncome,
+        'ration_card_number': rationCardNumber,
+        'passport_expiry_date': passportExpiryDate,
       };
 
   factory ExtractedUserData.fromJson(Map<String, dynamic> j) {
     final data = ExtractedUserData();
-    data.fullName = j['fullName'] as String?;
-    data.fatherName = j['fatherName'] as String?;
-    data.motherName = j['motherName'] as String?;
-    data.spouseName = j['spouseName'] as String?;
-    data.dateOfBirth = j['dateOfBirth'] != null
-        ? DateTime.tryParse(j['dateOfBirth'] as String)
+    data.fullName = (j['full_name'] ?? j['fullName']) as String?;
+    data.fatherName = (j['father_name'] ?? j['fatherName']) as String?;
+    data.motherName = (j['mother_name'] ?? j['motherName']) as String?;
+    data.spouseName = (j['spouse_name'] ?? j['spouseName']) as String?;
+    data.dateOfBirth = (j['date_of_birth'] ?? j['dateOfBirth']) != null
+        ? DateTime.tryParse((j['date_of_birth'] ?? j['dateOfBirth']) as String)
         : null;
     data.gender = j['gender'] as String?;
-    data.bloodGroup = j['bloodGroup'] as String?;
-    data.aadhaarNumber = j['aadhaarNumber'] as String?;
-    data.panNumber = j['panNumber'] as String?;
-    data.passportNumber = j['passportNumber'] as String?;
-    data.voterIdNumber = j['voterIdNumber'] as String?;
-    data.drivingLicenseNumber = j['drivingLicenseNumber'] as String?;
-    data.addressLine1 = j['addressLine1'] as String?;
-    data.addressLine2 = j['addressLine2'] as String?;
+    data.bloodGroup = (j['blood_group'] ?? j['bloodGroup']) as String?;
+    data.aadhaarNumber = (j['aadhaar_number'] ?? j['aadhaarNumber']) as String?;
+    data.panNumber = (j['pan_number'] ?? j['panNumber']) as String?;
+    data.passportNumber =
+        (j['passport_number'] ?? j['passportNumber']) as String?;
+    data.voterIdNumber =
+        (j['voter_id_number'] ?? j['voterIdNumber']) as String?;
+    data.drivingLicenseNumber =
+        (j['driving_license_number'] ?? j['drivingLicenseNumber']) as String?;
+    data.addressLine1 = (j['address_line1'] ?? j['addressLine1']) as String?;
+    data.addressLine2 = (j['address_line2'] ?? j['addressLine2']) as String?;
     data.village = j['village'] as String?;
     data.tehsil = j['tehsil'] as String?;
     data.district = j['district'] as String?;
     data.state = j['state'] as String?;
     data.pincode = j['pincode'] as String?;
-    data.mobileNumber = j['mobileNumber'] as String?;
-    data.emailAddress = j['emailAddress'] as String?;
-    data.bankName = j['bankName'] as String?;
-    data.accountNumber = j['accountNumber'] as String?;
-    data.ifscCode = j['ifscCode'] as String?;
-    data.branchName = j['branchName'] as String?;
+    data.mobileNumber = (j['mobile_number'] ?? j['mobileNumber']) as String?;
+    data.emailAddress = (j['email_address'] ?? j['emailAddress']) as String?;
+    data.bankName = (j['bank_name'] ?? j['bankName']) as String?;
+    data.accountNumber = (j['account_number'] ?? j['accountNumber']) as String?;
+    data.ifscCode = (j['ifsc_code'] ?? j['ifscCode']) as String?;
+    data.branchName = (j['branch_name'] ?? j['branchName']) as String?;
     data.caste = j['caste'] as String?;
     data.religion = j['religion'] as String?;
     data.nationality = j['nationality'] as String?;
     data.occupation = j['occupation'] as String?;
-    data.annualIncome = j['annualIncome'] as String?;
-    data.rationCardNumber = j['rationCardNumber'] as String?;
-    data.passportExpiryDate = j['passportExpiryDate'] as String?;
+    data.annualIncome = (j['annual_income'] ?? j['annualIncome']) as String?;
+    data.rationCardNumber =
+        (j['ration_card_number'] ?? j['rationCardNumber']) as String?;
+    data.passportExpiryDate =
+        (j['passport_expiry_date'] ?? j['passportExpiryDate']) as String?;
     return data;
   }
 }

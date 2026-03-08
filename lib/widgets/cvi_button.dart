@@ -53,8 +53,8 @@ class _CviButtonState extends State<CviButton>
     super.dispose();
   }
 
-  void _onTapDown(_) => _pressCtrl.forward();
-  void _onTapUp(_) => _pressCtrl.reverse();
+  void _onTapDown(TapDownDetails _) => _pressCtrl.forward();
+  void _onTapUp(TapUpDetails _) => _pressCtrl.reverse();
   void _onTapCancel() => _pressCtrl.reverse();
 
   @override

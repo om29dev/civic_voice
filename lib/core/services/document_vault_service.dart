@@ -1,22 +1,18 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// DOCUMENT VAULT SERVICE — Supabase-backed document storage + AI extraction
+// DOCUMENT VAULT SERVICE — AWS Amplify (S3 + DynamoDB) backed document storage
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import 'dart:convert';
-import 'dart:io';
-import 'dart:typed_data';
+import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'document_ai_service.dart';
+import '../../models/cvi_document_model.dart';
 
 class DocumentVaultService {
-  static final _supabase = Supabase.instance.client;
-  static const _bucketName = 'user-documents';
-
   // ────────────────────────────────────────────────────────────────────────────
-  // UPLOAD DOCUMENT — compress → upload to storage → AI extract → save metadata
+  // UPLOAD DOCUMENT — compress → upload to S3 → AI extract → save metadata
   // ────────────────────────────────────────────────────────────────────────────
 
   static Future<Map<String, dynamic>> uploadDocument({
@@ -24,60 +20,87 @@ class DocumentVaultService {
     required String documentType,
   }) async {
     try {
-      final userId = _supabase.auth.currentUser?.id;
-      if (userId == null) throw Exception('Not logged in');
+      await Amplify.Auth.getCurrentUser();
+      // userId is currently used implicitly by Amplify Auth rules (owner-based)
 
-      // Step 1: Image usage (already compressed by provider or handled by AI service)
-      // We'll keep a basic compression here just for Supabase storage size if needed,
-      // but the user's Step 3 handles it in the AI service too.
-      // Let's ensure it's under 1MB for storage.
-
-      // Step 2: Upload to Supabase Storage
+      // Step 1: Upload to S3
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final fileName = '${documentType}_$timestamp.jpg';
-      final filePath = '$userId/$fileName';
+      final storageKey = 'documents/$fileName';
 
-      await _supabase.storage.from(_bucketName).uploadBinary(
-            filePath,
-            imageBytes,
-            fileOptions: const FileOptions(
-              contentType: 'image/jpeg',
-              upsert: true,
-            ),
-          );
+      await Amplify.Storage.uploadData(
+        data: StorageDataPayload.bytes(
+          imageBytes,
+          contentType: 'image/jpeg',
+        ),
+        path: StoragePath.fromString('public/$storageKey'),
+      ).result;
 
-      // Step 3: AI extraction via Gemini
+      // Step 2: AI extraction via Gemini
       final extractedData = await DocumentAIService.extractFromDocumentBytes(
         imageBytes: imageBytes,
         documentType: documentType,
       );
 
+      // Check for extraction error
+      if (extractedData.containsKey('error')) {
+        return {
+          'success': false,
+          'error': 'AI Extraction failed: ${extractedData['error']}',
+        };
+      }
+
       final confidence =
           (extractedData['confidence'] as num?)?.toDouble() ?? 0.0;
 
-      // Step 4: Save document metadata to user_documents table
-      await _supabase.from('user_documents').insert({
-        'user_id': userId,
-        'document_type': documentType,
-        'file_name': fileName,
-        'file_path': filePath,
-        'file_size': imageBytes.length,
-        'is_verified': confidence > 0.6,
-        'confidence_score': confidence,
-        'extracted_fields': extractedData,
-      });
+      // Step 3: Save document metadata to DynamoDB via GraphQL
+      final docMutation = '''
+        mutation CreateUserDocument(\$input: CreateUserDocumentInput!) {
+          createUserDocument(input: \$input) {
+            id
+            name
+            category
+            size
+            uploadDate
+            status
+            filePath
+            isVerified
+            extractedText
+          }
+        }
+      ''';
 
-      // Step 5: Merge extracted data into user_extracted_data
-      await _mergeExtractedData(
-        userId: userId,
-        extractedData: extractedData,
+      final docInput = {
+        'name': fileName,
+        'category': documentType,
+        'size': '${(imageBytes.length / 1024).toStringAsFixed(1)} KB',
+        'uploadDate': DateTime.now().toUtc().toIso8601String(),
+        'status': 'Verified',
+        'filePath': storageKey,
+        'isVerified': confidence > 0.6,
+        'extractedText': json.encode(extractedData),
+      };
+
+      final operation = Amplify.API.mutate(
+        request: GraphQLRequest<String>(
+          document: docMutation,
+          variables: {'input': docInput},
+        ),
       );
+
+      final response = await operation.response;
+      if (response.hasErrors) {
+        throw Exception('GraphQL Errors: ${response.errors}');
+      }
+
+      // Step 4: Merge extracted data (Stubbbed for now as we need UserExtractedData table)
+      // await _mergeExtractedData(userId: userId, extractedData: extractedData);
 
       return {
         'success': true,
         'confidence': confidence,
         'extractedData': extractedData,
-        'filePath': filePath,
+        'filePath': storageKey,
       };
     } catch (e) {
       debugPrint('DocumentVault: Upload error: $e');
@@ -86,94 +109,57 @@ class DocumentVaultService {
   }
 
   // ────────────────────────────────────────────────────────────────────────────
-  // MERGE EXTRACTED DATA INTO user_extracted_data (upsert, only fill nulls)
-  // ────────────────────────────────────────────────────────────────────────────
-
-  static Future<void> _mergeExtractedData({
-    required String userId,
-    required Map<String, dynamic> extractedData,
-  }) async {
-    // Fetch existing row for this user
-    final existing = await _supabase
-        .from('user_extracted_data')
-        .select()
-        .eq('user_id', userId)
-        .maybeSingle();
-
-    final Map<String, dynamic> updateData = {
-      'user_id': userId,
-      'updated_at': DateTime.now().toIso8601String(),
-    };
-
-    // Map extracted JSON keys to database column names
-    const fieldMapping = {
-      'full_name': 'full_name',
-      'full_name_hindi': 'full_name_hindi',
-      'father_name': 'father_name',
-      'mother_name': 'mother_name',
-      'spouse_name': 'spouse_name',
-      'date_of_birth': 'date_of_birth',
-      'gender': 'gender',
-      'blood_group': 'blood_group',
-      'aadhaar_number': 'aadhaar_number',
-      'pan_number': 'pan_number',
-      'passport_number': 'passport_number',
-      'voter_id_number': 'voter_id_number',
-      'driving_license_number': 'driving_license_number',
-      'address_line1': 'address_line1',
-      'address_line2': 'address_line2',
-      'village': 'village',
-      'tehsil': 'tehsil',
-      'district': 'district',
-      'state': 'state',
-      'pincode': 'pincode',
-      'mobile_number': 'mobile_number',
-      'email_address': 'email_address',
-      'bank_name': 'bank_name',
-      'account_number': 'account_number',
-      'ifsc_code': 'ifsc_code',
-      'branch_name': 'branch_name',
-      'caste': 'caste',
-      'religion': 'religion',
-      'annual_income': 'annual_income',
-      'ration_card_number': 'ration_card_number',
-    };
-
-    for (final entry in fieldMapping.entries) {
-      final extractedValue = extractedData[entry.key];
-      if (extractedValue == null || extractedValue.toString().isEmpty) continue;
-      if (extractedValue.toString() == 'null') continue;
-
-      // Only update if existing field is null/empty (don't overwrite)
-      final existingValue = existing?[entry.value];
-      if (existingValue == null ||
-          existingValue.toString().isEmpty ||
-          existingValue.toString() == 'null') {
-        updateData[entry.value] = extractedValue.toString();
-      }
-    }
-
-    // Upsert (insert or update)
-    await _supabase
-        .from('user_extracted_data')
-        .upsert(updateData, onConflict: 'user_id');
-  }
-
-  // ────────────────────────────────────────────────────────────────────────────
-  // FETCH USER DOCUMENTS from Supabase
+  // FETCH USER DOCUMENTS from DynamoDB
   // ────────────────────────────────────────────────────────────────────────────
 
   static Future<List<Map<String, dynamic>>> getUserDocuments() async {
-    final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) return [];
-
     try {
-      final response = await _supabase
-          .from('user_documents')
-          .select()
-          .eq('user_id', userId)
-          .order('created_at', ascending: false);
-      return List<Map<String, dynamic>>.from(response);
+      const listQuery = '''
+        query ListUserDocuments {
+          listUserDocuments {
+            items {
+              id
+              name
+              category
+              size
+              uploadDate
+              status
+              filePath
+              isVerified
+              extractedText
+            }
+          }
+        }
+      ''';
+
+      final operation = Amplify.API.query(
+        request: GraphQLRequest<String>(document: listQuery),
+      );
+
+      final response = await operation.response;
+      if (response.hasErrors) {
+        debugPrint('DocumentVault: GraphQL Errors: ${response.errors}');
+        return [];
+      }
+
+      final data =
+          response.data != null ? SafeDecode.decode(response.data!) : {};
+      final items = data['listUserDocuments']?['items'] as List? ?? [];
+
+      return items.map((i) {
+        final map = Map<String, dynamic>.from(i);
+        return {
+          'id': map['id'],
+          'name': map['name'],
+          'document_type': map['category'],
+          'size': map['size'],
+          'upload_date': map['uploadDate'],
+          'status': map['status'],
+          'file_path': map['filePath'],
+          'is_verified': map['isVerified'],
+          'extracted_text': map['extractedText'],
+        };
+      }).toList();
     } catch (e) {
       debugPrint('DocumentVault: Fetch error: $e');
       return [];
@@ -185,50 +171,99 @@ class DocumentVaultService {
   // ────────────────────────────────────────────────────────────────────────────
 
   static Future<Map<String, dynamic>?> getUserExtractedData() async {
-    final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) return null;
-
     try {
-      final response = await _supabase
-          .from('user_extracted_data')
-          .select()
-          .eq('user_id', userId)
-          .maybeSingle();
-      return response;
+      final docs = await getUserDocuments();
+      if (docs.isEmpty) return {};
+
+      // Map the List<Map<String, dynamic>> to List<CVIDocument> for merging logic
+      final cviDocs = docs.map((d) {
+        final extractedMap = d['extracted_text'] != null
+            ? SafeDecode.decode(d['extracted_text'] as String)
+            : <String, dynamic>{};
+
+        return CVIDocument(
+          id: d['id'] as String,
+          type: DocumentType.values.firstWhere(
+            (e) => e.name == d['document_type'],
+            orElse: () => DocumentType.other,
+          ),
+          fileName: d['name'] as String,
+          localPath: d['file_path'] as String,
+          uploadedAt: DateTime.tryParse(d['upload_date'] as String? ?? '') ??
+              DateTime.now(),
+          isVerified: d['is_verified'] as bool? ?? false,
+          extractedData: extractedMap,
+        );
+      }).toList();
+
+      final merged = DocumentAIService.mergeExtractedData(cviDocs);
+      return merged.toJson();
     } catch (e) {
-      debugPrint('DocumentVault: Extracted data fetch error: $e');
+      debugPrint('DocumentVault: Extraction merge error: $e');
+      return {};
+    }
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // GET DOWNLOAD URL for S3 objects
+  // ────────────────────────────────────────────────────────────────────────────
+
+  static Future<String?> getDocumentSignedUrl(String storageKey) async {
+    try {
+      final result = await Amplify.Storage.getUrl(
+        path: StoragePath.fromString('public/$storageKey'),
+        options: const StorageGetUrlOptions(
+          pluginOptions: S3GetUrlPluginOptions(
+            expiresIn: Duration(hours: 1),
+          ),
+        ),
+      ).result;
+      return result.url.toString();
+    } catch (e) {
+      debugPrint('DocumentVault: URL error: $e');
       return null;
     }
   }
 
   // ────────────────────────────────────────────────────────────────────────────
-  // GET SIGNED URL for private document images
+  // DELETE DOCUMENT from S3 + DynamoDB
   // ────────────────────────────────────────────────────────────────────────────
 
-  static Future<String?> getDocumentSignedUrl(String filePath) async {
+  static Future<Map<String, dynamic>> deleteDocument(
+      String documentId, String storageKey) async {
     try {
-      final url = await _supabase.storage
-          .from(_bucketName)
-          .createSignedUrl(filePath, 3600); // 1hr expiry
-      return url;
-    } catch (e) {
-      debugPrint('DocumentVault: Signed URL error: $e');
-      return null;
-    }
-  }
+      // 1. Delete from S3
+      await Amplify.Storage.remove(
+        path: StoragePath.fromString('public/$storageKey'),
+      ).result;
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // DELETE DOCUMENT from storage + table
-  // ────────────────────────────────────────────────────────────────────────────
+      // 2. Delete from DynamoDB
+      const deleteMutation = '''
+        mutation DeleteUserDocument(\$input: DeleteUserDocumentInput!) {
+          deleteUserDocument(input: \$input) {
+            id
+          }
+        }
+      ''';
 
-  static Future<bool> deleteDocument(String documentId, String filePath) async {
-    try {
-      await _supabase.storage.from(_bucketName).remove([filePath]);
-      await _supabase.from('user_documents').delete().eq('id', documentId);
-      return true;
+      final operation = Amplify.API.mutate(
+        request: GraphQLRequest<String>(
+          document: deleteMutation,
+          variables: {
+            'input': {'id': documentId}
+          },
+        ),
+      );
+
+      final response = await operation.response;
+      if (response.hasErrors) {
+        return {'success': false, 'error': 'GraphQL Error: ${response.errors}'};
+      }
+
+      return {'success': true};
     } catch (e) {
       debugPrint('DocumentVault: Delete error: $e');
-      return false;
+      return {'success': false, 'error': e.toString()};
     }
   }
 
@@ -244,21 +279,18 @@ class DocumentVaultService {
     required Map<String, dynamic> filledData,
     String status = 'draft',
   }) async {
-    final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) return;
+    // Stub: Need to add form_fill_history table to schema.graphql
+    debugPrint('DocumentVault: Form history save (stubbed)');
+  }
+}
 
+/// Helper for safe JSON decoding from GraphQL strings
+class SafeDecode {
+  static Map<String, dynamic> decode(String jsonStr) {
     try {
-      await _supabase.from('form_fill_history').insert({
-        'user_id': userId,
-        'service_id': serviceId,
-        'service_name': serviceName,
-        'fields_total': fieldsTotal,
-        'fields_auto_filled': fieldsAutoFilled,
-        'status': status,
-        'filled_data': filledData,
-      });
+      return (json.decode(jsonStr) as Map<String, dynamic>);
     } catch (e) {
-      debugPrint('DocumentVault: Form history save error: $e');
+      return {};
     }
   }
 }

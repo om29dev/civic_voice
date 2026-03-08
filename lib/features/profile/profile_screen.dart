@@ -37,7 +37,7 @@ class ProfileScreen extends StatelessWidget {
           const Positioned.fill(
             child: JaliPattern(opacity: 0.03),
           ),
-          
+
           CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
@@ -57,7 +57,8 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 actions: [
                   IconButton(
-                    icon: const Icon(Icons.logout_rounded, color: AppColors.semanticError, size: 24),
+                    icon: const Icon(Icons.logout_rounded,
+                        color: AppColors.semanticError, size: 24),
                     onPressed: () => _confirmLogout(context, auth),
                     tooltip: 'Sign Out',
                   ),
@@ -74,31 +75,36 @@ class ProfileScreen extends StatelessWidget {
                     const SizedBox(height: 32),
 
                     // Applications
-                    const _MySectionHeader('My Applications', 'मेरे आवेदन', Icons.apps_rounded),
+                    const _MySectionHeader(
+                        'My Applications', 'मेरे आवेदन', Icons.apps_rounded),
                     const SizedBox(height: 16),
                     _ApplicationsSection(),
                     const SizedBox(height: 32),
 
                     // Language & Region
-                    const _MySectionHeader('Language & Region', 'भाषा और क्षेत्र', Icons.language_rounded),
+                    const _MySectionHeader('Language & Region',
+                        'भाषा और क्षेत्र', Icons.language_rounded),
                     const SizedBox(height: 16),
                     _LanguageSection(),
                     const SizedBox(height: 32),
 
                     // Voice Settings
-                    const _MySectionHeader('Voice Settings', 'आवाज़ सेटिंग', Icons.mic_rounded),
+                    const _MySectionHeader(
+                        'Voice Settings', 'आवाज़ सेटिंग', Icons.mic_rounded),
                     const SizedBox(height: 16),
                     _VoiceSettingsSection(),
                     const SizedBox(height: 32),
 
                     // Privacy & Security
-                    const _MySectionHeader('Privacy & Security', 'गोपनीयता और सुरक्षा', Icons.security_rounded),
+                    const _MySectionHeader('Privacy & Security',
+                        'गोपनीयता और सुरक्षा', Icons.security_rounded),
                     const SizedBox(height: 16),
                     _PrivacySection(),
                     const SizedBox(height: 32),
 
                     // About CVI
-                    const _MySectionHeader('About CVI', 'सीवीआई के बारे में', Icons.info_outline_rounded),
+                    const _MySectionHeader('About CVI', 'सीवीआई के बारे में',
+                        Icons.info_outline_rounded),
                     const SizedBox(height: 16),
                     _AboutSection(),
                     const SizedBox(height: 32),
@@ -127,7 +133,8 @@ class ProfileScreen extends StatelessWidget {
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary)),
         content: Text('Are you sure you want to sign out?',
-            style: GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 14)),
+            style: GoogleFonts.inter(
+                color: AppColors.textSecondary, fontSize: 14)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -161,11 +168,11 @@ class _ProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final initials = user?.initials ?? 'G';
-    final name     = user?.name ?? 'Guest User';
-    final email    = user?.email;
-    final mobile   = user?.mobile;
-    final joined   = user?.createdAt;
-    final isGuest  = user?.isGuest ?? true;
+    final name = user?.name ?? 'Guest User';
+    final email = user?.email;
+    final mobile = user?.mobile;
+    final joined = user?.createdAt;
+    final isGuest = user?.isGuest ?? true;
 
     return IndianCard(
       isPremium: true,
@@ -223,21 +230,17 @@ class _ProfileHeader extends StatelessWidget {
                   ),
                 ),
             ],
-          )
-              .animate()
-              .scale(
-                  begin: const Offset(0.8, 0.8),
-                  end: const Offset(1, 1),
-                  duration: 600.ms,
-                  curve: Curves.elasticOut),
+          ).animate().scale(
+              begin: const Offset(0.8, 0.8),
+              end: const Offset(1, 1),
+              duration: 600.ms,
+              curve: Curves.elasticOut),
           const SizedBox(height: 20),
-          
           Text(name,
               style: GoogleFonts.playfairDisplay(
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary)),
-                  
           if (email != null || mobile != null) ...[
             const SizedBox(height: 8),
             if (mobile != null)
@@ -249,7 +252,6 @@ class _ProfileHeader extends StatelessWidget {
                   style: GoogleFonts.inter(
                       color: AppColors.textSecondary, fontSize: 14)),
           ],
-
           if (joined != null) ...[
             const SizedBox(height: 12),
             Container(
@@ -262,12 +264,10 @@ class _ProfileHeader extends StatelessWidget {
               child: Text(
                 'Member since ${_fmtDate(joined)}',
                 style: GoogleFonts.spaceMono(
-                    color: AppColors.textMuted,
-                    fontSize: 11),
+                    color: AppColors.textMuted, fontSize: 11),
               ),
             ),
           ],
-
           if (!isGuest) ...[
             const SizedBox(height: 20),
             const Divider(color: AppColors.surfaceBorder, height: 1),
@@ -278,13 +278,14 @@ class _ProfileHeader extends StatelessWidget {
               runSpacing: 8,
               alignment: WrapAlignment.center,
               children: [
-                if (mobile != null) const _VerifiedBadge(label: 'Mobile Verified'),
-                if (email != null) const _VerifiedBadge(label: 'Email Verified'),
+                if (mobile != null)
+                  const _VerifiedBadge(label: 'Mobile Verified'),
+                if (email != null)
+                  const _VerifiedBadge(label: 'Email Verified'),
                 const _VerifiedBadge(label: 'Aadhaar Linked', isGold: true),
               ],
             ),
           ],
-
           if (isGuest) ...[
             const SizedBox(height: 24),
             CviButton(
@@ -298,12 +299,21 @@ class _ProfileHeader extends StatelessWidget {
     ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.06, end: 0);
   }
 
-  static String _fmtDate(DateTime d) =>
-      '${_months[d.month - 1]} ${d.year}';
+  static String _fmtDate(DateTime d) => '${_months[d.month - 1]} ${d.year}';
 
   static const _months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec'
   ];
 }
 
@@ -315,7 +325,7 @@ class _VerifiedBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isGold ? AppColors.gold : AppColors.emerald;
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -326,14 +336,14 @@ class _VerifiedBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(isGold ? Icons.verified_user_rounded : Icons.check_circle_rounded,
-              color: color, size: 14),
+          Icon(
+              isGold ? Icons.verified_user_rounded : Icons.check_circle_rounded,
+              color: color,
+              size: 14),
           const SizedBox(width: 6),
           Text(label,
               style: GoogleFonts.inter(
-                  color: color,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600)),
+                  color: color, fontSize: 12, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -347,7 +357,7 @@ class _VerifiedBadge extends StatelessWidget {
 class _ApplicationsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final sp       = context.watch<ServicesProvider>();
+    final sp = context.watch<ServicesProvider>();
     final services = sp.allServices;
 
     // Only show services with any progress
@@ -381,7 +391,6 @@ class _ApplicationsSection extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                     color: AppColors.textSecondary, fontSize: 13)),
-                    
             const SizedBox(height: 20),
             CviButton(
               text: 'Browse Services',
@@ -397,9 +406,9 @@ class _ApplicationsSection extends StatelessWidget {
     return Column(
       children: active.map((s) {
         final progress = sp.getProgress(s.id);
-        final done     = progress.where((v) => v).length;
-        final total    = progress.length;
-        final pct      = total > 0 ? done / total : 0.0;
+        final done = progress.where((v) => v).length;
+        final total = progress.length;
+        final pct = total > 0 ? done / total : 0.0;
         final complete = pct == 1.0;
 
         final (statusLabel, statusColor) = complete
@@ -427,7 +436,8 @@ class _ApplicationsSection extends StatelessWidget {
                         color: statusColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text(s.iconEmoji, style: const TextStyle(fontSize: 24)),
+                      child: Text(s.iconEmoji,
+                          style: const TextStyle(fontSize: 24)),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -449,7 +459,8 @@ class _ApplicationsSection extends StatelessWidget {
                               color: statusColor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                  color: statusColor.withValues(alpha: 0.3), width: 1),
+                                  color: statusColor.withValues(alpha: 0.3),
+                                  width: 1),
                             ),
                             child: Text(statusLabel.toUpperCase(),
                                 style: GoogleFonts.spaceMono(
@@ -461,7 +472,8 @@ class _ApplicationsSection extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textMuted, size: 16),
+                    const Icon(Icons.arrow_forward_ios_rounded,
+                        color: AppColors.textMuted, size: 16),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -473,7 +485,8 @@ class _ApplicationsSection extends StatelessWidget {
                         child: LinearProgressIndicator(
                           value: pct,
                           backgroundColor: AppColors.bgDeep,
-                          valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(statusColor),
                           minHeight: 6,
                         ),
                       ),
@@ -481,8 +494,7 @@ class _ApplicationsSection extends StatelessWidget {
                     const SizedBox(width: 12),
                     Text('$done/$total steps',
                         style: GoogleFonts.spaceMono(
-                            color: AppColors.textSecondary,
-                            fontSize: 12)),
+                            color: AppColors.textSecondary, fontSize: 12)),
                   ],
                 ),
               ],
@@ -508,7 +520,7 @@ class _LanguageSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final lp      = context.watch<LanguageProvider>();
+    final lp = context.watch<LanguageProvider>();
     final current = lp.currentLanguage;
 
     return IndianCard(
@@ -531,15 +543,16 @@ class _LanguageSection extends StatelessWidget {
                 onTap: () => lp.switchLanguage(code),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 220),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
                     color: active
                         ? AppColors.saffron.withValues(alpha: 0.15)
                         : AppColors.surface,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: active ? AppColors.saffron : AppColors.surfaceBorder,
+                      color:
+                          active ? AppColors.saffron : AppColors.surfaceBorder,
                       width: active ? 1.5 : 1,
                     ),
                   ),
@@ -553,7 +566,8 @@ class _LanguageSection extends StatelessWidget {
                                 ? AppColors.saffron
                                 : AppColors.textSecondary,
                             fontSize: 14,
-                            fontWeight: active ? FontWeight.w600 : FontWeight.w500,
+                            fontWeight:
+                                active ? FontWeight.w600 : FontWeight.w500,
                           )),
                       if (active) ...[
                         const Spacer(),
@@ -596,8 +610,8 @@ class _SegmentedSizeControlState extends State<_SegmentedSizeControl> {
   @override
   Widget build(BuildContext context) {
     final access = context.watch<AccessibilityProvider>();
-    int _selected = _scaleValues.indexOf(access.textScaleFactor);
-    if (_selected == -1) _selected = 1; // fallback to Medium
+    int selected = _scaleValues.indexOf(access.textScaleFactor);
+    if (selected == -1) selected = 1; // fallback to Medium
 
     return Container(
       padding: const EdgeInsets.all(4),
@@ -608,7 +622,7 @@ class _SegmentedSizeControlState extends State<_SegmentedSizeControl> {
       ),
       child: Row(
         children: List.generate(3, (i) {
-          final active = _selected == i;
+          final active = selected == i;
           return Expanded(
             child: GestureDetector(
               onTap: () => access.setTextScale(_scaleValues[i]),
@@ -616,13 +630,16 @@ class _SegmentedSizeControlState extends State<_SegmentedSizeControl> {
                 duration: const Duration(milliseconds: 180),
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: active
-                      ? AppColors.bgMid
-                      : Colors.transparent,
+                  color: active ? AppColors.bgMid : Colors.transparent,
                   borderRadius: BorderRadius.circular(8),
-                  boxShadow: active ? [
-                    const BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))
-                  ] : null,
+                  boxShadow: active
+                      ? [
+                          const BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 4,
+                              offset: Offset(0, 2))
+                        ]
+                      : null,
                 ),
                 child: Text(_options[i],
                     textAlign: TextAlign.center,
@@ -631,7 +648,8 @@ class _SegmentedSizeControlState extends State<_SegmentedSizeControl> {
                             ? AppColors.textPrimary
                             : AppColors.textSecondary,
                         fontSize: 13,
-                        fontWeight: active ? FontWeight.w600 : FontWeight.w500)),
+                        fontWeight:
+                            active ? FontWeight.w600 : FontWeight.w500)),
               ),
             ),
           );
@@ -673,7 +691,8 @@ class _VoiceSettingsSectionState extends State<_VoiceSettingsSection> {
                         fontSize: 15,
                         fontWeight: FontWeight.w600)),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppColors.gold.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
@@ -728,16 +747,18 @@ class _VoiceSettingsSectionState extends State<_VoiceSettingsSection> {
 
           // Wake word
           SwitchListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
             title: Text('Wake Word "Hey CVI"',
                 style: GoogleFonts.inter(
                     color: AppColors.textPrimary,
                     fontSize: 15,
                     fontWeight: FontWeight.w500)),
             subtitle: Text('Beta feature',
-                style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 12)),
+                style: GoogleFonts.inter(
+                    color: AppColors.textMuted, fontSize: 12)),
             value: _wakeWord,
-            activeColor: AppColors.saffron,
+            activeThumbColor: AppColors.saffron,
             activeTrackColor: AppColors.saffron.withValues(alpha: 0.3),
             inactiveTrackColor: AppColors.bgDeep,
             onChanged: (v) => setState(() => _wakeWord = v),
@@ -780,13 +801,18 @@ class _GenderToggle extends StatelessWidget {
               decoration: BoxDecoration(
                 color: active ? AppColors.surface : Colors.transparent,
                 borderRadius: BorderRadius.circular(9),
-                boxShadow: active ? [
-                  const BoxShadow(color: Colors.black12, blurRadius: 2, offset: Offset(0, 1))
-                ] : null,
+                boxShadow: active
+                    ? [
+                        const BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 2,
+                            offset: Offset(0, 1))
+                      ]
+                    : null,
               ),
               child: Row(
                 children: [
-                   Icon(
+                  Icon(
                     g == 'female' ? Icons.female_rounded : Icons.male_rounded,
                     size: 16,
                     color: active ? AppColors.saffron : AppColors.textMuted,
@@ -795,7 +821,9 @@ class _GenderToggle extends StatelessWidget {
                   Text(
                     g == 'female' ? 'Female' : 'Male',
                     style: GoogleFonts.inter(
-                      color: active ? AppColors.textPrimary : AppColors.textSecondary,
+                      color: active
+                          ? AppColors.textPrimary
+                          : AppColors.textSecondary,
                       fontSize: 13,
                       fontWeight: active ? FontWeight.w600 : FontWeight.w500,
                     ),
@@ -833,7 +861,9 @@ class _MicPermissionCard extends StatelessWidget {
         const SizedBox(width: 14),
         Expanded(
           child: Text(
-            hasPerms ? 'Microphone setup complete' : 'Microphone access required',
+            hasPerms
+                ? 'Microphone setup complete'
+                : 'Microphone access required',
             style: GoogleFonts.inter(
                 color: hasPerms ? AppColors.textPrimary : color,
                 fontSize: 14,
@@ -872,16 +902,18 @@ class _PrivacySectionState extends State<_PrivacySection> {
         children: [
           // Biometric
           SwitchListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
             title: Text('Biometric Lock',
                 style: GoogleFonts.inter(
                     color: AppColors.textPrimary,
                     fontSize: 15,
                     fontWeight: FontWeight.w500)),
             subtitle: Text('Require fingerprint to open app',
-                style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 13)),
+                style: GoogleFonts.inter(
+                    color: AppColors.textMuted, fontSize: 13)),
             value: _biometric,
-            activeColor: AppColors.saffron,
+            activeThumbColor: AppColors.saffron,
             activeTrackColor: AppColors.saffron.withValues(alpha: 0.3),
             inactiveTrackColor: AppColors.bgDeep,
             onChanged: (v) => setState(() => _biometric = v),
@@ -907,7 +939,9 @@ class _PrivacySectionState extends State<_PrivacySection> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   backgroundColor: AppColors.bgMid,
-                  content: Text('Data export initiated. You will receive an email.', style: TextStyle(color: AppColors.textPrimary)),
+                  content: Text(
+                      'Data export initiated. You will receive an email.',
+                      style: TextStyle(color: AppColors.textPrimary)),
                   behavior: SnackBarBehavior.floating,
                 ),
               );
@@ -944,7 +978,8 @@ class _PrivacySectionState extends State<_PrivacySection> {
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary)),
         content: Text('This will permanently clear all conversation history.',
-            style: GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 14)),
+            style: GoogleFonts.inter(
+                color: AppColors.textSecondary, fontSize: 14)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
@@ -979,7 +1014,8 @@ class _PrivacySectionState extends State<_PrivacySection> {
         ),
         title: Row(
           children: [
-            const Icon(Icons.warning_amber_rounded, color: AppColors.semanticError, size: 28),
+            const Icon(Icons.warning_amber_rounded,
+                color: AppColors.semanticError, size: 28),
             const SizedBox(width: 10),
             Text('Delete Account',
                 style: GoogleFonts.playfairDisplay(
@@ -990,7 +1026,8 @@ class _PrivacySectionState extends State<_PrivacySection> {
         ),
         content: Text(
             'This will permanently delete your account and all data. This action CANNOT be undone.',
-            style: GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 14)),
+            style:
+                GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 14)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
@@ -1021,7 +1058,7 @@ class _SettingsListTile extends StatelessWidget {
   final Color textColor;
   final bool isBold;
   final bool showChevron;
-  
+
   const _SettingsListTile({
     required this.icon,
     required this.title,
@@ -1049,9 +1086,9 @@ class _SettingsListTile extends StatelessWidget {
               color: textColor,
               fontSize: 15,
               fontWeight: isBold ? FontWeight.w600 : FontWeight.w500)),
-      trailing: showChevron 
-        ? const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted)
-        : null,
+      trailing: showChevron
+          ? const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted)
+          : null,
       onTap: onTap,
     );
   }
@@ -1083,8 +1120,7 @@ class _AboutSection extends StatelessWidget {
                 padding: const EdgeInsets.only(right: 20),
                 child: Text('1.0.0 (Build 1)',
                     style: GoogleFonts.spaceMono(
-                        color: AppColors.textMuted,
-                        fontSize: 12)),
+                        color: AppColors.textMuted, fontSize: 12)),
               ),
             ),
           ),
@@ -1136,7 +1172,8 @@ class _AboutSection extends StatelessWidget {
         decoration: const BoxDecoration(
           color: AppColors.bgDeep,
           borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-          border: Border(top: BorderSide(color: AppColors.surfaceBorder, width: 1)),
+          border:
+              Border(top: BorderSide(color: AppColors.surfaceBorder, width: 1)),
         ),
         padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
         child: SafeArea(
@@ -1157,7 +1194,8 @@ class _AboutSection extends StatelessWidget {
               const SizedBox(height: 24),
               Row(
                 children: [
-                  const Icon(Icons.new_releases_rounded, color: AppColors.saffron, size: 28),
+                  const Icon(Icons.new_releases_rounded,
+                      color: AppColors.saffron, size: 28),
                   const SizedBox(width: 12),
                   Text("What's New in v1.0.0",
                       style: GoogleFonts.playfairDisplay(
@@ -1177,32 +1215,33 @@ class _AboutSection extends StatelessWidget {
                 final icon = item.substring(0, 2);
                 final text = item.substring(2);
                 return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(icon, style: const TextStyle(fontSize: 18)),
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: Text(text,
-                                style: GoogleFonts.inter(
-                                    color: AppColors.textSecondary,
-                                    fontSize: 14,
-                                    height: 1.4)),
-                          ),
+                        child: Text(icon, style: const TextStyle(fontSize: 18)),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(text,
+                              style: GoogleFonts.inter(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 14,
+                                  height: 1.4)),
                         ),
-                      ],
-                    ),
-              );}),
+                      ),
+                    ],
+                  ),
+                );
+              }),
               const SizedBox(height: 16),
               CviButton(
                 text: 'Close',

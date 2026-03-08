@@ -40,7 +40,8 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
       debugPrint("Location error: $e");
       if (mounted) {
         setState(() {
-          _isLoadingLocation = false; // Ensure loading state is updated even on error
+          _isLoadingLocation =
+              false; // Ensure loading state is updated even on error
         });
       }
     }
@@ -117,14 +118,17 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                 ),
               ),
             )
-            .animate(onPlay: (controller) => controller.repeat())
-            .shimmer(duration: 2000.ms, color: Colors.white24),
-            
+                .animate(onPlay: (controller) => controller.repeat())
+                .shimmer(duration: 2000.ms, color: Colors.white24),
+
             const SizedBox(height: 32),
-            
+
             // Location Card
             GlassCard(
-              gradientColors: [Colors.red.withValues(alpha: 0.1), Colors.red.withValues(alpha: 0.05)],
+              gradientColors: [
+                Colors.red.withValues(alpha: 0.1),
+                Colors.red.withValues(alpha: 0.05)
+              ],
               child: Column(
                 children: [
                   Row(
@@ -183,7 +187,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
               ),
             ),
             const SizedBox(height: 32),
-            
+
             // Disaster Guides
             Text(
               lang.translate('offline_guides'),
@@ -206,8 +210,10 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                   backgroundColor: AppTheme.glassBackground,
                   iconColor: guide.color,
                   collapsedIconColor: guide.color,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  collapsedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  collapsedShape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   leading: const Icon(Icons.info),
                   title: Text(
                     guide.title,
@@ -222,9 +228,11 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildStepSection('DO:', guide.doSteps, Colors.greenAccent),
+                          _buildStepSection(
+                              'DO:', guide.doSteps, Colors.greenAccent),
                           const SizedBox(height: 16),
-                          _buildStepSection('DON\'T:', guide.dontSteps, Colors.redAccent),
+                          _buildStepSection(
+                              'DON\'T:', guide.dontSteps, Colors.redAccent),
                         ],
                       ),
                     ),
@@ -251,23 +259,25 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
         ),
         const SizedBox(height: 8),
         ...steps.map((step) => Padding(
-          padding: const EdgeInsets.only(bottom: 4),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('• ', style: TextStyle(color: AppTheme.pureWhite.withValues(alpha: 0.7))),
-              Expanded(
-                child: Text(
-                  step,
-                  style: GoogleFonts.inter(
-                    color: AppTheme.pureWhite.withValues(alpha: 0.9),
-                    fontSize: 13,
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('• ',
+                      style: TextStyle(
+                          color: AppTheme.pureWhite.withValues(alpha: 0.7))),
+                  Expanded(
+                    child: Text(
+                      step,
+                      style: GoogleFonts.inter(
+                        color: AppTheme.pureWhite.withValues(alpha: 0.9),
+                        fontSize: 13,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
-        )).toList(),
+            )),
       ],
     );
   }

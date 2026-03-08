@@ -22,7 +22,7 @@ class RecommendationsScreen extends StatefulWidget {
 class _RecommendationsScreenState extends State<RecommendationsScreen> {
   final _ageController = TextEditingController();
   final _incomeController = TextEditingController();
-  
+
   bool _isMatching = false;
   bool _showResults = false;
   List<GovernmentScheme> _matchedSchemes = [];
@@ -43,10 +43,19 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
     super.initState();
     // Pre-fill from profile if available
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final profile = context.read<CitizenProfileProvider>().profile;
-      if (profile != null) {
-        _ageController.text = profile.age.toString();
-        _incomeController.text = profile.income.toString();
+      final provider = context.read<CitizenProfileProvider>();
+      if (provider.profile != null) {
+        _ageController.text = provider.profile!.age.toString();
+        _incomeController.text = provider.profile!.income.toString();
+      } else {
+        provider.fetchProfile().then((_) {
+          if (mounted && provider.profile != null) {
+            setState(() {
+              _ageController.text = provider.profile!.age.toString();
+              _incomeController.text = provider.profile!.income.toString();
+            });
+          }
+        });
       }
     });
   }
@@ -64,7 +73,8 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
     await Future.delayed(1500.ms);
 
     final age = int.tryParse(_ageController.text) ?? 30;
-    final income = double.tryParse(_incomeController.text.replaceAll(',', '')) ?? 0;
+    final income =
+        double.tryParse(_incomeController.text.replaceAll(',', '')) ?? 0;
 
     setState(() {
       _matchedSchemes = CsvSchemeService.findMatches(age, income);
@@ -91,9 +101,9 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
         child: SafeArea(
           child: AnimatedSwitcher(
             duration: 500.ms,
-            child: _isMatching 
-              ? _buildMatchingView() 
-              : (_showResults ? _buildResultsView() : _buildFormView()),
+            child: _isMatching
+                ? _buildMatchingView()
+                : (_showResults ? _buildResultsView() : _buildFormView()),
           ),
         ),
       ),
@@ -118,11 +128,10 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
           const SizedBox(height: 8),
           Text(
             'Enter your details to find exclusive benefits and government schemes tailored for you.',
-            style: GoogleFonts.poppins(color: AppColors.textMuted, fontSize: 14),
+            style:
+                GoogleFonts.poppins(color: AppColors.textMuted, fontSize: 14),
           ).animate().fadeIn(delay: 200.ms),
-          
           const SizedBox(height: 40),
-          
           GlassCard(
             padding: const EdgeInsets.all(24),
             child: Column(
@@ -143,14 +152,14 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
                   keyboard: TextInputType.number,
                 ),
                 const SizedBox(height: 32),
-                
                 SizedBox(
                   width: double.infinity,
                   height: 60,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.saffron,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
                       elevation: 8,
                       shadowColor: AppColors.saffron.withValues(alpha: 0.5),
                     ),
@@ -171,11 +180,12 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
                       ],
                     ),
                   ),
-                ).animate(onPlay: (c) => c.repeat()).shimmer(duration: 3.seconds),
+                )
+                    .animate(onPlay: (c) => c.repeat())
+                    .shimmer(duration: 3.seconds),
               ],
             ),
           ).animate().scale(delay: 400.ms, curve: Curves.easeOutBack),
-          
           const SizedBox(height: 32),
           _buildInfoNote(),
         ],
@@ -198,11 +208,15 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
             child: const Center(
               child: Icon(Icons.search, size: 64, color: AppColors.saffron),
             ),
-          ).animate(onPlay: (c) => c.repeat())
-           .scale(begin: const Offset(0.8, 0.8), end: const Offset(1.2, 1.2), duration: 1.seconds, curve: Curves.easeInOut)
-           .blur(begin: const Offset(0, 0), end: const Offset(10, 10))
-           .fadeOut(delay: 800.ms),
-           
+          )
+              .animate(onPlay: (c) => c.repeat())
+              .scale(
+                  begin: const Offset(0.8, 0.8),
+                  end: const Offset(1.2, 1.2),
+                  duration: 1.seconds,
+                  curve: Curves.easeInOut)
+              .blur(begin: const Offset(0, 0), end: const Offset(10, 10))
+              .fadeOut(delay: 800.ms),
           const SizedBox(height: 40),
           Text(
             'Analyzing Bharat Database...',
@@ -215,7 +229,8 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
           const SizedBox(height: 12),
           Text(
             'Matching eligibility criteria with 500+ schemes',
-            style: GoogleFonts.poppins(color: AppColors.textMuted, fontSize: 13),
+            style:
+                GoogleFonts.poppins(color: AppColors.textMuted, fontSize: 13),
           ),
         ],
       ),
@@ -259,13 +274,18 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
                     Expanded(
                       child: Text(
                         'Results: Age ${_ageController.text}, Income ₹${_incomeController.text}',
-                        style: GoogleFonts.poppins(color: AppColors.textMuted, fontSize: 11),
+                        style: GoogleFonts.poppins(
+                            color: AppColors.textMuted, fontSize: 11),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     TextButton(
                       onPressed: () => setState(() => _showResults = false),
-                      child: Text('Refine Params', style: GoogleFonts.poppins(color: AppColors.saffron, fontSize: 12, fontWeight: FontWeight.bold)),
+                      child: Text('Refine Params',
+                          style: GoogleFonts.poppins(
+                              color: AppColors.saffron,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
@@ -281,9 +301,11 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
                     child: DropdownButton<String>(
                       value: _selectedCategory,
                       dropdownColor: AppColors.bgMid,
-                      icon: const Icon(Icons.filter_list, color: AppColors.saffron),
+                      icon: const Icon(Icons.filter_list,
+                          color: AppColors.saffron),
                       isExpanded: true,
-                      style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
+                      style: GoogleFonts.poppins(
+                          color: Colors.white, fontSize: 14),
                       items: _categories.map((String cat) {
                         return DropdownMenuItem<String>(
                           value: cat,
@@ -310,7 +332,8 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.sentiment_dissatisfied, size: 64, color: AppColors.textMuted),
+                  const Icon(Icons.sentiment_dissatisfied,
+                      size: 64, color: AppColors.textMuted),
                   const SizedBox(height: 16),
                   Text(
                     'No direct matches found.',
@@ -324,29 +347,46 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
               ),
             ),
           )
-        else
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final filtered = _matchedSchemes.where((s) {
-                    if (_selectedCategory == 'All') return true;
-                    // Improved matching logic for categories
-                    final cat = s.category.toLowerCase();
-                    final filter = _selectedCategory.toLowerCase();
-                    if (filter == 'housing') return cat.contains('home') || cat.contains('housing') || cat.contains('aswas');
-                    if (filter == 'education') return cat.contains('students') || cat.contains('education') || cat.contains('shiksha');
-                    return cat.contains(filter);
-                  }).toList();
+        else ...[
+          (() {
+            final filtered = _matchedSchemes.where((s) {
+              if (_selectedCategory == 'All') return true;
+              final cat = s.category.toLowerCase();
+              final filter = _selectedCategory.toLowerCase();
+              if (filter == 'housing')
+                return cat.contains('home') ||
+                    cat.contains('housing') ||
+                    cat.contains('aswas');
+              if (filter == 'education')
+                return cat.contains('students') ||
+                    cat.contains('education') ||
+                    cat.contains('shiksha');
+              return cat.contains(filter);
+            }).toList();
 
-                  if (index >= filtered.length) return null;
-                  return _RecommendationCard(scheme: filtered[index], index: index);
-                },
-                childCount: _matchedSchemes.length, // This will be handled by returning null above if index exceeds filtered length
+            if (filtered.isEmpty) {
+              return SliverFillRemaining(
+                child: Center(
+                  child: Text(
+                    'No schemes found for "$_selectedCategory"',
+                    style: GoogleFonts.poppins(color: AppColors.textMuted),
+                  ),
+                ),
+              );
+            }
+
+            return SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => _RecommendationCard(
+                      scheme: filtered[index], index: index),
+                  childCount: filtered.length,
+                ),
               ),
-            ),
-          ),
+            );
+          })(),
+        ],
         const SliverToBoxAdapter(child: SizedBox(height: 100)),
       ],
     );
@@ -387,7 +427,8 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
               hintStyle: const TextStyle(color: Colors.white24, fontSize: 14),
               prefixIcon: Icon(icon, color: AppColors.saffron, size: 20),
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             ),
           ),
         ),
@@ -411,7 +452,8 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
           Expanded(
             child: Text(
               'Your privacy matters. CVI does not share this search data with third parties. It is only used to query the Bharat Scheme Knowledge Base.',
-              style: GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 12, height: 1.5),
+              style: GoogleFonts.inter(
+                  color: AppColors.textSecondary, fontSize: 12, height: 1.5),
             ),
           ),
         ],
@@ -436,7 +478,8 @@ class _RecommendationCard extends StatelessWidget {
         border: Border.all(color: AppColors.surfaceBorder),
       ),
       child: InkWell(
-        onTap: () => context.push(Routes.serviceDetailPath(scheme.id), extra: scheme.toServiceModel()),
+        onTap: () => context.push(Routes.serviceDetailPath(scheme.id),
+            extra: scheme.toServiceModel()),
         borderRadius: BorderRadius.circular(20),
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -446,11 +489,13 @@ class _RecommendationCard extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppColors.saffron.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.saffron.withValues(alpha: 0.3)),
+                      border: Border.all(
+                          color: AppColors.saffron.withValues(alpha: 0.3)),
                     ),
                     child: Text(
                       scheme.category.replaceAll('_', ' ').toUpperCase(),
@@ -462,7 +507,8 @@ class _RecommendationCard extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  const Icon(Icons.verified, color: AppColors.emerald, size: 20),
+                  const Icon(Icons.verified,
+                      color: AppColors.emerald, size: 20),
                 ],
               ),
               const SizedBox(height: 12),
@@ -487,7 +533,8 @@ class _RecommendationCard extends StatelessWidget {
               const SizedBox(height: 16),
               Row(
                 children: [
-                  const Icon(Icons.info_outline, color: AppColors.gold, size: 14),
+                  const Icon(Icons.info_outline,
+                      color: AppColors.gold, size: 14),
                   const SizedBox(width: 8),
                   Text(
                     'Exclusive Match',
@@ -512,7 +559,9 @@ class _RecommendationCard extends StatelessWidget {
           ),
         ),
       ),
-    ).animate().fadeIn(delay: Duration(milliseconds: index * 100)).slideY(begin: 0.1, end: 0);
+    )
+        .animate()
+        .fadeIn(delay: Duration(milliseconds: index * 100))
+        .slideY(begin: 0.1, end: 0);
   }
 }
-

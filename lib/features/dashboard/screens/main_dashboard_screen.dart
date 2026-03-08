@@ -11,11 +11,11 @@ import '../../../providers/analytics_provider.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/conversation_provider.dart';
 import '../../../widgets/t_text.dart';
-import '../../../data/mock/services_data.dart';
 import '../../../providers/services_provider.dart';
 import '../../../providers/user_provider.dart';
 import '../../../providers/notification_provider.dart';
 import '../../../widgets/flag/waving_flag_widget.dart';
+import '../../../providers/language_provider.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN DASHBOARD SCREEN (DATA-RICH)
@@ -54,8 +54,20 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
 
   String _formattedDate() {
     final date = DateTime.now();
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
     return '${date.day} ${months[date.month - 1]}, ${date.year}';
   }
 
@@ -70,33 +82,39 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
           child: ListView(
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.only(bottom: 120),
-              children: [
-                // Tricolor bar at very top
-                const SizedBox(
-                  height: 3,
-                  child: Row(children: [
-                    Expanded(child: SizedBox(child: ColoredBox(color: Color(0xFFFF6B1A)))),
-                    Expanded(child: SizedBox(child: ColoredBox(color: Color(0xFFF5F5F5)))),
-                    Expanded(child: SizedBox(child: ColoredBox(color: Color(0xFF138808)))),
-                  ]),
-                ),
-                _buildHeroGreeting(),
-                const SizedBox(height: 24),
-                _buildStatsRow(),
-                const SizedBox(height: 32),
-                _buildQuickActions(),
-                const SizedBox(height: 32),
-                _buildSmartFeatures(),
-                const SizedBox(height: 32),
-                _buildPopularServices(),
-                const SizedBox(height: 32),
-                _buildGovSchemesBanner(),
-                const SizedBox(height: 32),
-                _buildRecentActivity(),
-              ],
-            ),
+            children: [
+              // Tricolor bar at very top
+              const SizedBox(
+                height: 3,
+                child: Row(children: [
+                  Expanded(
+                      child: SizedBox(
+                          child: ColoredBox(color: Color(0xFFFF6B1A)))),
+                  Expanded(
+                      child: SizedBox(
+                          child: ColoredBox(color: Color(0xFFF5F5F5)))),
+                  Expanded(
+                      child: SizedBox(
+                          child: ColoredBox(color: Color(0xFF138808)))),
+                ]),
+              ),
+              _buildHeroGreeting(),
+              const SizedBox(height: 24),
+              _buildStatsRow(),
+              const SizedBox(height: 32),
+              _buildQuickActions(),
+              const SizedBox(height: 32),
+              _buildSmartFeatures(),
+              const SizedBox(height: 32),
+              _buildPopularServices(),
+              const SizedBox(height: 32),
+              _buildGovSchemesBanner(),
+              const SizedBox(height: 32),
+              _buildRecentActivity(),
+            ],
           ),
         ),
+      ),
     );
   }
 
@@ -162,7 +180,8 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    const Icon(Icons.notifications_outlined, color: AppColors.textPrimary, size: 24),
+                    const Icon(Icons.notifications_outlined,
+                        color: AppColors.textPrimary, size: 24),
                     if (np.hasUnread)
                       Positioned(
                         right: 8,
@@ -170,7 +189,8 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
                         child: Container(
                           width: 10,
                           height: 10,
-                          decoration: const BoxDecoration(color: AppColors.saffron, shape: BoxShape.circle),
+                          decoration: const BoxDecoration(
+                              color: AppColors.saffron, shape: BoxShape.circle),
                         ),
                       ),
                   ],
@@ -192,14 +212,20 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
                   end: Alignment.bottomRight,
                 ),
                 boxShadow: [
-                  BoxShadow(color: AppColors.saffron.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 4)),
+                  BoxShadow(
+                      color: AppColors.saffron.withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4)),
                 ],
                 border: Border.all(color: AppColors.bgDeep, width: 2),
               ),
               child: Center(
                 child: Text(
                   userInitials,
-                  style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white),
+                  style: GoogleFonts.poppins(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white),
                 ),
               ),
             ),
@@ -223,9 +249,21 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
               Expanded(
                 child: Column(
                   children: [
-                    _StatCard(label: 'Queries Today', hindiLabel: 'आज की बातें', value: '${analytics.queriesCount}', icon: Icons.forum_rounded, color: AppColors.saffron, delay: 0),
+                    _StatCard(
+                        label: 'Queries Today',
+                        hindiLabel: 'आज की बातें',
+                        value: '${analytics.queriesCount}',
+                        icon: Icons.forum_rounded,
+                        color: AppColors.saffron,
+                        delay: 0),
                     const SizedBox(height: 12),
-                    _StatCard(label: 'Active Apps', hindiLabel: 'सक्रिय आवेदन', value: '$activeApps', icon: Icons.pending_actions_rounded, color: const Color(0xFF138808), delay: 100),
+                    _StatCard(
+                        label: 'Active Apps',
+                        hindiLabel: 'सक्रिय आवेदन',
+                        value: '$activeApps',
+                        icon: Icons.pending_actions_rounded,
+                        color: const Color(0xFF138808),
+                        delay: 100),
                   ],
                 ),
               ),
@@ -233,9 +271,21 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
               Expanded(
                 child: Column(
                   children: [
-                    _StatCard(label: 'Services Explored', hindiLabel: 'देखी गई सेवाएं', value: '${analytics.servicesExploredCount}', icon: Icons.travel_explore_rounded, color: AppColors.gold, delay: 50),
+                    _StatCard(
+                        label: 'Services Explored',
+                        hindiLabel: 'देखी गई सेवाएं',
+                        value: '${analytics.servicesExploredCount}',
+                        icon: Icons.travel_explore_rounded,
+                        color: AppColors.gold,
+                        delay: 50),
                     const SizedBox(height: 12),
-                    _StatCard(label: 'Saved Docs', hindiLabel: 'सहेजे दस्तावेज़', value: '$savedDocs', icon: Icons.folder_special_rounded, color: const Color(0x4DFFFFFF), delay: 150),
+                    _StatCard(
+                        label: 'Saved Docs',
+                        hindiLabel: 'सहेजे दस्तावेज़',
+                        value: '$savedDocs',
+                        icon: Icons.folder_special_rounded,
+                        color: const Color(0x4DFFFFFF),
+                        delay: 150),
                   ],
                 ),
               ),
@@ -249,12 +299,36 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
   // ─── Section 3: Quick Actions ───────────────────────────────────────────────
   Widget _buildQuickActions() {
     final actions = [
-      ('Ask CVI',   Icons.mic_rounded,        AppColors.saffron,             () => context.push(Routes.voice)),
-      ('Complaints',Icons.report_problem_rounded, AppColors.accentRed,          () => context.push(Routes.voiceComplaint)),
-      ('Services',  Icons.apps_rounded,        AppColors.gold,                () => context.go(Routes.services)),
-      ('My Apps',   Icons.assignment_rounded,  AppColors.gold,                () => context.push(Routes.myApplications)),
-      ('Documents', Icons.file_present_rounded,const Color(0xFF138808),       () => context.push(Routes.documents)),
-      ('Doc Vault', Icons.lock_rounded,        AppColors.saffron,             () => context.push(Routes.documentVault)),
+      (
+        'Ask CVI',
+        Icons.mic_rounded,
+        AppColors.saffron,
+        () => context.push(Routes.voice)
+      ),
+      (
+        'Complaints',
+        Icons.report_problem_rounded,
+        AppColors.accentRed,
+        () => context.push(Routes.voiceComplaint)
+      ),
+      (
+        'Services',
+        Icons.apps_rounded,
+        AppColors.gold,
+        () => context.go(Routes.services)
+      ),
+      (
+        'My Apps',
+        Icons.assignment_rounded,
+        AppColors.gold,
+        () => context.push(Routes.myApplications)
+      ),
+      (
+        'Secure Vault',
+        Icons.lock_person_rounded,
+        AppColors.saffron,
+        () => context.push(Routes.documentVault)
+      ),
     ];
 
     return Column(
@@ -275,7 +349,12 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
             separatorBuilder: (_, __) => const SizedBox(width: 14),
             itemBuilder: (context, index) {
               final (label, icon, color, onTap) = actions[index];
-              return _QuickActionBtn(label: label, icon: icon, color: color, onTap: onTap, index: index);
+              return _QuickActionBtn(
+                  label: label,
+                  icon: icon,
+                  color: color,
+                  onTap: onTap,
+                  index: index);
             },
           ),
         ),
@@ -283,16 +362,51 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
     );
   }
 
-
   // ─── Section 3.5: Smart Features ──────────────────────────────────────────────
   Widget _buildSmartFeatures() {
     final features = [
-      ('Voice Complaint', 'शिकायत दर्ज', Icons.record_voice_over_rounded, AppColors.accentBlue, Routes.voiceComplaint),
-      ('AI Scanner', 'दस्तावेज़ स्कैन', Icons.document_scanner_rounded, AppColors.accentTeal, Routes.documentScanner),
-      ('Scheme Finder', 'योजना खोजें', Icons.search_rounded, AppColors.gold, Routes.schemeDiscovery),
-      ('App Tracker', 'स्थिति', Icons.track_changes_rounded, AppColors.emeraldLight, Routes.appTracker),
-      ('Offline Guide', 'ऑफ़लाइन', Icons.download_done_rounded, AppColors.accentPurple, Routes.offlineGuidance),
-      ('Profile Recs', 'प्रोफाइल', Icons.person_search_rounded, AppColors.accentAmber, Routes.citizenProfile),
+      (
+        'Voice Complaint',
+        'शिकायत दर्ज',
+        Icons.record_voice_over_rounded,
+        AppColors.accentBlue,
+        Routes.voiceComplaint
+      ),
+      (
+        'AI Scanner',
+        'दस्तावेज़ स्कैन',
+        Icons.document_scanner_rounded,
+        AppColors.accentTeal,
+        Routes.documentScanner
+      ),
+      (
+        'Scheme Finder',
+        'योजना खोजें',
+        Icons.search_rounded,
+        AppColors.gold,
+        Routes.schemeDiscovery
+      ),
+      (
+        'App Tracker',
+        'स्थिति',
+        Icons.track_changes_rounded,
+        AppColors.emeraldLight,
+        Routes.appTracker
+      ),
+      (
+        'Offline Guide',
+        'ऑफ़लाइन',
+        Icons.download_done_rounded,
+        AppColors.accentPurple,
+        Routes.offlineGuidance
+      ),
+      (
+        'Profile Recs',
+        'प्रोफाइल',
+        Icons.person_search_rounded,
+        AppColors.accentAmber,
+        Routes.citizenProfile
+      ),
     ];
 
     return Column(
@@ -349,19 +463,23 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
                         color: AppColors.textPrimary,
                       ),
                     ),
-                    Text(
-                      f.$2,
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      style: GoogleFonts.notoSansDevanagari(
-                        fontSize: 8,
-                        color: AppColors.textSecondary,
+                    if (context.watch<LanguageProvider>().languageCode == 'hi')
+                      Text(
+                        f.$2,
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        style: GoogleFonts.notoSansDevanagari(
+                          fontSize: 8,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
-            ).animate().fadeIn(delay: Duration(milliseconds: 200 + index * 50)).scale(delay: Duration(milliseconds: 200 + index * 50));
+            )
+                .animate()
+                .fadeIn(delay: Duration(milliseconds: 200 + index * 50))
+                .scale(delay: Duration(milliseconds: 200 + index * 50));
           },
         ),
       ],
@@ -371,7 +489,14 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
   // ─── Section 4: Popular Services Grid ───────────────────────────────────────
   Widget _buildPopularServices() {
     final services = context.watch<ServicesProvider>().allServices;
-    final popular = services.where((s) => s.isPopular || s.id == 'aadhaar_card' || s.id == 'pan_card' || s.id == 'passport').take(6).toList();
+    final popular = services
+        .where((s) =>
+            s.isPopular ||
+            s.id == 'aadhaar_card' ||
+            s.id == 'pan_card' ||
+            s.id == 'passport')
+        .take(6)
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -386,7 +511,10 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
                 onTap: () => context.go(Routes.services),
                 child: TText(
                   'View All',
-                  style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.saffron),
+                  style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.saffron),
                 ),
               ),
             ],
@@ -439,7 +567,11 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
             separatorBuilder: (_, __) => const SizedBox(width: 16),
             itemBuilder: (context, index) {
               final (name, benefit, deadline) = schemes[index];
-              return _SchemeCard(name: name, benefit: benefit, deadline: deadline, index: index);
+              return _SchemeCard(
+                  name: name,
+                  benefit: benefit,
+                  deadline: deadline,
+                  index: index);
             },
           ),
         ),
@@ -452,7 +584,11 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
     return Consumer<ConversationProvider>(
       builder: (context, conv, child) {
         final messages = conv.modernMessages
-            .where((m) => m.isUser).toList().reversed.take(5).toList();
+            .where((m) => m.isUser)
+            .toList()
+            .reversed
+            .take(5)
+            .toList();
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -494,12 +630,14 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          width: 36, height: 36,
+                          width: 36,
+                          height: 36,
                           decoration: BoxDecoration(
                             color: AppColors.saffron.withValues(alpha: 0.12),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.mic_rounded, size: 16, color: AppColors.saffron),
+                          child: const Icon(Icons.mic_rounded,
+                              size: 16, color: AppColors.saffron),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -508,20 +646,29 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
                             decoration: BoxDecoration(
                               color: AppColors.bgDark,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: AppColors.surfaceBorder),
+                              border:
+                                  Border.all(color: AppColors.surfaceBorder),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(msg.text, style: GoogleFonts.poppins(fontSize: 13, color: AppColors.textPrimary)),
+                                Text(msg.text,
+                                    style: GoogleFonts.poppins(
+                                        fontSize: 13,
+                                        color: AppColors.textPrimary)),
                                 const SizedBox(height: 4),
-                                Text(_formatTime(msg.timestamp), style: GoogleFonts.poppins(fontSize: 10, color: AppColors.textMuted)),
+                                Text(_formatTime(msg.timestamp),
+                                    style: GoogleFonts.poppins(
+                                        fontSize: 10,
+                                        color: AppColors.textMuted)),
                               ],
                             ),
                           ),
                         ),
                       ],
-                    ).animate().fadeIn(delay: Duration(milliseconds: 100 * index)),
+                    )
+                        .animate()
+                        .fadeIn(delay: Duration(milliseconds: 100 * index)),
                   );
                 },
               ),
@@ -533,7 +680,11 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
 
   String _formatTime(DateTime dt) {
     String p = dt.hour >= 12 ? 'PM' : 'AM';
-    int h = dt.hour > 12 ? dt.hour - 12 : dt.hour == 0 ? 12 : dt.hour;
+    int h = dt.hour > 12
+        ? dt.hour - 12
+        : dt.hour == 0
+            ? 12
+            : dt.hour;
     String m = dt.minute.toString().padLeft(2, '0');
     return '$h:$m $p';
   }
@@ -551,7 +702,13 @@ class _StatCard extends StatelessWidget {
   final Color color;
   final int delay;
 
-  const _StatCard({required this.label, required this.hindiLabel, required this.value, required this.icon, required this.color, required this.delay});
+  const _StatCard(
+      {required this.label,
+      required this.hindiLabel,
+      required this.value,
+      required this.icon,
+      required this.color,
+      required this.delay});
 
   @override
   Widget build(BuildContext context) {
@@ -562,7 +719,12 @@ class _StatCard extends StatelessWidget {
           color: AppColors.bgMid,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: color.withValues(alpha: 0.2)),
-          boxShadow: [BoxShadow(color: color.withValues(alpha: 0.04), blurRadius: 20, offset: const Offset(0, 4))],
+          boxShadow: [
+            BoxShadow(
+                color: color.withValues(alpha: 0.04),
+                blurRadius: 20,
+                offset: const Offset(0, 4))
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -573,7 +735,8 @@ class _StatCard extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   color: color,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(20)),
                 ),
               ),
             ),
@@ -583,7 +746,9 @@ class _StatCard extends StatelessWidget {
                 children: [
                   Container(
                     padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(12)),
+                    decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12)),
                     child: Icon(icon, color: color, size: 20),
                   ),
                   const SizedBox(width: 12),
@@ -592,10 +757,23 @@ class _StatCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(value, style: GoogleFonts.playfairDisplay(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.textPrimary, height: 1.0)),
+                        Text(value,
+                            style: GoogleFonts.playfairDisplay(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.textPrimary,
+                                height: 1.0)),
                         const SizedBox(height: 2),
-                        TText(label, style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textMuted), maxLines: 1, overflow: TextOverflow.ellipsis),
-                        Text(hindiLabel, style: GoogleFonts.notoSansDevanagari(fontSize: 9, color: AppColors.textMuted)),
+                        TText(label,
+                            style: GoogleFonts.poppins(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textMuted),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis),
+                        Text(hindiLabel,
+                            style: GoogleFonts.notoSansDevanagari(
+                                fontSize: 9, color: AppColors.textMuted)),
                       ],
                     ),
                   )
@@ -605,7 +783,10 @@ class _StatCard extends StatelessWidget {
           ],
         ),
       ),
-    ).animate().fadeIn(delay: Duration(milliseconds: 300 + delay)).slideY(begin: 0.1, end: 0);
+    )
+        .animate()
+        .fadeIn(delay: Duration(milliseconds: 300 + delay))
+        .slideY(begin: 0.1, end: 0);
   }
 }
 
@@ -616,7 +797,12 @@ class _QuickActionBtn extends StatelessWidget {
   final VoidCallback onTap;
   final int index;
 
-  const _QuickActionBtn({required this.label, required this.icon, required this.color, required this.onTap, required this.index});
+  const _QuickActionBtn(
+      {required this.label,
+      required this.icon,
+      required this.color,
+      required this.onTap,
+      required this.index});
 
   @override
   Widget build(BuildContext context) {
@@ -625,20 +811,33 @@ class _QuickActionBtn extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            width: 64, height: 64,
+            width: 64,
+            height: 64,
             decoration: BoxDecoration(
               color: const Color(0xFF1E1814),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: color.withValues(alpha: 0.3)),
-              boxShadow: [BoxShadow(color: color.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))],
+              boxShadow: [
+                BoxShadow(
+                    color: color.withValues(alpha: 0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4))
+              ],
             ),
             child: Icon(icon, color: color, size: 28),
           ),
           const SizedBox(height: 8),
-          TText(label, style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+          TText(label,
+              style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary)),
         ],
       ),
-    ).animate().fadeIn(delay: Duration(milliseconds: 400 + index * 50)).scale(delay: Duration(milliseconds: 400 + index * 50));
+    )
+        .animate()
+        .fadeIn(delay: Duration(milliseconds: 400 + index * 50))
+        .scale(delay: Duration(milliseconds: 400 + index * 50));
   }
 }
 
@@ -714,27 +913,33 @@ class _PopularServiceCard extends StatelessWidget {
                   ),
                   const Padding(
                     padding: EdgeInsets.only(top: 4),
-                    child: Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textMuted, size: 12),
+                    child: Icon(Icons.arrow_forward_ios_rounded,
+                        color: AppColors.textMuted, size: 12),
                   ),
                 ],
               ),
               const Spacer(),
               // Bottom — name, hindi, views
               Flexible(
-                child: TText(
-                  service.localizedName('en'),
-                  style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                child: Text(
+                  context.watch<LanguageProvider>().languageCode == 'hi'
+                      ? (hindiName.isNotEmpty
+                          ? hindiName
+                          : service.localizedName('en'))
+                      : service.localizedName('en'),
+                  style: context.watch<LanguageProvider>().languageCode == 'hi'
+                      ? GoogleFonts.notoSansDevanagari(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textPrimary)
+                      : GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              if (hindiName.isNotEmpty && hindiName != service.localizedName('en'))
-                Text(
-                  hindiName,
-                  style: GoogleFonts.notoSansDevanagari(fontSize: 9, color: AppColors.textMuted),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
               const SizedBox(height: 2),
               Row(
                 children: [
@@ -749,7 +954,8 @@ class _PopularServiceCard extends StatelessWidget {
                   const SizedBox(width: 4),
                   Text(
                     '$views views',
-                    style: GoogleFonts.poppins(fontSize: 9, color: AppColors.gold),
+                    style:
+                        GoogleFonts.poppins(fontSize: 9, color: AppColors.gold),
                   ),
                 ],
               ),
@@ -757,7 +963,10 @@ class _PopularServiceCard extends StatelessWidget {
           ),
         ),
       ),
-    ).animate().fadeIn(delay: Duration(milliseconds: 500 + index * 50)).slideY(begin: 0.1, end: 0);
+    )
+        .animate()
+        .fadeIn(delay: Duration(milliseconds: 500 + index * 50))
+        .slideY(begin: 0.1, end: 0);
   }
 }
 
@@ -767,7 +976,11 @@ class _SchemeCard extends StatelessWidget {
   final String deadline;
   final int index;
 
-  const _SchemeCard({required this.name, required this.benefit, required this.deadline, required this.index});
+  const _SchemeCard(
+      {required this.name,
+      required this.benefit,
+      required this.deadline,
+      required this.index});
 
   @override
   Widget build(BuildContext context) {
@@ -799,27 +1012,50 @@ class _SchemeCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
                             color: const Color(0xFF0A7A3E),
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: Text('Gov Scheme', style: GoogleFonts.poppins(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.white)),
+                          child: Text('Gov Scheme',
+                              style: GoogleFonts.poppins(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white)),
                         ),
-                        const Icon(Icons.verified_rounded, color: Color(0xFF0A7A3E), size: 14),
+                        const Icon(Icons.verified_rounded,
+                            color: Color(0xFF0A7A3E), size: 14),
                       ],
                     ),
-                    TText(name, style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary), maxLines: 2, overflow: TextOverflow.ellipsis),
+                    TText(name,
+                        style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Flexible(
-                          child: Text(benefit, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.gold), overflow: TextOverflow.ellipsis),
+                          child: Text(benefit,
+                              style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.gold),
+                              overflow: TextOverflow.ellipsis),
                         ),
                         if (deadline != 'Ongoing')
-                          Text('Ends: $deadline', style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.accentRed))
+                          Text('Ends: $deadline',
+                              style: GoogleFonts.poppins(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.accentRed))
                         else
-                          Text(deadline, style: GoogleFonts.poppins(fontSize: 10, color: AppColors.emeraldLight)),
+                          Text(deadline,
+                              style: GoogleFonts.poppins(
+                                  fontSize: 10, color: AppColors.emeraldLight)),
                       ],
                     ),
                   ],
@@ -829,7 +1065,10 @@ class _SchemeCard extends StatelessWidget {
           ],
         ),
       ),
-    ).animate().fadeIn(delay: Duration(milliseconds: 600 + index * 100)).slideX(begin: 0.1, end: 0);
+    )
+        .animate()
+        .fadeIn(delay: Duration(milliseconds: 600 + index * 100))
+        .slideX(begin: 0.1, end: 0);
   }
 }
 
@@ -838,13 +1077,16 @@ class _FloatingMicButton extends StatefulWidget {
   State<_FloatingMicButton> createState() => _FloatingMicButtonState();
 }
 
-class _FloatingMicButtonState extends State<_FloatingMicButton> with SingleTickerProviderStateMixin {
+class _FloatingMicButtonState extends State<_FloatingMicButton>
+    with SingleTickerProviderStateMixin {
   late AnimationController _pulseCtrl;
 
   @override
   void initState() {
     super.initState();
-    _pulseCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat(reverse: true);
+    _pulseCtrl =
+        AnimationController(vsync: this, duration: const Duration(seconds: 2))
+          ..repeat(reverse: true);
   }
 
   @override
@@ -863,7 +1105,8 @@ class _FloatingMicButtonState extends State<_FloatingMicButton> with SingleTicke
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: AppColors.saffron.withValues(alpha: 0.3 + 0.3 * _pulseCtrl.value),
+                color: AppColors.saffron
+                    .withValues(alpha: 0.3 + 0.3 * _pulseCtrl.value),
                 blurRadius: 20 + 10 * _pulseCtrl.value,
                 spreadRadius: 2 + 4 * _pulseCtrl.value,
               ),
@@ -893,11 +1136,18 @@ class _SectionHeading extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        Text(title,
+            style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary)),
         const SizedBox(height: 6),
         Row(children: [
           Container(width: 20, height: 2, color: const Color(0xFFFF6B1A)),
-          Container(width: 20, height: 2, color: const Color(0xFFF5F5F5).withValues(alpha: 0.4)),
+          Container(
+              width: 20,
+              height: 2,
+              color: const Color(0xFFF5F5F5).withValues(alpha: 0.4)),
           Container(width: 20, height: 2, color: const Color(0xFF138808)),
         ]),
       ],

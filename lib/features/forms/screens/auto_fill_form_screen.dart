@@ -1,6 +1,4 @@
-// ═══════════════════════════════════════════════════════════════════════════════
-// AUTO FILL FORM SCREEN — Supabase-backed AI auto-filled government forms
-// ═══════════════════════════════════════════════════════════════════════════════
+// AUTO FILL FORM SCREEN — AWS-backed AI auto-filled government forms
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -57,7 +55,7 @@ class _AutoFillFormScreenState extends State<AutoFillFormScreen> {
   }
 
   Future<void> _loadFormData() async {
-    final result = await FormFillerService.autoFillFromSupabase(
+    final result = await FormFillerService.autoFillFromAws(
       serviceId: widget.serviceId,
     );
 
@@ -109,7 +107,8 @@ class _AutoFillFormScreenState extends State<AutoFillFormScreen> {
                       const SizedBox(height: 16),
                       _buildAutoFillStats(),
                       const SizedBox(height: 16),
-                      if (_emptyFields.isNotEmpty && _filledCount < _totalCount ~/ 2)
+                      if (_emptyFields.isNotEmpty &&
+                          _filledCount < _totalCount ~/ 2)
                         _buildMissingDocsAlert(),
                       const SizedBox(height: 12),
                       _buildFormBody(),
@@ -214,7 +213,8 @@ class _AutoFillFormScreenState extends State<AutoFillFormScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF6B1A),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 14),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14)),
                   ),
@@ -294,9 +294,7 @@ class _AutoFillFormScreenState extends State<AutoFillFormScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            pct >= 0.8
-                ? const Color(0xFF0A1A0A)
-                : const Color(0xFF1A1208),
+            pct >= 0.8 ? const Color(0xFF0A1A0A) : const Color(0xFF1A1208),
             const Color(0xFF0D0B07),
           ],
         ),
@@ -341,9 +339,7 @@ class _AutoFillFormScreenState extends State<AutoFillFormScreen> {
               minHeight: 8,
               backgroundColor: const Color(0xFF2A1F10),
               valueColor: AlwaysStoppedAnimation<Color>(
-                pct >= 0.8
-                    ? const Color(0xFF4CAF50)
-                    : const Color(0xFFFF6B1A),
+                pct >= 0.8 ? const Color(0xFF4CAF50) : const Color(0xFFFF6B1A),
               ),
             ),
           ),
@@ -360,8 +356,8 @@ class _AutoFillFormScreenState extends State<AutoFillFormScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF1A1208),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-            color: const Color(0xFFE65100).withValues(alpha: 0.3)),
+        border:
+            Border.all(color: const Color(0xFFE65100).withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -389,16 +385,15 @@ class _AutoFillFormScreenState extends State<AutoFillFormScreen> {
             runSpacing: 6,
             children: _emptyFields.take(5).map((f) {
               return Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFF2A1F10),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   f,
-                  style: GoogleFonts.outfit(
-                      color: Colors.white60, fontSize: 11),
+                  style:
+                      GoogleFonts.outfit(color: Colors.white60, fontSize: 11),
                 ),
               );
             }).toList(),
@@ -490,8 +485,7 @@ class _AutoFillFormScreenState extends State<AutoFillFormScreen> {
   Widget _buildBottomBar() {
     final allRequired = _formDef?.fields
             .where((f) => f.isRequired)
-            .every(
-                (f) => (_controllers[f.id]?.text ?? '').isNotEmpty) ??
+            .every((f) => (_controllers[f.id]?.text ?? '').isNotEmpty) ??
         false;
 
     return Container(
@@ -517,32 +511,35 @@ class _AutoFillFormScreenState extends State<AutoFillFormScreen> {
             const SizedBox(width: 12),
             Flexible(
               child: ElevatedButton(
-              onPressed: () {
-                // Update filled values from controllers
-                for (final field in _formDef!.fields) {
-                  _filledValues[field.id] = _controllers[field.id]?.text;
-                }
-                setState(() => _showReview = true);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    allRequired ? const Color(0xFFFF6B1A) : const Color(0xFF555555),
-                foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
-              ),
-              child: Text(
-                allRequired ? 'Review & Submit →' : '$_filledCount fields need input',
-                style: GoogleFonts.outfit(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
+                onPressed: () {
+                  // Update filled values from controllers
+                  for (final field in _formDef!.fields) {
+                    _filledValues[field.id] = _controllers[field.id]?.text;
+                  }
+                  setState(() => _showReview = true);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: allRequired
+                      ? const Color(0xFFFF6B1A)
+                      : const Color(0xFF555555),
+                  foregroundColor: Colors.white,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                ),
+                child: Text(
+                  allRequired
+                      ? 'Review & Submit →'
+                      : '$_filledCount fields need input',
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
         ),
       ),
     );
@@ -695,8 +692,7 @@ class _AutoFillFormScreenState extends State<AutoFillFormScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: TextButton(
-                      onPressed: () =>
-                          setState(() => _showReview = false),
+                      onPressed: () => setState(() => _showReview = false),
                       child: Text(
                         'Edit Form',
                         style: GoogleFonts.outfit(
@@ -718,7 +714,7 @@ class _AutoFillFormScreenState extends State<AutoFillFormScreen> {
   // ─── Submit ───────────────────────────────────────────────────────────────
 
   Future<void> _submitApplication() async {
-    // Save form fill history to Supabase
+    // Save form fill history to AWS Amplify
     final filledData = <String, dynamic>{};
     for (final field in _formDef!.fields) {
       filledData[field.label] = _filledValues[field.id] ?? '';
@@ -747,7 +743,8 @@ class _AutoFillFormScreenState extends State<AutoFillFormScreen> {
     }
   }
 
-  void _openSmartBrowser(Map<String, String> autoFillMap, {bool initialTranslate = true, String? languageCode}) {
+  void _openSmartBrowser(Map<String, String> autoFillMap,
+      {bool initialTranslate = true, String? languageCode}) {
     context.push(
       Routes.smartBrowser,
       extra: {
@@ -774,7 +771,7 @@ class _AutoFillFormScreenState extends State<AutoFillFormScreen> {
     final langProvider = context.read<LanguageProvider>();
     final currentLangName = langProvider.languageName;
     final isEnglish = langProvider.languageCode == 'en';
-    
+
     // Default to Hindi if app is in English, otherwise use current regional language
     final regionalLangName = isEnglish ? 'हिन्दी (Hindi)' : currentLangName;
 
@@ -815,9 +812,11 @@ class _AutoFillFormScreenState extends State<AutoFillFormScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2E2E2E),
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
               ),
-              child: Text('View in English', style: GoogleFonts.outfit(color: Colors.white)),
+              child: Text('View in English',
+                  style: GoogleFonts.outfit(color: Colors.white)),
             ),
             const SizedBox(height: 12),
             ElevatedButton(
@@ -825,16 +824,19 @@ class _AutoFillFormScreenState extends State<AutoFillFormScreen> {
                 Navigator.pop(bContext);
                 // If app is in English but user clicked "View in Hindi", pass 'hi'
                 final code = isEnglish ? 'hi' : langProvider.languageCode;
-                _openSmartBrowser(autoFillMap, initialTranslate: true, languageCode: code);
+                _openSmartBrowser(autoFillMap,
+                    initialTranslate: true, languageCode: code);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFF6B1A),
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
               ),
               child: Text(
                 'View in $regionalLangName',
-                style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                style: GoogleFonts.outfit(
+                    color: Colors.white, fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(height: 30),
@@ -880,9 +882,7 @@ class _FormFieldCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border(
           left: BorderSide(
-            color: hasValue
-                ? const Color(0xFF2E7D32)
-                : const Color(0xFFE65100),
+            color: hasValue ? const Color(0xFF2E7D32) : const Color(0xFFE65100),
             width: 3,
           ),
         ),
@@ -952,35 +952,29 @@ class _FormFieldCard extends StatelessWidget {
               controller: controller,
               onChanged: onChanged,
               style: GoogleFonts.outfit(
-                color: hasValue
-                    ? const Color(0xFFD4930A)
-                    : Colors.white,
+                color: hasValue ? const Color(0xFFD4930A) : Colors.white,
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
               ),
               decoration: InputDecoration(
                 hintText: hasValue ? null : 'Enter manually',
-                hintStyle:
-                    GoogleFonts.outfit(color: const Color(0xFF555555)),
+                hintStyle: GoogleFonts.outfit(color: const Color(0xFF555555)),
                 isDense: true,
-                contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 10),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 filled: true,
                 fillColor: const Color(0xFF0D0B07),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide:
-                      const BorderSide(color: Color(0xFF2A1F10)),
+                  borderSide: const BorderSide(color: Color(0xFF2A1F10)),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide:
-                      const BorderSide(color: Color(0xFF2A1F10)),
+                  borderSide: const BorderSide(color: Color(0xFF2A1F10)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide:
-                      const BorderSide(color: Color(0xFFD4930A)),
+                  borderSide: const BorderSide(color: Color(0xFFD4930A)),
                 ),
               ),
             ),
@@ -1010,9 +1004,8 @@ class _FormFieldCard extends StatelessWidget {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          value: field.options!.contains(controller.text)
-              ? controller.text
-              : null,
+          value:
+              field.options!.contains(controller.text) ? controller.text : null,
           isExpanded: true,
           hint: Text(
             'Select ${field.label}',

@@ -13,13 +13,17 @@ import '../../providers/voice_provider.dart';
 import '../../providers/analytics_provider.dart';
 import '../../widgets/decorative/chakra_painter.dart';
 import '../../widgets/decorative/tricolor_bar.dart';
+import '../../models/service_model.dart';
+import '../../providers/citizen_profile_provider.dart';
+import '../../providers/document_vault_provider.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // VOICE SCREEN — Bharat Silicon Design
 // ═══════════════════════════════════════════════════════════════════════════════
 
 class VoiceScreen extends StatefulWidget {
-  const VoiceScreen({super.key});
+  final ServiceModel? scheme;
+  const VoiceScreen({super.key, this.scheme});
 
   @override
   State<VoiceScreen> createState() => _VoiceScreenState();
@@ -48,6 +52,34 @@ class _VoiceScreenState extends State<VoiceScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1400),
     )..repeat(reverse: true);
+
+    // Initialize Scheme Context if provided
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.scheme != null) {
+        _initializeSchemeContext();
+      }
+    });
+  }
+
+  void _initializeSchemeContext() {
+    final conv = context.read<ConversationProvider>();
+    final citizen = context.read<CitizenProfileProvider>();
+    final vault = context.read<DocumentVaultProvider>();
+
+    conv.setSchemeGuidanceContext(
+      scheme: widget.scheme!,
+      userProfile: citizen.profile?.toJson(),
+      documents: vault.documents
+          .map((d) => d['document_type'] as String? ?? '')
+          .toList(),
+    );
+
+    // Trigger an invisible initial prompt to the AI to introduce itself in context
+    final prompt = context.read<LanguageProvider>().languageCode == 'hi'
+        ? 'कृपया अपना परिचय दें और मुझे बताएं कि आप ${widget.scheme!.name} के बारे में मेरी कैसे मदद कर सकते हैं।'
+        : 'Please introduce yourself and tell me how you can help me with the ${widget.scheme!.name} scheme.';
+
+    conv.sendMessage(prompt);
   }
 
   @override
@@ -273,31 +305,70 @@ class _TopBar extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  'CVI Voice',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        context.watch<ConversationProvider>().isSchemeMode
+                            ? 'Scheme Advisor'
+                            : 'CVI Voice',
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                    if (context.watch<ConversationProvider>().isSchemeMode) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 1.5),
+                        decoration: BoxDecoration(
+                          color: AppColors.emerald.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                              color: AppColors.emerald.withValues(alpha: 0.5)),
+                        ),
+                        child: Text(
+                          'SPECIALIST',
+                          style: GoogleFonts.jetBrainsMono(
+                            fontSize: 7.5,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.emerald,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 Text(
-                  'कोई भी सरकारी सेवा के बारे में पूछें',
-                  style: GoogleFonts.notoSansDevanagari(
-                    fontSize: 10,
-                    color: AppColors.textMuted,
-                  ),
+                  context.watch<ConversationProvider>().isSchemeMode
+                      ? context.watch<ConversationProvider>().activeSchemeName
+                      : (context.watch<LanguageProvider>().languageCode == 'hi'
+                          ? 'कोई भी सरकारी सेवा के बारे में पूछें'
+                          : 'Ask about any government service'),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.watch<LanguageProvider>().languageCode == 'hi'
+                      ? GoogleFonts.notoSansDevanagari(
+                          fontSize: 9, color: AppColors.textMuted)
+                      : GoogleFonts.poppins(
+                          fontSize: 9, color: AppColors.textMuted),
                 ),
               ],
             ),
           ),
           // Language pill
           Container(
-            height: 30,
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+            height: 28,
+            padding: const EdgeInsets.symmetric(horizontal: 2),
             decoration: BoxDecoration(
               color: AppColors.bgMid,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(9),
               border: Border.all(color: AppColors.surfaceBorder),
             ),
             child: Row(
@@ -313,8 +384,8 @@ class _TopBar extends StatelessWidget {
                   },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 180),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 6, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                     decoration: BoxDecoration(
                       color: active ? AppColors.saffron : Colors.transparent,
                       borderRadius: BorderRadius.circular(7),
@@ -322,7 +393,7 @@ class _TopBar extends StatelessWidget {
                     child: Text(
                       _labels[i],
                       style: GoogleFonts.jetBrainsMono(
-                        fontSize: 9,
+                        fontSize: 8.5,
                         fontWeight: FontWeight.w700,
                         color: active ? Colors.white : AppColors.textMuted,
                       ),
@@ -380,83 +451,115 @@ class _ConversationArea extends StatelessWidget {
     if (!conv.hasMessages && !conv.isLoading) {
       // Idle state — greeting + mic
       return Consumer<ConversationProvider>(
-        builder: (context, conv, _) => Column(
-          children: [
-            // Greeting section — isolated repaint boundary
-            RepaintBoundary(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'नमस्ते! मैं CVI हूं',
-                      style: GoogleFonts.notoSansDevanagari(
-                        fontSize: 14,
-                        color: AppColors.gold,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ).animate().fadeIn(delay: 100.ms),
-                    const SizedBox(height: 4),
-                    Text(
-                      'How can I help you today?',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.05, end: 0),
-                    const SizedBox(height: 12),
-                    // Suggestion chips — no per-chip animations
-                    RepaintBoundary(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        child: Row(
-                          children: [
-                            for (final (i, chip) in [
-                              'Passport apply?',
-                              'Aadhaar update?',
-                              'PAN card?',
-                            ].indexed)
-                              Padding(
-                                padding: EdgeInsets.only(right: 8, left: i == 0 ? 0 : 0),
-                                child: GestureDetector(
-                                  onTap: () => conv.sendMessage(chip),
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 150),
-                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.bgMid,
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(color: AppColors.saffron.withValues(alpha: 0.6), width: 1),
-                                    ),
-                                    child: Text(
-                                      chip,
-                                      style: GoogleFonts.poppins(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w500),
+        builder: (context, conv, _) => SingleChildScrollView(
+          child: Column(
+            children: [
+              // Greeting section — isolated repaint boundary
+              RepaintBoundary(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        context.watch<LanguageProvider>().languageCode == 'hi'
+                            ? 'नमस्ते! मैं CVI हूं'
+                            : 'Hello! I am CVI',
+                        style: context.watch<LanguageProvider>().languageCode ==
+                                'hi'
+                            ? GoogleFonts.notoSansDevanagari(
+                                fontSize: 14,
+                                color: AppColors.gold,
+                                fontWeight: FontWeight.w500,
+                              )
+                            : GoogleFonts.poppins(
+                                fontSize: 14,
+                                color: AppColors.gold,
+                                fontWeight: FontWeight.w600,
+                              ),
+                      ).animate().fadeIn(delay: 100.ms),
+                      const SizedBox(height: 4),
+                      Text(
+                        context.watch<LanguageProvider>().languageCode == 'hi'
+                            ? 'मैं आपकी कैसे सहायता कर सकता हूं?'
+                            : 'How can I help you today?',
+                        style: context.watch<LanguageProvider>().languageCode ==
+                                'hi'
+                            ? GoogleFonts.notoSansDevanagari(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              )
+                            : GoogleFonts.poppins(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                      )
+                          .animate()
+                          .fadeIn(delay: 200.ms)
+                          .slideY(begin: 0.05, end: 0),
+                      const SizedBox(height: 12),
+                      // Suggestion chips — no per-chip animations
+                      RepaintBoundary(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          child: Row(
+                            children: [
+                              for (final (i, chip) in [
+                                'Passport apply?',
+                                'Aadhaar update?',
+                                'PAN card?',
+                              ].indexed)
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                      right: 8, left: i == 0 ? 0 : 0),
+                                  child: GestureDetector(
+                                    onTap: () => conv.sendMessage(chip),
+                                    child: AnimatedContainer(
+                                      duration:
+                                          const Duration(milliseconds: 150),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 14, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.bgMid,
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                            color: AppColors.saffron
+                                                .withValues(alpha: 0.6),
+                                            width: 1),
+                                      ),
+                                      child: Text(
+                                        chip,
+                                        style: GoogleFonts.poppins(
+                                            fontSize: 11,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w500),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-            // Big mic
-            Expanded(
-              child: _IdleMic(
+              // Big mic with padding to ensure visibility
+              const SizedBox(height: 40),
+              _IdleMic(
                 outerPulse: outerPulse,
                 innerPulse: innerPulse,
                 onMicTap: onMicTap,
                 isListening: isListening,
                 isProcessing: isProcessing,
               ),
-            ),
-          ],
+              const SizedBox(height: 80), // Bottom breathing room for keyboard
+            ],
+          ),
         ),
       );
     }
@@ -474,9 +577,8 @@ class _ConversationArea extends StatelessWidget {
         final msg = conv.messages[i].toModel();
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
-          child: msg.isUser
-              ? _UserBubble(message: msg)
-              : _BotBubble(message: msg),
+          child:
+              msg.isUser ? _UserBubble(message: msg) : _BotBubble(message: msg),
         );
       },
     );
@@ -526,7 +628,8 @@ class _IdleMic extends StatelessWidget {
                   height: 160 + outerPulse.value * 10,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: activeColor.withValues(alpha: 0.06 + outerPulse.value * 0.04),
+                    color: activeColor.withValues(
+                        alpha: 0.06 + outerPulse.value * 0.04),
                   ),
                 ),
               ),
@@ -538,7 +641,8 @@ class _IdleMic extends StatelessWidget {
                   height: 120 + innerPulse.value * 6,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: activeColor.withValues(alpha: 0.10 + innerPulse.value * 0.06),
+                    color: activeColor.withValues(
+                        alpha: 0.10 + innerPulse.value * 0.06),
                   ),
                 ),
               ),
@@ -568,7 +672,9 @@ class _IdleMic extends StatelessWidget {
                     ],
                   ),
                   child: Icon(
-                    isProcessing ? Icons.auto_awesome_rounded : Icons.mic_rounded,
+                    isProcessing
+                        ? Icons.auto_awesome_rounded
+                        : Icons.mic_rounded,
                     color: Colors.white,
                     size: 32,
                   ),
@@ -583,36 +689,69 @@ class _IdleMic extends StatelessWidget {
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
             child: Column(
-              key: ValueKey(isListening ? 'l' : isProcessing ? 'p' : 'i'),
+              key: ValueKey(isListening
+                  ? 'l'
+                  : isProcessing
+                      ? 'p'
+                      : 'i'),
               children: [
                 Text(
                   isListening
-                      ? 'सुन रहा हूं...'
+                      ? (context.watch<LanguageProvider>().languageCode == 'hi'
+                          ? 'सुन रहा हूं...'
+                          : 'Listening...')
                       : isProcessing
-                          ? 'CVI सोच रहा है...'
-                          : 'बोलें',
-                  style: GoogleFonts.notoSansDevanagari(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: isListening
-                        ? AppColors.emeraldLight
+                          ? (context.watch<LanguageProvider>().languageCode ==
+                                  'hi'
+                              ? 'CVI सोच रहा है...'
+                              : 'CVI is thinking...')
+                          : (context.watch<LanguageProvider>().languageCode ==
+                                  'hi'
+                              ? 'बोलें'
+                              : 'Tap to Speak'),
+                  style: context.watch<LanguageProvider>().languageCode == 'hi'
+                      ? GoogleFonts.notoSansDevanagari(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500,
+                          color: isListening
+                              ? AppColors.emeraldLight
+                              : AppColors.gold,
+                        )
+                      : GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: isListening
+                              ? AppColors.emeraldLight
+                              : AppColors.gold,
+                        ),
+                ),
+                if (context.watch<LanguageProvider>().languageCode == 'hi') ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    isListening
+                        ? 'सुनना रोकने के लिए टैप करें'
                         : isProcessing
-                            ? AppColors.gold
-                            : AppColors.gold,
+                            ? 'आपके प्रश्न पर कार्रवाई कर रहे हैं...'
+                            : 'बोलना शुरू करने के लिए टैप करें',
+                    style: GoogleFonts.notoSansDevanagari(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  isListening
-                      ? 'Listening... tap to stop'
-                      : isProcessing
-                          ? 'Processing your query...'
-                          : 'Tap to Speak',
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
+                ] else ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    isListening
+                        ? 'Listening... tap to stop'
+                        : isProcessing
+                            ? 'Processing your query...'
+                            : 'Tap to Speak',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -704,8 +843,8 @@ class _UserBubble extends StatelessWidget {
     return Align(
       alignment: Alignment.centerRight,
       child: ConstrainedBox(
-        constraints: BoxConstraints(
-            maxWidth: MediaQuery.sizeOf(context).width * 0.75),
+        constraints:
+            BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * 0.75),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
@@ -771,8 +910,8 @@ class _BotBubble extends StatelessWidget {
     return Align(
       alignment: Alignment.centerLeft,
       child: ConstrainedBox(
-        constraints: BoxConstraints(
-            maxWidth: MediaQuery.sizeOf(context).width * 0.84),
+        constraints:
+            BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * 0.84),
         child: Container(
           decoration: const BoxDecoration(
             color: AppColors.bgMid,
@@ -937,7 +1076,8 @@ class _BottomMicBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
       decoration: const BoxDecoration(
         color: AppColors.bgMid,
-        border: Border(top: BorderSide(color: AppColors.surfaceBorder, width: 1)),
+        border:
+            Border(top: BorderSide(color: AppColors.surfaceBorder, width: 1)),
       ),
       child: SafeArea(
         top: false,
@@ -978,8 +1118,9 @@ class _BottomMicBar extends StatelessWidget {
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
-                      color: (isListening ? AppColors.emerald : AppColors.saffron)
-                          .withValues(alpha: 0.45),
+                      color:
+                          (isListening ? AppColors.emerald : AppColors.saffron)
+                              .withValues(alpha: 0.45),
                       blurRadius: 18,
                       offset: const Offset(0, 6),
                     ),
@@ -1048,7 +1189,8 @@ class _TextBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
       decoration: const BoxDecoration(
         color: AppColors.bgMid,
-        border: Border(top: BorderSide(color: AppColors.surfaceBorder, width: 1)),
+        border:
+            Border(top: BorderSide(color: AppColors.surfaceBorder, width: 1)),
       ),
       child: SafeArea(
         top: false,

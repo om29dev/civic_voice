@@ -37,7 +37,8 @@ class _CircularProgressCardState extends State<CircularProgressCard>
       duration: const Duration(milliseconds: 1500),
     );
 
-    _progressAnimation = Tween<double>(begin: 0.0, end: widget.progress).animate(
+    _progressAnimation =
+        Tween<double>(begin: 0.0, end: widget.progress).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
     );
 
@@ -46,7 +47,7 @@ class _CircularProgressCardState extends State<CircularProgressCard>
     );
 
     _controller.forward();
-    
+
     if (widget.progress >= 1.0) {
       Future.delayed(const Duration(milliseconds: 1500), () {
         if (mounted) {
@@ -83,7 +84,8 @@ class _CircularProgressCardState extends State<CircularProgressCard>
             ),
             boxShadow: [
               BoxShadow(
-                color: widget.color.withValues(alpha: 0.3 * _glowAnimation.value),
+                color:
+                    widget.color.withValues(alpha: 0.3 * _glowAnimation.value),
                 blurRadius: 30,
                 spreadRadius: 5,
               ),
@@ -105,7 +107,7 @@ class _CircularProgressCardState extends State<CircularProgressCard>
                         strokeWidth: 12,
                       ),
                     ),
-                    
+
                     // Progress circle
                     CustomPaint(
                       size: const Size(120, 120),
@@ -115,7 +117,7 @@ class _CircularProgressCardState extends State<CircularProgressCard>
                         strokeWidth: 12,
                       ),
                     ),
-                    
+
                     // Center content
                     Center(
                       child: Column(
@@ -138,7 +140,7 @@ class _CircularProgressCardState extends State<CircularProgressCard>
                         ],
                       ),
                     ),
-                    
+
                     // Celebration particles when complete
                     if (_progressAnimation.value >= 0.99)
                       Positioned.fill(
@@ -229,7 +231,6 @@ class _CelebrationParticlesPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final random = Random(42);
 
     for (int i = 0; i < 12; i++) {
       final angle = (i * 30) * pi / 180;
@@ -284,7 +285,8 @@ class _LinearProgressCardState extends State<LinearProgressCard>
       duration: const Duration(milliseconds: 1200),
     );
 
-    _progressAnimation = Tween<double>(begin: 0.0, end: widget.progress).animate(
+    _progressAnimation =
+        Tween<double>(begin: 0.0, end: widget.progress).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
     );
 

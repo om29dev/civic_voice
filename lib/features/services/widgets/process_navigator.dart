@@ -10,14 +10,16 @@ class ProcessNavigator extends StatefulWidget {
   State<ProcessNavigator> createState() => _ProcessNavigatorState();
 }
 
-class _ProcessNavigatorState extends State<ProcessNavigator> with SingleTickerProviderStateMixin {
+class _ProcessNavigatorState extends State<ProcessNavigator>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   int _currentStep = 0;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 1));
+    _controller =
+        AnimationController(vsync: this, duration: const Duration(seconds: 1));
     _controller.repeat(reverse: true);
   }
 
@@ -36,7 +38,8 @@ class _ProcessNavigatorState extends State<ProcessNavigator> with SingleTickerPr
         color: AppColors.white,
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
-          BoxShadow(color: AppColors.primary.withValues(alpha: 0.05), blurRadius: 20),
+          BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.05), blurRadius: 20),
         ],
       ),
       child: Column(
@@ -44,7 +47,10 @@ class _ProcessNavigatorState extends State<ProcessNavigator> with SingleTickerPr
         children: [
           const Text(
             'Process Navigator',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary),
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary),
           ),
           const SizedBox(height: 20),
           Expanded(
@@ -54,10 +60,10 @@ class _ProcessNavigatorState extends State<ProcessNavigator> with SingleTickerPr
               maxScale: 2.0,
               child: Stack(
                 children: [
-                   _buildPath(),
+                  _buildPath(),
                   ...widget.steps.asMap().entries.map((entry) {
                     return _buildNode(entry.key, entry.value);
-                  }).toList(),
+                  }),
                 ],
               ),
             ),
@@ -87,14 +93,20 @@ class _ProcessNavigatorState extends State<ProcessNavigator> with SingleTickerPr
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isCurrent ? AppColors.secondary : AppColors.primary.withValues(alpha: 0.1),
+                  color: isCurrent
+                      ? AppColors.secondary
+                      : AppColors.primary.withValues(alpha: 0.1),
                   border: Border.all(
                     color: isCurrent ? AppColors.white : AppColors.primary,
                     width: 2,
                   ),
-                  boxShadow: isCurrent 
-                    ? [BoxShadow(color: AppColors.secondary.withValues(alpha: 0.5), blurRadius: 10)] 
-                    : [],
+                  boxShadow: isCurrent
+                      ? [
+                          BoxShadow(
+                              color: AppColors.secondary.withValues(alpha: 0.5),
+                              blurRadius: 10)
+                        ]
+                      : [],
                 ),
                 child: Icon(
                   _getIconForIndex(index),
@@ -131,11 +143,16 @@ class _ProcessNavigatorState extends State<ProcessNavigator> with SingleTickerPr
 
   IconData _getIconForIndex(int index) {
     switch (index) {
-      case 0: return Icons.edit_note;
-      case 1: return Icons.cloud_upload;
-      case 2: return Icons.payment;
-      case 3: return Icons.how_to_reg;
-      default: return Icons.circle;
+      case 0:
+        return Icons.edit_note;
+      case 1:
+        return Icons.cloud_upload;
+      case 2:
+        return Icons.payment;
+      case 3:
+        return Icons.how_to_reg;
+      default:
+        return Icons.circle;
     }
   }
 }
@@ -153,11 +170,11 @@ class PathPainter extends CustomPainter {
 
     final path = Path();
     path.moveTo(85, 85); // Center of first node approx
-    
+
     for (int i = 1; i < stepsCount; i++) {
-        double nextTop = 85.0 + (i * 80.0);
-        double nextLeft = (i % 2 == 0) ? 85.0 : 185.0;
-        path.lineTo(nextLeft, nextTop);
+      double nextTop = 85.0 + (i * 80.0);
+      double nextLeft = (i % 2 == 0) ? 85.0 : 185.0;
+      path.lineTo(nextLeft, nextTop);
     }
 
     canvas.drawPath(path, paint);

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../features/eligibility/screens/ai_eligibility_flow_screen.dart';
 import '../../features/voice/screens/voice_complaint_screen.dart';
 import '../../features/documents/screens/ai_document_scanner_screen.dart';
 import '../../features/services/screens/scheme_discovery_screen.dart';
@@ -11,6 +9,7 @@ import '../../features/dashboard/screens/application_dashboard_screen.dart';
 import '../../features/services/screens/offline_guidance_screen.dart';
 import '../../features/profile/screens/citizen_profile_dashboard.dart';
 import '../../features/recommendations/screens/recommendations_screen.dart';
+import '../../features/services/screens/eligibility_checker_screen.dart';
 
 import '../../providers/language_provider.dart';
 import '../../providers/auth_provider.dart';
@@ -33,41 +32,38 @@ import '../../features/auto_form/screens/smart_form_screen.dart';
 import '../../features/auto_form/screens/form_review_screen.dart';
 import '../../features/auto_form/screens/guided_submission_screen.dart';
 import '../../features/auto_form/models/auto_form_model.dart';
-import '../../providers/notification_provider.dart';
 import '../../providers/document_vault_provider.dart';
-import '../../features/profile/screens/family_dashboard_screen.dart';
 import '../../widgets/navigation/cvi_bottom_nav.dart';
 
 /// Route name constants — use these instead of raw strings.
 abstract class Routes {
-  static const splash          = '/';
-  static const onboarding      = '/onboarding';
-  static const auth            = '/auth';
-  static const dashboard       = '/dashboard';
-  static const voice           = '/voice';
-  static const services        = '/services';
-  static const serviceDetail   = '/service/:id';
-  static const eligibility     = '/service/:id/eligibility';
-  static const profile         = '/profile';
-  static const family          = '/family';
-  static const notifications   = '/notifications';
-  static const myApplications  = '/my-applications';
-  static const documents       = '/documents';
-  static const documentVault   = '/document-vault';
-  static const autoFillForm    = '/auto-fill/:serviceId';
-  static const smartBrowser     = '/smart-browser';
-  static const officeLocator   = '/office-locator';
-  static const voiceComplaint  = '/voice-complaint';
+  static const splash = '/';
+  static const onboarding = '/onboarding';
+  static const auth = '/auth';
+  static const dashboard = '/dashboard';
+  static const voice = '/voice';
+  static const services = '/services';
+  static const serviceDetail = '/service/:id';
+  static const eligibility = '/service/:id/eligibility';
+  static const profile = '/profile';
+  static const family = '/family';
+  static const notifications = '/notifications';
+  static const myApplications = '/my-applications';
+  static const documents = '/documents';
+  static const documentVault = '/document-vault';
+  static const autoFillForm = '/auto-fill/:serviceId';
+  static const smartBrowser = '/smart-browser';
+  static const officeLocator = '/office-locator';
+  static const voiceComplaint = '/voice-complaint';
   static const documentScanner = '/document-scanner';
   static const schemeDiscovery = '/scheme-discovery';
-  static const appTracker      = '/app-tracker';
+  static const appTracker = '/app-tracker';
   static const offlineGuidance = '/offline-guidance';
-  static const citizenProfile  = '/citizen-profile';
+  static const citizenProfile = '/citizen-profile';
   static const recommendations = '/recommendations';
-  static const smartForm       = '/smart-form/:serviceId';
-  static const formReview      = '/form-review';
-  static const guidedSubmit    = '/guided-submit';
-
+  static const smartForm = '/smart-form/:serviceId';
+  static const formReview = '/form-review';
+  static const guidedSubmit = '/guided-submit';
 
   static String serviceDetailPath(String id) => '/service/$id';
   static String eligibilityPath(String id) => '/service/$id/eligibility';
@@ -77,21 +73,24 @@ abstract class Routes {
 
 /// Manages the GoRouter instance and listens to auth state for redirects.
 class AppRouter {
-  final BuildContext _context;
   late final GoRouter router;
   static bool hasShownSplash = false;
 
-  AppRouter(this._context) {
-    final authProvider = _context.read<AuthProvider>();
+  AppRouter(BuildContext context) {
+    final authProvider = context.read<AuthProvider>();
 
     router = GoRouter(
       initialLocation: Routes.splash,
       debugLogDiagnostics: false,
       refreshListenable: authProvider,
-
-      redirect: (context, state) async {
-        final auth    = context.read<AuthProvider>();
-        final loc     = state.matchedLocation;
+      redirect: (context, state) {
+        // CRITICAL: This redirect MUST be synchronous.
+        // The router's refreshListenable fires on every notifyListeners() call.
+        // If this function were async (using await), two concurrent redirect calls
+        // could race: one navigates and unmounts the page while the other resumes
+        // on the dead element → '_elements.contains(element)': is not true crash.
+        final auth = context.read<AuthProvider>();
+        final loc = state.matchedLocation;
 
         // 1. Enforce splash screen at least once per session
         if (!hasShownSplash) {
@@ -99,29 +98,33 @@ class AppRouter {
           return null; // Let the splash screen play
         }
 
-        // 2. Check auth state and boarding progress
-        final isOnSplash      = loc == Routes.splash;
-        final isOnOnboarding  = loc == Routes.onboarding;
-        final isOnAuth        = loc == Routes.auth;
+        final isOnAuth = loc == Routes.auth;
+        final isOnOnboarding = loc == Routes.onboarding;
+        final isOnSplash = loc == Routes.splash;
 
-        final prefs        = await SharedPreferences.getInstance();
-        final seenOnboard  = prefs.getBool('cvi_onboarded') ?? false;
+        // seenOnboard is cached in AuthProvider during _init() — no await needed.
+        final seenOnboard = auth.seenOnboard;
 
-        // 3. Not Authenticated Flow
+        // 2. Not Authenticated → Send to Auth or Onboarding
         if (!auth.isAuthenticated) {
-          if (!seenOnboard && !isOnOnboarding) return Routes.onboarding;
-          if (seenOnboard && !isOnAuth) return Routes.auth;
-          return null; // Otherwise stay where they are (either Auth or Onboarding)
+          if (!isOnAuth && !isOnOnboarding && !isOnSplash) {
+            return Routes.auth;
+          }
+          if (!seenOnboard && !isOnOnboarding && !isOnSplash) {
+            return Routes.onboarding;
+          }
+          return null;
         }
 
-        // Authenticated — send away from auth/onboarding/splash
-        if (isOnSplash || isOnAuth || isOnOnboarding) {
+        // 3. Authenticated → Redirect to Dashboard from any non-app screen.
+        // The auth screen must NOT call context.go() itself; this redirect is
+        // the sole driver of post-login navigation.
+        if (isOnAuth || isOnSplash || isOnOnboarding) {
           return Routes.dashboard;
         }
 
-        return null; // No redirect needed
+        return null;
       },
-
       routes: [
         // ── Splash ────────────────────────────────────────────────────────
         GoRoute(
@@ -186,7 +189,8 @@ class AppRouter {
               name: 'recommendations',
               pageBuilder: (context, state) => _noTransitionPage(
                 state,
-                const RecommendationsScreen(key: PageStorageKey('recommendations')),
+                const RecommendationsScreen(
+                    key: PageStorageKey('recommendations')),
               ),
             ),
           ],
@@ -196,10 +200,13 @@ class AppRouter {
         GoRoute(
           path: Routes.voice,
           name: 'voice',
-          pageBuilder: (context, state) => _buildPage(
-            state,
-            const VoiceScreen(),
-          ),
+          pageBuilder: (context, state) {
+            final scheme = state.extra as ServiceModel?;
+            return _buildPage(
+              state,
+              VoiceScreen(scheme: scheme),
+            );
+          },
         ),
 
         // ── Service Detail (full-screen, outside shell) ───────────────────
@@ -216,11 +223,9 @@ class AppRouter {
           path: Routes.eligibility,
           name: 'eligibility',
           pageBuilder: (context, state) {
-            // final service = state.extra as ServiceModel;
-            // TODO: import EligibilityCheckerScreen
-
-            // return _buildPage(state, EligibilityCheckerScreen(service: service));
-            return _buildPage(state, const Scaffold(body: Center(child: Text('Eligibility Screen')))); // Temp
+            final service = state.extra as ServiceModel;
+            return _buildPage(
+                state, EligibilityCheckerScreen(service: service));
           },
         ),
 
@@ -293,7 +298,8 @@ class AppRouter {
                 title: extra['title'] as String,
                 formData: extra['formData'] as Map<String, String>,
                 documents: docs,
-                languageCode: extra['languageCode'] as String? ?? context.read<LanguageProvider>().languageCode,
+                languageCode: extra['languageCode'] as String? ??
+                    context.read<LanguageProvider>().languageCode,
                 initialTranslate: extra['initialTranslate'] as bool? ?? true,
               ),
             );
@@ -306,38 +312,45 @@ class AppRouter {
           name: 'officeLocator',
           pageBuilder: (context, state) => _buildPage(
             state,
-            const Scaffold(body: Center(child: Text('Office Locator Screen'))), // Temp
+            const Scaffold(
+                body: Center(child: Text('Office Locator Screen'))), // Temp
           ),
         ),
         GoRoute(
           path: Routes.voiceComplaint,
           name: 'voiceComplaint',
-          pageBuilder: (context, state) => _buildPage(state, VoiceComplaintScreen()),
+          pageBuilder: (context, state) =>
+              _buildPage(state, const VoiceComplaintScreen()),
         ),
         GoRoute(
           path: Routes.documentScanner,
           name: 'documentScanner',
-          pageBuilder: (context, state) => _buildPage(state, const AIDocumentScannerScreen()),
+          pageBuilder: (context, state) =>
+              _buildPage(state, const AIDocumentScannerScreen()),
         ),
         GoRoute(
           path: Routes.schemeDiscovery,
           name: 'schemeDiscovery',
-          pageBuilder: (context, state) => _buildPage(state, SchemeDiscoveryScreen()),
+          pageBuilder: (context, state) =>
+              _buildPage(state, const SchemeDiscoveryScreen()),
         ),
         GoRoute(
           path: Routes.appTracker,
           name: 'appTracker',
-          pageBuilder: (context, state) => _buildPage(state, ApplicationDashboardScreen()),
+          pageBuilder: (context, state) =>
+              _buildPage(state, const ApplicationDashboardScreen()),
         ),
         GoRoute(
           path: Routes.offlineGuidance,
           name: 'offlineGuidance',
-          pageBuilder: (context, state) => _buildPage(state, OfflineGuidanceScreen()),
+          pageBuilder: (context, state) =>
+              _buildPage(state, const OfflineGuidanceScreen()),
         ),
         GoRoute(
           path: Routes.citizenProfile,
           name: 'citizenProfile',
-          pageBuilder: (context, state) => _buildPage(state, CitizenProfileDashboard()),
+          pageBuilder: (context, state) =>
+              _buildPage(state, const CitizenProfileDashboard()),
         ),
 
         // ── Smart AI Form (new auto_form module) ────────────────────────────
@@ -382,15 +395,15 @@ class AppRouter {
                 url: extra['url'] as String,
                 title: extra['title'] as String,
                 formData: extra['formData'] as Map<String, String>,
-                submitSteps: (extra['submitSteps'] as List<dynamic>?)?.cast<SubmitStep>() ?? [],
+                submitSteps: (extra['submitSteps'] as List<dynamic>?)
+                        ?.cast<SubmitStep>() ??
+                    [],
                 portalName: extra['portalName'] as String? ?? '',
               ),
             );
           },
         ),
-
       ],
-
       errorBuilder: (context, state) => _ErrorScreen(error: state.error),
     );
   }
@@ -406,9 +419,10 @@ class AppRouter {
           final slide = Tween<Offset>(
             begin: const Offset(0, 0.04),
             end: Offset.zero,
-          ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
-          final fade = Tween<double>(begin: 0.0, end: 1.0)
-              .animate(CurvedAnimation(parent: animation, curve: Curves.easeOut));
+          ).animate(
+              CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
+          final fade = Tween<double>(begin: 0.0, end: 1.0).animate(
+              CurvedAnimation(parent: animation, curve: Curves.easeOut));
           return FadeTransition(
             opacity: fade,
             child: SlideTransition(position: slide, child: child),
@@ -434,10 +448,10 @@ class _AppShell extends StatelessWidget {
 
   static const _tabs = [
     Routes.dashboard, // 0
-    Routes.services,  // 1
-    Routes.voice,     // 2
+    Routes.services, // 1
+    Routes.voice, // 2
     Routes.recommendations, // 3
-    Routes.profile,   // 4
+    Routes.profile, // 4
   ];
 
   int _currentIndex(BuildContext context) {

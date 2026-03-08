@@ -16,7 +16,6 @@ class SchemesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageProvider>(context);
     final categorySchemes = SchemeKnowledgeBase.getSchemesByCategories();
-    final categoryNames = SchemeKnowledgeBase.getCategoryNames();
     final userProvider = Provider.of<UserProvider>(context);
     final user = userProvider.currentUser;
 
@@ -43,16 +42,19 @@ class SchemesScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                  border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.info_outline, color: AppColors.primary, size: 20),
+                    const Icon(Icons.info_outline,
+                        color: AppColors.primary, size: 20),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         lang.translate('unlock_eligibility_msg'),
-                        style: GoogleFonts.inter(color: AppColors.white, fontSize: 13),
+                        style: GoogleFonts.inter(
+                            color: AppColors.white, fontSize: 13),
                       ),
                     ),
                   ],
@@ -76,7 +78,8 @@ class SchemesScreen extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 15, top: 20),
                       child: Row(
                         children: [
-                          Icon(_getCategoryIcon(category), color: AppColors.primary, size: 24),
+                          Icon(_getCategoryIcon(category),
+                              color: AppColors.primary, size: 24),
                           const SizedBox(width: 12),
                           Text(
                             lang.translate(category),
@@ -91,8 +94,9 @@ class SchemesScreen extends StatelessWidget {
                     ),
 
                     // Schemes in this category
-                    ...schemes.map((scheme) => _buildSchemeCard(context, scheme, user, lang)).toList(),
-                    
+                    ...schemes.map((scheme) =>
+                        _buildSchemeCard(context, scheme, user, lang)),
+
                     const SizedBox(height: 10),
                   ],
                 );
@@ -104,7 +108,8 @@ class SchemesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSchemeCard(BuildContext context, GovernmentScheme scheme, UserProfile user, LanguageProvider lang) {
+  Widget _buildSchemeCard(BuildContext context, GovernmentScheme scheme,
+      UserProfile user, LanguageProvider lang) {
     final isEligible = user.isProfileComplete && scheme.isEligible(user);
     final languageCode = lang.languageCode;
 
@@ -124,7 +129,9 @@ class SchemesScreen extends StatelessWidget {
           color: AppColors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isEligible ? AppColors.primary.withValues(alpha: 0.5) : AppColors.white.withValues(alpha: 0.1),
+            color: isEligible
+                ? AppColors.primary.withValues(alpha: 0.5)
+                : AppColors.white.withValues(alpha: 0.1),
             width: isEligible ? 1.5 : 1,
           ),
         ),
@@ -135,7 +142,8 @@ class SchemesScreen extends StatelessWidget {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: (isEligible ? AppColors.primary : AppColors.primary).withValues(alpha: 0.2),
+                color: (isEligible ? AppColors.primary : AppColors.primary)
+                    .withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -145,7 +153,7 @@ class SchemesScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 16),
-            
+
             // Scheme Info
             Expanded(
               child: Column(
@@ -165,7 +173,8 @@ class SchemesScreen extends StatelessWidget {
                       ),
                       if (isEligible)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: AppColors.success.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(8),
@@ -194,7 +203,7 @@ class SchemesScreen extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             // Arrow
             const SizedBox(width: 8),
             Icon(

@@ -1,9 +1,9 @@
+import 'package:amplify_flutter/amplify_flutter.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../models/document_model.dart';
 import '../models/application_model.dart';
 import '../models/family_member_model.dart';
-import '../core/theme/app_theme.dart';
-import '../core/services/supabase_service.dart';
 
 enum UserType { guest, registered, premium }
 
@@ -104,10 +104,12 @@ class UserProfile {
   }
 
   bool get isGuest => userType == UserType.guest;
-  bool get isRegistered => userType == UserType.registered || userType == UserType.premium;
-  
+  bool get isRegistered =>
+      userType == UserType.registered || userType == UserType.premium;
+
   // Check if personalization data is set
-  bool get isProfileComplete => age != null && annualIncome != null && location != null;
+  bool get isProfileComplete =>
+      age != null && annualIncome != null && location != null;
 
   UserProfile copyWith({
     String? name,
@@ -134,8 +136,16 @@ class UserProfile {
       userType: userType ?? this.userType,
       isVerified: isVerified ?? this.isVerified,
       applicationsCount: applications?.length ?? applicationsCount,
-      completedCount: applications?.where((a) => a.status == ApplicationStatus.approved).length ?? completedCount,
-      pendingCount: applications?.where((a) => a.status == ApplicationStatus.submitted || a.status == ApplicationStatus.verified).length ?? pendingCount,
+      completedCount: applications
+              ?.where((a) => a.status == ApplicationStatus.approved)
+              .length ??
+          completedCount,
+      pendingCount: applications
+              ?.where((a) =>
+                  a.status == ApplicationStatus.submitted ||
+                  a.status == ApplicationStatus.verified)
+              .length ??
+          pendingCount,
       joinDate: joinDate,
       documents: documents ?? this.documents,
       applications: applications ?? this.applications,
@@ -195,30 +205,57 @@ class UserProvider extends ChangeNotifier {
       location: location,
       ownsLand: ownsLand,
     );
-     if (preferences != null) {
+    if (preferences != null) {
       _currentUser = _currentUser.copyWith(preferences: preferences);
     }
     notifyListeners();
   }
 
-  // Fetch user profile from Supabase
+  // Fetch user profile from Data API
   Future<void> fetchUserProfile(String userId) async {
     try {
-      final data = await SupabaseService.from('profiles').select().eq('id', userId).single();
-      
-      // Initialize with fetched data
-      login(
-        name: data['name'] ?? 'User',
-        email: data['email'] ?? '',
-        phone: data['phone'] ?? '',
-        isVerified: false, // Or fetch this if we add it to DB
-        age: data['age'],
-        annualIncome: data['annual_income']?.toDouble(),
-        occupation: data['occupation'],
-        location: data['location'],
-        ownsLand: data['owns_land'] ?? false,
-        preferences: data['preferences'],
+      final query = '''
+        query GetUser(\$id: ID!) {
+          getUser(id: \$id) {
+            id
+            name
+            email
+            phone
+            isVerified
+            age
+            annualIncome
+            location
+            occupation
+            ownsLand
+          }
+        }
+      ''';
+
+      final operation = Amplify.API.query(
+        request: GraphQLRequest<String>(
+          document: query,
+          variables: {'id': userId},
+        ),
       );
+
+      final response = await operation.response;
+      if (response.data != null) {
+        final data = json.decode(response.data!) as Map<String, dynamic>;
+        final user = data['getUser'];
+        if (user != null) {
+          login(
+            name: user['name'] ?? 'User',
+            email: user['email'] ?? '',
+            phone: user['phone'] ?? '',
+            isVerified: user['isVerified'] ?? false,
+            age: user['age'] as int?,
+            annualIncome: (user['annualIncome'] as num?)?.toDouble(),
+            location: user['location'],
+            occupation: user['occupation'],
+            ownsLand: user['ownsLand'] ?? false,
+          );
+        }
+      }
     } catch (e) {
       debugPrint('Error fetching profile: $e');
     }
@@ -226,18 +263,21 @@ class UserProvider extends ChangeNotifier {
 
   // Add application
   void addApplication(UserApplication app) {
-    final List<UserApplication> updatedApps = List.from(_currentUser.applications)..add(app);
+    final List<UserApplication> updatedApps =
+        List.from(_currentUser.applications)..add(app);
     _currentUser = _currentUser.copyWith(applications: updatedApps);
     notifyListeners();
   }
 
   // Update application status
-  void updateApplicationStatus(String id, ApplicationStatus status, {String? currentStep, String? nextStep, ApplicationEvent? newEvent}) {
-    final List<UserApplication> updatedApps = _currentUser.applications.map((app) {
+  void updateApplicationStatus(String id, ApplicationStatus status,
+      {String? currentStep, String? nextStep, ApplicationEvent? newEvent}) {
+    final List<UserApplication> updatedApps =
+        _currentUser.applications.map((app) {
       if (app.id == id) {
         final List<ApplicationEvent> updatedTimeline = List.from(app.timeline);
         if (newEvent != null) updatedTimeline.add(newEvent);
-        
+
         return UserApplication(
           id: app.id,
           schemeId: app.schemeId,
@@ -251,7 +291,7 @@ class UserProvider extends ChangeNotifier {
       }
       return app;
     }).toList();
-    
+
     _currentUser = _currentUser.copyWith(applications: updatedApps);
     notifyListeners();
   }
@@ -280,48 +320,65 @@ class UserProvider extends ChangeNotifier {
       ownsLand: ownsLand,
     );
     notifyListeners();
-    _syncToSupabase();
+    _syncToAws();
   }
 
-  Future<void> _syncToSupabase() async {
-    if (!SupabaseService.isLoggedIn) return;
-    
+  Future<void> _syncToAws() async {
     try {
-      await SupabaseService.from('profiles').upsert({
-        'id': SupabaseService.userId,
+      final authUser = await Amplify.Auth.getCurrentUser();
+      final mutation = '''
+        mutation UpdateUser(\$input: UpdateUserInput!) {
+          updateUser(input: \$input) {
+            id
+          }
+        }
+      ''';
+
+      final input = {
+        'id': authUser.userId,
         'name': _currentUser.name,
         'email': _currentUser.email,
         'phone': _currentUser.phone,
         'age': _currentUser.age,
-        'annual_income': _currentUser.annualIncome,
-        'occupation': _currentUser.occupation,
+        'annualIncome': _currentUser.annualIncome,
         'location': _currentUser.location,
-        'owns_land': _currentUser.ownsLand,
-        'preferences': _currentUser.preferences,
-        'updated_at': DateTime.now().toIso8601String(),
-      });
+        'occupation': _currentUser.occupation,
+        'ownsLand': _currentUser.ownsLand,
+      };
+
+      await Amplify.API
+          .mutate(
+            request: GraphQLRequest<String>(
+              document: mutation,
+              variables: {'input': input},
+            ),
+          )
+          .response;
     } catch (e) {
-      debugPrint('Supabase profile sync error: $e');
+      debugPrint('Error syncing profile: $e');
     }
   }
 
   void updatePreference(String key, dynamic value) {
-    final Map<String, dynamic> updatedPrefs = Map.from(_currentUser.preferences)..[key] = value;
+    final Map<String, dynamic> updatedPrefs = Map.from(_currentUser.preferences)
+      ..[key] = value;
     _currentUser = _currentUser.copyWith(preferences: updatedPrefs);
     notifyListeners();
-    _syncToSupabase();
+    _syncToAws();
   }
 
   // Add document
   void addDocument(UserDocument document) {
-    final List<UserDocument> updatedDocs = List.from(_currentUser.documents)..add(document);
+    final List<UserDocument> updatedDocs = List.from(_currentUser.documents)
+      ..add(document);
     _currentUser = _currentUser.copyWith(documents: updatedDocs);
     notifyListeners();
   }
 
   // Remove document
   void removeDocument(String id) {
-    final List<UserDocument> updatedDocs = _currentUser.documents.where((doc) => doc.id != id).toList();
+    final List<UserDocument> updatedDocs =
+        _currentUser.documents.where((doc) => doc.id != id).toList();
     _currentUser = _currentUser.copyWith(documents: updatedDocs);
     notifyListeners();
   }
@@ -334,14 +391,16 @@ class UserProvider extends ChangeNotifier {
 
   // Add family member
   void addFamilyMember(FamilyMember member) {
-    final List<FamilyMember> updatedMembers = List.from(_currentUser.familyMembers)..add(member);
+    final List<FamilyMember> updatedMembers =
+        List.from(_currentUser.familyMembers)..add(member);
     _currentUser = _currentUser.copyWith(familyMembers: updatedMembers);
     notifyListeners();
   }
 
   // Remove family member
   void removeFamilyMember(String id) {
-    final List<FamilyMember> updatedMembers = _currentUser.familyMembers.where((m) => m.id != id).toList();
+    final List<FamilyMember> updatedMembers =
+        _currentUser.familyMembers.where((m) => m.id != id).toList();
     _currentUser = _currentUser.copyWith(familyMembers: updatedMembers);
     notifyListeners();
   }

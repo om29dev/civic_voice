@@ -51,7 +51,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
           const Positioned.fill(
             child: ParticleBackground(),
           ),
-          
           SafeArea(
             bottom: false,
             child: CustomScrollView(
@@ -71,7 +70,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
                   ),
                   actions: [
                     IconButton(
-                      icon: const Icon(Icons.settings_rounded, color: AppColors.textSecondary),
+                      icon: const Icon(Icons.settings_rounded,
+                          color: AppColors.textSecondary),
                       onPressed: () => context.push(Routes.profile),
                     ),
                   ],
@@ -134,7 +134,10 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.surfaceBorder),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 20, offset: const Offset(0, 8)),
+          BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: 20,
+              offset: const Offset(0, 8)),
         ],
       ),
       child: Column(
@@ -152,13 +155,19 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
                     end: Alignment.bottomRight,
                   ),
                   boxShadow: [
-                    BoxShadow(color: AppColors.saffron.withValues(alpha: 0.3), blurRadius: 16, offset: const Offset(0, 4)),
+                    BoxShadow(
+                        color: AppColors.saffron.withValues(alpha: 0.3),
+                        blurRadius: 16,
+                        offset: const Offset(0, 4)),
                   ],
                 ),
                 child: Center(
                   child: Text(
                     _userName.isNotEmpty ? _userName[0].toUpperCase() : 'C',
-                    style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.w700, color: Colors.white),
+                    style: GoogleFonts.poppins(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white),
                   ),
                 ),
               ),
@@ -169,12 +178,16 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
                   children: [
                     Text(
                       _userName,
-                      style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                      style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       _userEmail,
-                      style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textSecondary),
+                      style: GoogleFonts.poppins(
+                          fontSize: 12, color: AppColors.textSecondary),
                     ),
                   ],
                 ),
@@ -189,19 +202,27 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   decoration: BoxDecoration(
                     color: AppColors.bgDark,
-                    border: Border.all(color: AppColors.gold.withValues(alpha: 0.3)),
+                    border: Border.all(
+                        color: AppColors.gold.withValues(alpha: 0.3)),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
                     children: [
-                      Text('Civic Score', style: GoogleFonts.poppins(fontSize: 11, color: AppColors.textMuted)),
+                      Text('Civic Score',
+                          style: GoogleFonts.poppins(
+                              fontSize: 11, color: AppColors.textMuted)),
                       const SizedBox(height: 4),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.star_rounded, color: AppColors.gold, size: 16),
+                          const Icon(Icons.star_rounded,
+                              color: AppColors.gold, size: 16),
                           const SizedBox(width: 4),
-                          Text('850', style: GoogleFonts.jetBrainsMono(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.gold)),
+                          Text('850',
+                              style: GoogleFonts.jetBrainsMono(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.gold)),
                         ],
                       ),
                     ],
@@ -222,7 +243,10 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
                     child: Center(
                       child: Text(
                         'Edit Profile',
-                        style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.saffron),
+                        style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.saffron),
                       ),
                     ),
                   ),
@@ -245,13 +269,17 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
       ),
       child: Column(
         children: [
-          _buildInfoTile(lang.t('profile_info_name'), _userName, Icons.person_outline_rounded),
+          _buildInfoTile(lang.t('profile_info_name'), _userName,
+              Icons.person_outline_rounded),
           const Divider(color: AppColors.surfaceBorder, height: 1),
-          _buildInfoTile(lang.t('profile_info_age'), '$_userAge years', Icons.cake_outlined),
+          _buildInfoTile(lang.t('profile_info_age'), '$_userAge years',
+              Icons.cake_outlined),
           const Divider(color: AppColors.surfaceBorder, height: 1),
-          _buildInfoTile(lang.t('profile_info_state'), _userState, Icons.map_outlined),
+          _buildInfoTile(
+              lang.t('profile_info_state'), _userState, Icons.map_outlined),
           const Divider(color: AppColors.surfaceBorder, height: 1),
-          _buildInfoTile(lang.t('profile_info_district'), _userDistrict, Icons.location_city_rounded),
+          _buildInfoTile(lang.t('profile_info_district'), _userDistrict,
+              Icons.location_city_rounded),
         ],
       ),
     ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1, end: 0);
@@ -264,9 +292,15 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
         children: [
           Icon(icon, color: AppColors.textSecondary, size: 20),
           const SizedBox(width: 16),
-          Text(label, style: GoogleFonts.poppins(fontSize: 13, color: AppColors.textSecondary)),
+          Text(label,
+              style: GoogleFonts.poppins(
+                  fontSize: 13, color: AppColors.textSecondary)),
           const Spacer(),
-          Text(value, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+          Text(value,
+              style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary)),
         ],
       ),
     );
@@ -276,7 +310,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
     final lang = context.read<LanguageProvider>();
     final nameCtrl = TextEditingController(text: _userName);
     final ageCtrl = TextEditingController(text: _userAge);
-    
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -294,11 +328,16 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(lang.t('profile_edit'), style: GoogleFonts.playfairDisplay(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+              Text(lang.t('profile_edit'),
+                  style: GoogleFonts.playfairDisplay(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary)),
               const SizedBox(height: 24),
               _buildTextField(lang.t('profile_info_name'), nameCtrl),
               const SizedBox(height: 16),
-              _buildTextField(lang.t('profile_info_age'), ageCtrl, keyboardType: TextInputType.number),
+              _buildTextField(lang.t('profile_info_age'), ageCtrl,
+                  keyboardType: TextInputType.number),
               const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,
@@ -313,9 +352,14 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.saffron,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                   ),
-                  child: Text(lang.t('profile_save_changes'), style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
+                  child: Text(lang.t('profile_save_changes'),
+                      style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white)),
                 ),
               )
             ],
@@ -325,7 +369,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController ctrl, {TextInputType? keyboardType}) {
+  Widget _buildTextField(String label, TextEditingController ctrl,
+      {TextInputType? keyboardType}) {
     return TextField(
       controller: ctrl,
       keyboardType: keyboardType,
@@ -333,8 +378,12 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
       decoration: InputDecoration(
         labelText: label,
         labelStyle: GoogleFonts.poppins(color: AppColors.textSecondary),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.surfaceBorder)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.saffron, width: 2)),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.surfaceBorder)),
+        focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.saffron, width: 2)),
         filled: true,
         fillColor: AppColors.bgMid,
       ),
@@ -351,12 +400,16 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [AppColors.accentBlue.withValues(alpha: 0.1), AppColors.bgDeep],
+              colors: [
+                AppColors.accentBlue.withValues(alpha: 0.1),
+                AppColors.bgDeep
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.accentBlue.withValues(alpha: 0.3)),
+            border:
+                Border.all(color: AppColors.accentBlue.withValues(alpha: 0.3)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -364,24 +417,37 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(lang.t('profile_services_explored'), style: GoogleFonts.poppins(fontSize: 13, color: AppColors.textSecondary)),
+                  Text(lang.t('profile_services_explored'),
+                      style: GoogleFonts.poppins(
+                          fontSize: 13, color: AppColors.textSecondary)),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Text('$count', style: GoogleFonts.playfairDisplay(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.accentBlue)),
+                      Text('$count',
+                          style: GoogleFonts.playfairDisplay(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.accentBlue)),
                       const SizedBox(width: 8),
-                      Text(lang.t('profile_total'), style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textMuted)),
+                      Text(lang.t('profile_total'),
+                          style: GoogleFonts.poppins(
+                              fontSize: 12, color: AppColors.textMuted)),
                     ],
                   ),
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
                   color: AppColors.accentBlue.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(lang.t('profile_view_history'), style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.accentBlue)),
+                child: Text(lang.t('profile_view_history'),
+                    style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.accentBlue)),
               )
             ],
           ),
@@ -392,47 +458,56 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
 
   // ─── 4. LANGUAGE SETTINGS ───────────────────────────────────────────────────
   Widget _buildLanguageSettings() {
-    return Consumer<LanguageProvider>(
-      builder: (context, lang, child) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (lang.isTranslating)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Row(
-                  children: [
-                    const SizedBox(
-                      width: 16, height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.saffron),
-                    ),
-                    const SizedBox(width: 10),
-                    Text('Translating via Google...', style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textMuted)),
-                  ],
-                ),
+    return Consumer<LanguageProvider>(builder: (context, lang, child) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (lang.isTranslating)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: AppColors.saffron),
+                  ),
+                  const SizedBox(width: 10),
+                  Text('Translating via Google...',
+                      style: GoogleFonts.poppins(
+                          fontSize: 12, color: AppColors.textMuted)),
+                ],
               ),
-            if (lang.translationError != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Text('Translation failed — showing English', style: GoogleFonts.poppins(fontSize: 11, color: AppColors.semanticError)),
-              ),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                _buildLangCard('English', 'en', lang.languageCode == 'en', lang.isTranslating, () => lang.switchLanguage('en')),
-                _buildLangCard('हिंदी',   'hi', lang.languageCode == 'hi', lang.isTranslating, () => lang.switchLanguage('hi')),
-                _buildLangCard('मराठी',   'mr', lang.languageCode == 'mr', lang.isTranslating, () => lang.switchLanguage('mr')),
-                _buildLangCard('தமிழ்',  'ta', lang.languageCode == 'ta', lang.isTranslating, () => lang.switchLanguage('ta')),
-              ],
             ),
-          ],
-        ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1, end: 0);
-      }
-    );
+          if (lang.translationError != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text('Translation failed — showing English',
+                  style: GoogleFonts.poppins(
+                      fontSize: 11, color: AppColors.semanticError)),
+            ),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              _buildLangCard('English', 'en', lang.languageCode == 'en',
+                  lang.isTranslating, () => lang.switchLanguage('en')),
+              _buildLangCard('हिंदी', 'hi', lang.languageCode == 'hi',
+                  lang.isTranslating, () => lang.switchLanguage('hi')),
+              _buildLangCard('मराठी', 'mr', lang.languageCode == 'mr',
+                  lang.isTranslating, () => lang.switchLanguage('mr')),
+              _buildLangCard('தமிழ்', 'ta', lang.languageCode == 'ta',
+                  lang.isTranslating, () => lang.switchLanguage('ta')),
+            ],
+          ),
+        ],
+      ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1, end: 0);
+    });
   }
 
-  Widget _buildLangCard(String label, String code, bool isSelected, bool isLoading, VoidCallback onTap) {
+  Widget _buildLangCard(String label, String code, bool isSelected,
+      bool isLoading, VoidCallback onTap) {
     return GestureDetector(
       onTap: isLoading ? null : onTap,
       child: AnimatedContainer(
@@ -440,13 +515,21 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
         width: (MediaQuery.of(context).size.width - 56) / 2,
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.saffron.withValues(alpha: 0.15) : AppColors.bgMid,
+          color: isSelected
+              ? AppColors.saffron.withValues(alpha: 0.15)
+              : AppColors.bgMid,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? AppColors.saffron : AppColors.surfaceBorder,
             width: isSelected ? 2 : 1,
           ),
-          boxShadow: isSelected ? [BoxShadow(color: AppColors.saffron.withValues(alpha: 0.2), blurRadius: 10)] : null,
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                      color: AppColors.saffron.withValues(alpha: 0.2),
+                      blurRadius: 10)
+                ]
+              : null,
         ),
         child: Center(
           child: Text(
@@ -454,14 +537,17 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
             style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              color: isSelected ? AppColors.saffron : isLoading ? AppColors.textMuted : AppColors.textSecondary,
+              color: isSelected
+                  ? AppColors.saffron
+                  : isLoading
+                      ? AppColors.textMuted
+                      : AppColors.textSecondary,
             ),
           ),
         ),
       ),
     );
   }
-
 
   // ─── 5. NOTIFICATIONS ───────────────────────────────────────────────────────
   Widget _buildNotifications(LanguageProvider lang) {
@@ -473,22 +559,28 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
       ),
       child: Column(
         children: [
-          _buildSwitchTile(lang.t('profile_notif_updates'), _notifAppUpdates, (val) => setState(() => _notifAppUpdates = val)),
+          _buildSwitchTile(lang.t('profile_notif_updates'), _notifAppUpdates,
+              (val) => setState(() => _notifAppUpdates = val)),
           const Divider(color: AppColors.surfaceBorder, height: 1),
-          _buildSwitchTile(lang.t('profile_notif_schemes'), _notifGovSchemes, (val) => setState(() => _notifGovSchemes = val)),
+          _buildSwitchTile(lang.t('profile_notif_schemes'), _notifGovSchemes,
+              (val) => setState(() => _notifGovSchemes = val)),
           const Divider(color: AppColors.surfaceBorder, height: 1),
-          _buildSwitchTile(lang.t('profile_notif_new'), _notifNewServices, (val) => setState(() => _notifNewServices = val)),
+          _buildSwitchTile(lang.t('profile_notif_new'), _notifNewServices,
+              (val) => setState(() => _notifNewServices = val)),
         ],
       ),
     ).animate().fadeIn(delay: 500.ms).slideY(begin: 0.1, end: 0);
   }
 
-  Widget _buildSwitchTile(String label, bool value, ValueChanged<bool> onChanged) {
+  Widget _buildSwitchTile(
+      String label, bool value, ValueChanged<bool> onChanged) {
     return SwitchListTile(
-      title: Text(label, style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textPrimary)),
+      title: Text(label,
+          style:
+              GoogleFonts.poppins(fontSize: 14, color: AppColors.textPrimary)),
       value: value,
       onChanged: onChanged,
-      activeColor: AppColors.saffron,
+      activeThumbColor: AppColors.saffron,
       activeTrackColor: AppColors.saffron.withValues(alpha: 0.3),
       inactiveTrackColor: AppColors.bgDark,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -505,26 +597,37 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
       ),
       child: Column(
         children: [
-          _buildLinkTile('App Version', 'v2.0.0 (Bharat Silicon)', Icons.info_outline_rounded, null),
+          _buildLinkTile('App Version', 'v2.0.0 (Bharat Silicon)',
+              Icons.info_outline_rounded, null),
           const Divider(color: AppColors.surfaceBorder, height: 1),
-          _buildLinkTile(lang.t('profile_privacy'), '', Icons.privacy_tip_outlined, () async {
-            final uri = Uri.parse('https://www.digitalindia.gov.in/privacy-policy');
+          _buildLinkTile(
+              lang.t('profile_privacy'), '', Icons.privacy_tip_outlined,
+              () async {
+            final uri =
+                Uri.parse('https://www.digitalindia.gov.in/privacy-policy');
             if (await canLaunchUrl(uri)) {
               await launchUrl(uri, mode: LaunchMode.externalApplication);
             }
           }),
           const Divider(color: AppColors.surfaceBorder, height: 1),
-          _buildLinkTile(lang.t('profile_report_issue'), '', Icons.bug_report_outlined, () async {
-            final Uri emailLaunchUri = Uri(scheme: 'mailto', path: 'support@civicvoice.in', queryParameters: {'subject': 'Bug Report — CVI App'});
+          _buildLinkTile(
+              lang.t('profile_report_issue'), '', Icons.bug_report_outlined,
+              () async {
+            final Uri emailLaunchUri = Uri(
+                scheme: 'mailto',
+                path: 'support@civicvoice.in',
+                queryParameters: {'subject': 'Bug Report — CVI App'});
             if (await canLaunchUrl(emailLaunchUri)) {
               await launchUrl(emailLaunchUri);
             }
           }),
           const Divider(color: AppColors.surfaceBorder, height: 1),
-          _buildLinkTile(lang.t('profile_rate_app'), '', Icons.star_border_rounded, () {
+          _buildLinkTile(
+              lang.t('profile_rate_app'), '', Icons.star_border_rounded, () {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('App store listing coming soon! Thank you for your support 🙏'),
+                content: Text(
+                    'App store listing coming soon! Thank you for your support 🙏'),
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -534,14 +637,20 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
     ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.1, end: 0);
   }
 
-  Widget _buildLinkTile(String label, String trailing, IconData icon, VoidCallback? onTap) {
+  Widget _buildLinkTile(
+      String label, String trailing, IconData icon, VoidCallback? onTap) {
     return ListTile(
       onTap: onTap,
       leading: Icon(icon, color: AppColors.textSecondary, size: 22),
-      title: Text(label, style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textPrimary)),
+      title: Text(label,
+          style:
+              GoogleFonts.poppins(fontSize: 14, color: AppColors.textPrimary)),
       trailing: trailing.isNotEmpty
-          ? Text(trailing, style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textMuted))
-          : const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textMuted, size: 14),
+          ? Text(trailing,
+              style:
+                  GoogleFonts.poppins(fontSize: 12, color: AppColors.textMuted))
+          : const Icon(Icons.arrow_forward_ios_rounded,
+              color: AppColors.textMuted, size: 14),
     );
   }
 
@@ -554,11 +663,16 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
         icon: const Icon(Icons.logout_rounded, color: AppColors.semanticError),
         label: Text(
           lang.t('profile_sign_out'),
-          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.semanticError),
+          style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppColors.semanticError),
         ),
         style: OutlinedButton.styleFrom(
-          side: BorderSide(color: AppColors.semanticError.withValues(alpha: 0.5)),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          side:
+              BorderSide(color: AppColors.semanticError.withValues(alpha: 0.5)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           backgroundColor: AppColors.semanticError.withValues(alpha: 0.05),
         ),
         onPressed: () => _showLogoutDialog(lang),
@@ -572,12 +686,19 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.bgMid,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Text(lang.t('profile_sign_out'), style: GoogleFonts.playfairDisplay(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
-        content: Text(lang.t('profile_sign_out_q'), style: GoogleFonts.poppins(color: AppColors.textSecondary)),
+        title: Text(lang.t('profile_sign_out'),
+            style: GoogleFonts.playfairDisplay(
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary)),
+        content: Text(lang.t('profile_sign_out_q'),
+            style: GoogleFonts.poppins(color: AppColors.textSecondary)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text(lang.t('cancel'), style: GoogleFonts.poppins(color: AppColors.textMuted, fontWeight: FontWeight.w600)),
+            child: Text(lang.t('cancel'),
+                style: GoogleFonts.poppins(
+                    color: AppColors.textMuted, fontWeight: FontWeight.w600)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -590,9 +711,12 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.semanticError,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
-            child: Text(lang.t('profile_sign_out'), style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600)),
+            child: Text(lang.t('profile_sign_out'),
+                style: GoogleFonts.poppins(
+                    color: Colors.white, fontWeight: FontWeight.w600)),
           ),
         ],
       ),

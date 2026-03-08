@@ -20,8 +20,7 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
   late AnimationController _bounceController;
   late AnimationController _glowController;
   late AnimationController _textController;
-  
-  late Animation<double> _waveAnimation;
+
   late Animation<double> _bounceAnimation;
   late Animation<double> _glowAnimation;
   late Animation<double> _textFadeAnimation;
@@ -30,16 +29,13 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
   @override
   void initState() {
     super.initState();
-    
+
     // Wave animation for hand
     _waveController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
-    _waveAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _waveController, curve: Curves.easeInOut),
-    );
-    
+
     // Bounce animation for avatar
     _bounceController = AnimationController(
       vsync: this,
@@ -48,7 +44,7 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
     _bounceAnimation = Tween<double>(begin: -5.0, end: 5.0).animate(
       CurvedAnimation(parent: _bounceController, curve: Curves.easeInOut),
     );
-    
+
     // Glow animation
     _glowController = AnimationController(
       vsync: this,
@@ -57,7 +53,7 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
     _glowAnimation = Tween<double>(begin: 0.3, end: 1.0).animate(
       CurvedAnimation(parent: _glowController, curve: Curves.easeInOut),
     );
-    
+
     // Text animation
     _textController = AnimationController(
       vsync: this,
@@ -70,7 +66,7 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
       begin: const Offset(0, 0.3),
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _textController, curve: Curves.easeOut));
-    
+
     // Start animations
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) {
@@ -123,18 +119,21 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
                       center: Alignment.topLeft,
                       radius: 1.5,
                       colors: [
-                        AppTheme.electricBlue.withValues(alpha: 0.1 * _glowAnimation.value),
-                        AppTheme.neonCyan.withValues(alpha: 0.05 * _glowAnimation.value),
+                        AppTheme.electricBlue
+                            .withValues(alpha: 0.1 * _glowAnimation.value),
+                        AppTheme.neonCyan
+                            .withValues(alpha: 0.05 * _glowAnimation.value),
                         Colors.transparent,
                       ],
                     ),
                   ),
                 ),
               ),
-              
+
               // Main content
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 child: Row(
                   children: [
                     // Animated Avatar
@@ -145,9 +144,9 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
                         child: _buildAnimatedAvatar(),
                       ),
                     ),
-                    
+
                     const SizedBox(width: 20),
-                    
+
                     // Greeting Text
                     Expanded(
                       flex: 3,
@@ -162,7 +161,7 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
                   ],
                 ),
               ),
-              
+
               // Floating particles
               ..._buildFloatingParticles(),
             ],
@@ -175,7 +174,8 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
   Widget _buildAnimatedAvatar() {
     return GestureDetector(
       onTap: () {
-        final voiceProvider = Provider.of<VoiceProvider>(context, listen: false);
+        final voiceProvider =
+            Provider.of<VoiceProvider>(context, listen: false);
         voiceProvider.speak("How can I help you?");
       },
       child: Stack(
@@ -189,14 +189,15 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.electricBlue.withValues(alpha: 0.4 * _glowAnimation.value),
+                  color: AppTheme.electricBlue
+                      .withValues(alpha: 0.4 * _glowAnimation.value),
                   blurRadius: 40,
                   spreadRadius: 10,
                 ),
               ],
             ),
           ),
-          
+
           // Mascot Image with border
           Container(
             width: 140,
@@ -213,7 +214,7 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
               ),
             ),
           ),
-          
+
           // Interactive speech bubble hint
           Positioned(
             right: 0,
@@ -231,26 +232,13 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
                 ],
               ),
               child: const Icon(Icons.mic, color: Colors.white, size: 12),
-            ).animate(onPlay: (controller) => controller.repeat(reverse: true))
-             .scale(begin: const Offset(1, 1), end: const Offset(1.2, 1.2), duration: 1.seconds),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEye() {
-    return Container(
-      width: 12,
-      height: 12,
-      decoration: BoxDecoration(
-        color: AppTheme.pureWhite,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.pureWhite.withValues(alpha: 0.5),
-            blurRadius: 8,
-            spreadRadius: 2,
+            )
+                .animate(
+                    onPlay: (controller) => controller.repeat(reverse: true))
+                .scale(
+                    begin: const Offset(1, 1),
+                    end: const Offset(1.2, 1.2),
+                    duration: 1.seconds),
           ),
         ],
       ),
@@ -259,7 +247,7 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
 
   Widget _buildGreetingText() {
     final lang = Provider.of<LanguageProvider>(context);
-    
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -282,9 +270,9 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
             ),
           ),
         ),
-        
+
         const SizedBox(height: 8),
-        
+
         // Subtitle
         Text(
           lang.translate('how_can_help'),
@@ -294,15 +282,16 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
             fontWeight: FontWeight.w500,
           ),
         ),
-        
+
         const SizedBox(height: 12),
-        
+
         // Voice visualization bars
         Row(
           children: List.generate(5, (index) {
             return Container(
               width: 4,
-              height: 20 + math.sin((index + _glowAnimation.value) * math.pi) * 15,
+              height:
+                  20 + math.sin((index + _glowAnimation.value) * math.pi) * 15,
               margin: const EdgeInsets.only(right: 4),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(2),
@@ -328,7 +317,7 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
       final radius = 60 + math.sin(_glowAnimation.value * math.pi) * 10;
       final x = math.cos(angle) * radius;
       final y = math.sin(angle) * radius;
-      
+
       return Positioned(
         left: 100 + x,
         top: 100 + y,
@@ -342,7 +331,9 @@ class _AnimatedHeroGreetingState extends State<AnimatedHeroGreeting>
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: (index % 2 == 0 ? AppTheme.electricBlue : AppTheme.neonCyan)
+                  color: (index % 2 == 0
+                          ? AppTheme.electricBlue
+                          : AppTheme.neonCyan)
                       .withValues(alpha: 0.5),
                   blurRadius: 8,
                   spreadRadius: 2,

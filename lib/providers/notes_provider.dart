@@ -28,13 +28,13 @@ class NotesProvider with ChangeNotifier {
   final ReminderService _reminderService = ReminderService();
   final AudioRecorder _recorder = AudioRecorder();
   final AudioPlayer _player = AudioPlayer();
-  String? _currentRecordingPath;
 
   List<Note> get notes => _notes;
   bool get isRecording => _isRecording;
   bool _isRecording = false;
 
-  void addNote(String title, String content, {DateTime? reminderTime, String? audioPath}) {
+  void addNote(String title, String content,
+      {DateTime? reminderTime, String? audioPath}) {
     final note = Note(
       id: DateTime.now().toIso8601String(),
       title: title,
@@ -44,7 +44,7 @@ class NotesProvider with ChangeNotifier {
       audioPath: audioPath,
     );
     _notes.add(note);
-    
+
     if (reminderTime != null) {
       _reminderService.scheduleReminder(
         id: note.hashCode,
@@ -53,16 +53,17 @@ class NotesProvider with ChangeNotifier {
         scheduledTime: reminderTime,
       );
     }
-    
+
     notifyListeners();
   }
 
   Future<void> startRecording() async {
     if (await _recorder.hasPermission()) {
       final dir = await getApplicationDocumentsDirectory();
-      final path = '${dir.path}/note_${DateTime.now().millisecondsSinceEpoch}.m4a';
+      final path =
+          '${dir.path}/note_${DateTime.now().millisecondsSinceEpoch}.m4a';
       await _recorder.start(const RecordConfig(), path: path);
-      _currentRecordingPath = path;
+
       _isRecording = true;
       notifyListeners();
     }

@@ -16,6 +16,7 @@ import '../../../providers/user_provider.dart';
 import '../../../providers/conversation_provider.dart';
 import '../../../providers/notification_provider.dart';
 import '../../../providers/analytics_provider.dart';
+import '../../../providers/language_provider.dart';
 
 class PremiumDashboardScreen extends StatefulWidget {
   const PremiumDashboardScreen({super.key});
@@ -26,7 +27,6 @@ class PremiumDashboardScreen extends StatefulWidget {
 
 class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
     with TickerProviderStateMixin {
-  
   late AnimationController _fadeController;
   late AnimationController _shimmerController;
 
@@ -83,9 +83,10 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
   Widget _buildHeroHeader() {
     final userProvider = Provider.of<UserProvider>(context);
     final user = userProvider.currentUser;
-    final String formattedDate = DateFormat('EEEE, d MMMM yyyy').format(DateTime.now());
+    final String formattedDate =
+        DateFormat('EEEE, d MMMM yyyy').format(DateTime.now());
     // In a real app, use an intl/date formatting package for Hindi date
-    const String hindiDate = 'सोमवार, ३ मार्च २०२५'; 
+    const String hindiDate = 'सोमवार, ३ मार्च २०२५';
 
     return Container(
       height: 280,
@@ -102,12 +103,12 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
           const Positioned.fill(
             child: JaliPattern(opacity: 0.04),
           ),
-          
+
           Column(
             children: [
               // Top Tricolor Strip
               const TricolorBar(),
-              
+
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
                 child: Row(
@@ -119,16 +120,25 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'नमस्ते',
-                            style: GoogleFonts.notoSansDevanagari(
-                              fontSize: 13,
-                              color: AppColors.gold,
-                              fontWeight: FontWeight.w500,
+                          if (context.watch<LanguageProvider>().languageCode ==
+                              'hi')
+                            Text(
+                              hindiDate,
+                              style: GoogleFonts.notoSansDevanagari(
+                                fontSize: 13,
+                                color: AppColors.gold,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          ),
                           Text(
-                            user.name.isNotEmpty ? 'Good Evening, ${user.name.split(' ')[0]}' : 'Good Evening',
+                            user.name.isNotEmpty
+                                ? '${context.watch<LanguageProvider>().languageCode == 'hi' ? 'शुभ संध्या' : 'Good Evening'}, ${user.name.split(' ')[0]}'
+                                : (context
+                                            .watch<LanguageProvider>()
+                                            .languageCode ==
+                                        'hi'
+                                    ? 'शुभ संध्या'
+                                    : 'Good Evening'),
                             style: GoogleFonts.playfairDisplay(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
@@ -138,16 +148,27 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '$hindiDate · $formattedDate',
-                            style: GoogleFonts.notoSansDevanagari(
-                              fontSize: 11,
-                              color: AppColors.textMuted,
-                            ),
+                            context.watch<LanguageProvider>().languageCode ==
+                                    'hi'
+                                ? hindiDate
+                                : formattedDate,
+                            style: context
+                                        .watch<LanguageProvider>()
+                                        .languageCode ==
+                                    'hi'
+                                ? GoogleFonts.notoSansDevanagari(
+                                    fontSize: 11,
+                                    color: AppColors.textMuted,
+                                  )
+                                : GoogleFonts.poppins(
+                                    fontSize: 11,
+                                    color: AppColors.textMuted,
+                                  ),
                           ),
                         ],
                       ),
                     ),
-                    
+
                     // Avatar & Bell
                     Row(
                       children: [
@@ -157,7 +178,8 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
                             children: [
                               GestureDetector(
                                 onTap: () => context.push(Routes.notifications),
-                                child: const Icon(Icons.notifications_none, color: AppColors.gold, size: 28),
+                                child: const Icon(Icons.notifications_none,
+                                    color: AppColors.gold, size: 28),
                               ),
                               if (np.hasUnread)
                                 Positioned(
@@ -165,11 +187,17 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
                                   top: -2,
                                   child: Container(
                                     padding: const EdgeInsets.all(4),
-                                    decoration: const BoxDecoration(color: AppColors.accentRed, shape: BoxShape.circle),
-                                    constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                                    decoration: const BoxDecoration(
+                                        color: AppColors.accentRed,
+                                        shape: BoxShape.circle),
+                                    constraints: const BoxConstraints(
+                                        minWidth: 16, minHeight: 16),
                                     child: Text(
                                       '${np.unreadCount}',
-                                      style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 8,
+                                          fontWeight: FontWeight.bold),
                                       textAlign: TextAlign.center,
                                     ),
                                   ),
@@ -184,12 +212,17 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
                           decoration: const BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: LinearGradient(
-                              colors: [AppColors.saffron, AppColors.saffronDeep],
+                              colors: [
+                                AppColors.saffron,
+                                AppColors.saffronDeep
+                              ],
                             ),
                           ),
                           child: Center(
                             child: Text(
-                              user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
+                              user.name.isNotEmpty
+                                  ? user.name[0].toUpperCase()
+                                  : 'U',
                               style: GoogleFonts.poppins(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -203,9 +236,9 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
                   ],
                 ),
               ),
-              
+
               const Spacer(),
-              
+
               // Ask CVI Bar
               GestureDetector(
                 onTap: () {
@@ -213,11 +246,13 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
                 },
                 child: Container(
                   height: 56,
-                  margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
                   decoration: BoxDecoration(
                     color: AppColors.bgMid,
                     borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: AppColors.surfaceBorder, width: 1),
+                    border:
+                        Border.all(color: AppColors.surfaceBorder, width: 1),
                   ),
                   child: Row(
                     children: [
@@ -230,20 +265,33 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
                           color: AppColors.bgDark,
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: const [
-                            BoxShadow(color: AppColors.saffronGlow, blurRadius: 12, spreadRadius: 2),
+                            BoxShadow(
+                                color: AppColors.saffronGlow,
+                                blurRadius: 12,
+                                spreadRadius: 2),
                           ],
                         ),
-                        child: const Icon(Icons.mic, color: AppColors.saffron, size: 20),
+                        child: const Icon(Icons.mic,
+                            color: AppColors.saffron, size: 20),
                       ),
                       const SizedBox(width: 16),
                       // Text
                       Text(
-                        'Ask CVI · CVI से पूछें',
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textSecondary,
-                        ),
+                        context.watch<LanguageProvider>().languageCode == 'hi'
+                            ? 'CVI से पूछें'
+                            : 'Ask CVI',
+                        style: context.watch<LanguageProvider>().languageCode ==
+                                'hi'
+                            ? GoogleFonts.notoSansDevanagari(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.textSecondary,
+                              )
+                            : GoogleFonts.poppins(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.textSecondary,
+                              ),
                       ),
                       const Spacer(),
                       // Hint
@@ -272,7 +320,7 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
     return Consumer3<UserProvider, AnalyticsProvider, ConversationProvider>(
       builder: (context, userProvider, analytics, convoProvider, child) {
         final user = userProvider.currentUser;
-        
+
         final stats = [
           {
             'value': '${convoProvider.messages.length}',
@@ -311,13 +359,14 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
             itemBuilder: (context, index) {
               final stat = stats[index];
               final color = stat['color'] as Color;
-              
+
               return AnimatedBuilder(
                 animation: _shimmerController,
                 builder: (context, child) {
-                  final sweep = sin((_shimmerController.value * 2 * pi) + (index * 0.5));
+                  final sweep =
+                      sin((_shimmerController.value * 2 * pi) + (index * 0.5));
                   final opacity = (sweep + 1) / 2;
-                  
+
                   return Container(
                     width: 140,
                     padding: const EdgeInsets.all(16),
@@ -325,10 +374,14 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
                       color: AppColors.surface,
                       borderRadius: BorderRadius.circular(20),
                       border: Border(
-                        top: BorderSide(color: color.withValues(alpha: 0.5 + (0.5 * opacity)), width: 2),
+                        top: BorderSide(
+                            color:
+                                color.withValues(alpha: 0.5 + (0.5 * opacity)),
+                            width: 2),
                         left: const BorderSide(color: AppColors.surfaceBorder),
                         right: const BorderSide(color: AppColors.surfaceBorder),
-                        bottom: const BorderSide(color: AppColors.surfaceBorder),
+                        bottom:
+                            const BorderSide(color: AppColors.surfaceBorder),
                       ),
                     ),
                     child: Column(
@@ -367,11 +420,36 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
   // ─── POPULAR SERVICES ───────────────────────────────────────────────────────
   Widget _buildPopularServices() {
     final services = [
-      {'emoji': '🪪', 'name': 'Aadhaar Card', 'hindi': 'आधार कार्ड', 'color': AppColors.saffron},
-      {'emoji': '📘', 'name': 'Passport', 'hindi': 'पासपोर्ट', 'color': AppColors.accentBlue},
-      {'emoji': '💳', 'name': 'PAN Card', 'hindi': 'पैन कार्ड', 'color': AppColors.gold},
-      {'emoji': '🗳️', 'name': 'Voter ID', 'hindi': 'मतदाता पत्र', 'color': AppColors.emerald},
-      {'emoji': '🚗', 'name': 'Driving License', 'hindi': 'ड्राइविंग लाइसेंस', 'color': AppColors.saffron},
+      {
+        'emoji': '🪪',
+        'name': 'Aadhaar Card',
+        'hindi': 'आधार कार्ड',
+        'color': AppColors.saffron
+      },
+      {
+        'emoji': '📘',
+        'name': 'Passport',
+        'hindi': 'पासपोर्ट',
+        'color': AppColors.accentBlue
+      },
+      {
+        'emoji': '💳',
+        'name': 'PAN Card',
+        'hindi': 'पैन कार्ड',
+        'color': AppColors.gold
+      },
+      {
+        'emoji': '🗳️',
+        'name': 'Voter ID',
+        'hindi': 'मतदाता पत्र',
+        'color': AppColors.emerald
+      },
+      {
+        'emoji': '🚗',
+        'name': 'Driving License',
+        'hindi': 'ड्राइविंग लाइसेंस',
+        'color': AppColors.saffron
+      },
     ];
 
     return Padding(
@@ -426,20 +504,29 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(s['emoji'] as String, style: const TextStyle(fontSize: 28)),
+                        Text(s['emoji'] as String,
+                            style: const TextStyle(fontSize: 28)),
                         const SizedBox(height: 8),
                         Text(
-                          s['name'] as String,
+                          (context.watch<LanguageProvider>().languageCode ==
+                                  'hi')
+                              ? (s['hindi'] as String)
+                              : (s['name'] as String),
                           textAlign: TextAlign.center,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.poppins(
-                            fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textPrimary,
-                          ),
-                        ),
-                        Text(
-                          s['hindi'] as String,
-                          style: GoogleFonts.notoSansDevanagari(fontSize: 8, color: AppColors.textMuted),
+                          style:
+                              context.watch<LanguageProvider>().languageCode ==
+                                      'hi'
+                                  ? GoogleFonts.notoSansDevanagari(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textPrimary)
+                                  : GoogleFonts.poppins(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textPrimary,
+                                    ),
                         ),
                       ],
                     ),
@@ -504,7 +591,8 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
                   color: AppColors.emerald.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.mic_rounded, color: AppColors.emerald, size: 20),
+                child: const Icon(Icons.mic_rounded,
+                    color: AppColors.emerald, size: 20),
               ),
             ),
           ],
@@ -535,11 +623,14 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
             Center(
               child: Column(
                 children: [
-                  Icon(Icons.history_rounded, color: AppColors.textMuted.withValues(alpha: 0.3), size: 48),
+                  Icon(Icons.history_rounded,
+                      color: AppColors.textMuted.withValues(alpha: 0.3),
+                      size: 48),
                   const SizedBox(height: 12),
                   Text(
                     'No recent activity to show',
-                    style: GoogleFonts.poppins(color: AppColors.textMuted, fontSize: 13),
+                    style: GoogleFonts.poppins(
+                        color: AppColors.textMuted, fontSize: 13),
                   ),
                 ],
               ),
@@ -563,15 +654,15 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
           ),
           const SizedBox(height: 16),
           ...apps.take(3).map((app) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: _buildActivityItem(
-              icon: Icons.assignment_rounded,
-              title: 'Applied for ${app.schemeName}',
-              hindiTitle: '${app.schemeName} के लिए आवेदन किया',
-              time: DateFormat.MMMd().format(app.submissionDate),
-              color: AppColors.saffron,
-            ),
-          )),
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _buildActivityItem(
+                  icon: Icons.assignment_rounded,
+                  title: 'Applied for ${app.schemeName}',
+                  hindiTitle: '${app.schemeName} के लिए आवेदन किया',
+                  time: DateFormat.MMMd().format(app.submissionDate),
+                  color: AppColors.saffron,
+                ),
+              )),
         ],
       ),
     );
@@ -598,7 +689,7 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
             ),
           ),
           const SizedBox(width: 12),
-          
+
           // Icon
           Container(
             width: 40,
@@ -610,7 +701,7 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
             child: Icon(icon, color: color, size: 20),
           ),
           const SizedBox(width: 16),
-          
+
           // Text
           Expanded(
             child: BilingualLabel(
@@ -621,7 +712,7 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
               scale: 0.9,
             ),
           ),
-          
+
           // Time
           Text(
             time,

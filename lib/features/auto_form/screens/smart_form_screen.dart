@@ -6,14 +6,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/router/app_router.dart';
 import '../../../models/service_model.dart';
+import '../../../providers/user_provider.dart';
 import '../../../providers/language_provider.dart';
 import '../../../providers/voice_provider.dart';
-import '../../../providers/user_provider.dart';
 import '../../../providers/citizen_profile_provider.dart';
 import '../models/auto_form_model.dart';
 import '../providers/auto_form_provider.dart';
@@ -108,8 +109,7 @@ class _SmartFormScreenState extends State<SmartFormScreen>
           return _buildNoFormScreen(provider.errorMessage);
         }
 
-        final langCode =
-            context.watch<LanguageProvider>().languageCode;
+        final langCode = context.watch<LanguageProvider>().languageCode;
 
         return Scaffold(
           backgroundColor: AppColors.bgDeep,
@@ -158,7 +158,7 @@ class _SmartFormScreenState extends State<SmartFormScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
+            const SizedBox(
               width: 56,
               height: 56,
               child: CircularProgressIndicator(
@@ -302,7 +302,7 @@ class _SmartFormScreenState extends State<SmartFormScreen>
         const SizedBox(height: 4),
         Row(
           children: [
-            Icon(Icons.language_rounded,
+            const Icon(Icons.language_rounded,
                 color: AppColors.textMuted, size: 14),
             const SizedBox(width: 4),
             Text(
@@ -329,9 +329,7 @@ class _SmartFormScreenState extends State<SmartFormScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            isGood
-                ? const Color(0xFF0A1A0A)
-                : AppColors.bgDark,
+            isGood ? const Color(0xFF0A1A0A) : AppColors.bgDark,
             AppColors.bgDeep,
           ],
         ),
@@ -339,7 +337,7 @@ class _SmartFormScreenState extends State<SmartFormScreen>
         border: Border.all(
           color: isGood
               ? AppColors.emeraldLight.withValues(alpha: 0.4)
-              : AppColors.gold.withValues(alpha: 0.3),
+              : AppColors.gold.withOpacity(0.3),
         ),
       ),
       child: Column(
@@ -387,27 +385,22 @@ class _SmartFormScreenState extends State<SmartFormScreen>
 
   // ─── Missing Docs Alert ─────────────────────────────────────────────────────
 
-  Widget _buildMissingDocsAlert(
-      AutoFormProvider provider, String langCode) {
+  Widget _buildMissingDocsAlert(AutoFormProvider provider, String langCode) {
     final template = provider.template!;
-    final missingLabels = provider.emptyFieldIds
-        .take(5)
-        .map((id) {
-          final field = template.fields.firstWhere(
-            (f) => f.id == id,
-            orElse: () => template.fields.first,
-          );
-          return field.getLabel(langCode);
-        })
-        .toList();
+    final missingLabels = provider.emptyFieldIds.take(5).map((id) {
+      final field = template.fields.firstWhere(
+        (f) => f.id == id,
+        orElse: () => template.fields.first,
+      );
+      return field.getLabel(langCode);
+    }).toList();
 
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.bgDark,
         borderRadius: BorderRadius.circular(12),
-        border:
-            Border.all(color: AppColors.saffron.withValues(alpha: 0.3)),
+        border: Border.all(color: AppColors.saffron.withOpacity(0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -435,16 +428,15 @@ class _SmartFormScreenState extends State<SmartFormScreen>
             runSpacing: 6,
             children: missingLabels.map((label) {
               return Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.bgMid,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   label,
-                  style: GoogleFonts.poppins(
-                      color: Colors.white60, fontSize: 11),
+                  style:
+                      GoogleFonts.poppins(color: Colors.white60, fontSize: 11),
                 ),
               );
             }).toList(),
@@ -490,10 +482,10 @@ class _SmartFormScreenState extends State<SmartFormScreen>
           final field = entry.value;
           final value = provider.filledValues[field.id];
           final hasValue = value != null && value.isNotEmpty;
-          final isAnimating = provider.isAnimating &&
-              provider.animatedFieldIndex == idx;
-          final isExplaining = provider.isExplaining &&
-              provider.currentExplainIndex == idx;
+          final isAnimating =
+              provider.isAnimating && provider.animatedFieldIndex == idx;
+          final isExplaining =
+              provider.isExplaining && provider.currentExplainIndex == idx;
           final source = provider.getSourceLabel(field.id);
 
           return Padding(
@@ -525,10 +517,9 @@ class _SmartFormScreenState extends State<SmartFormScreen>
     return Container(
       width: MediaQuery.of(context).size.width,
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.bgDark,
-        border:
-            const Border(top: BorderSide(color: AppColors.surfaceBorder)),
+        border: Border(top: BorderSide(color: AppColors.surfaceBorder)),
       ),
       child: SafeArea(
         child: Column(
@@ -555,7 +546,9 @@ class _SmartFormScreenState extends State<SmartFormScreen>
                   size: 20,
                 ),
                 label: Text(
-                  provider.isExplaining ? 'Stop Explanation' : '🔊 Explain Form',
+                  provider.isExplaining
+                      ? 'Stop Explanation'
+                      : '🔊 Explain Form',
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
@@ -591,9 +584,8 @@ class _SmartFormScreenState extends State<SmartFormScreen>
                         ? null
                         : () {
                             // Sync controller values before review
-                            for (final f
-                                in provider.template?.fields ??
-                                    <SmartFormField>[]) {
+                            for (final f in provider.template?.fields ??
+                                <SmartFormField>[]) {
                               final val = _controllers[f.id]?.text ?? '';
                               provider.updateField(f.id, val);
                             }
@@ -628,7 +620,8 @@ class _SmartFormScreenState extends State<SmartFormScreen>
   }
 
   /// Shows a language chooser for voice explanation of form info + required fields.
-  void _showExplainLanguageChooser(BuildContext context, AutoFormProvider provider) {
+  void _showExplainLanguageChooser(
+      BuildContext context, AutoFormProvider provider) {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.bgDark,
@@ -718,7 +711,6 @@ class _SmartFormScreenState extends State<SmartFormScreen>
     );
   }
 
-  /// Starts voice explanation: form description + importance + required fields list.
   void _startFormExplanation(AutoFormProvider provider, String langCode) {
     final voiceProvider = context.read<VoiceProvider>();
     provider.startVoiceExplanation(
@@ -726,6 +718,8 @@ class _SmartFormScreenState extends State<SmartFormScreen>
       voiceProvider: voiceProvider,
     );
   }
+
+  // ─── Document Scanner Integration ──────────────────────────────────────────
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -763,14 +757,14 @@ class _SmartFieldCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isHighlighted
-            ? AppColors.saffron.withValues(alpha: 0.08)
+            ? AppColors.saffron.withOpacity(0.08)
             : AppColors.bgDark,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isHighlighted
-              ? AppColors.saffron.withValues(alpha: 0.5)
+              ? AppColors.saffron.withOpacity(0.5)
               : hasValue
-                  ? AppColors.emeraldLight.withValues(alpha: 0.3)
+                  ? AppColors.emeraldLight.withOpacity(0.3)
                   : AppColors.surfaceBorder,
           width: isHighlighted ? 1.5 : 1,
         ),
@@ -788,8 +782,8 @@ class _SmartFieldCard extends StatelessWidget {
                     Row(
                       children: [
                         if (hasValue)
-                          Padding(
-                            padding: const EdgeInsets.only(right: 6),
+                          const Padding(
+                            padding: EdgeInsets.only(right: 6),
                             child: Icon(
                               Icons.check_circle_rounded,
                               color: AppColors.emeraldLight,
@@ -807,7 +801,7 @@ class _SmartFieldCard extends StatelessWidget {
                           ),
                         ),
                         if (field.required)
-                          Text(' *',
+                          const Text(' *',
                               style: TextStyle(
                                   color: AppColors.accentRed, fontSize: 14)),
                       ],
@@ -829,7 +823,7 @@ class _SmartFieldCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: AppColors.saffron.withValues(alpha: 0.12),
+                    color: AppColors.saffron.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -862,24 +856,22 @@ class _SmartFieldCard extends StatelessWidget {
                   fontSize: 13,
                 ),
                 isDense: true,
-                contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 14, vertical: 12),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 filled: true,
                 fillColor: AppColors.bgMid,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide:
-                      const BorderSide(color: AppColors.surfaceBorder),
+                  borderSide: const BorderSide(color: AppColors.surfaceBorder),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide:
-                      const BorderSide(color: AppColors.surfaceBorder),
+                  borderSide: const BorderSide(color: AppColors.surfaceBorder),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(
-                      color: AppColors.saffron, width: 1.5),
+                  borderSide:
+                      const BorderSide(color: AppColors.saffron, width: 1.5),
                 ),
               ),
             ),
@@ -890,7 +882,7 @@ class _SmartFieldCard extends StatelessWidget {
 
   Widget _buildDropdown(BuildContext context) {
     return DropdownButtonFormField<String>(
-      value: field.options?.contains(value) == true ? value : null,
+      initialValue: field.options?.contains(value) == true ? value : null,
       items: field.options?.map((opt) {
         return DropdownMenuItem(
           value: opt,
@@ -979,7 +971,7 @@ class _LanguageOption extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(Icons.play_circle_rounded,
+            const Icon(Icons.play_circle_rounded,
                 color: AppColors.saffron, size: 28),
           ],
         ),

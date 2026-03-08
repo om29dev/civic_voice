@@ -49,11 +49,11 @@ class ServiceNavigationScreen extends StatelessWidget {
             ),
             const SizedBox(height: 30),
             ...appServices.map((service) => ServiceCard(
-              service: service,
-              onTap: () {
-                // Navigate to details
-              },
-            )).toList(),
+                  service: service,
+                  onTap: () {
+                    // Navigate to details
+                  },
+                )),
           ],
         ),
       ),

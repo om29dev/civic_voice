@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -8,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../providers/document_scanner_provider.dart';
+import '../../../../providers/document_vault_provider.dart';
 import '../../../../widgets/cvi_button.dart';
 import '../../../../widgets/glass_card.dart';
 
@@ -16,10 +14,15 @@ class AIDocumentScannerScreen extends StatelessWidget {
 
   Future<void> _scanAction(DocumentScannerProvider provider) async {
     final picker = ImagePicker();
-    final file = await picker.pickImage(source: ImageSource.camera);
+    final file = await picker.pickImage(
+      source: ImageSource.camera,
+      maxWidth: 1920,
+      maxHeight: 1920,
+      imageQuality: 80,
+    );
     if (file != null) {
-      final bytes = await File(file.path).readAsBytes();
-      provider.processImage(base64Encode(bytes));
+      final bytes = await file.readAsBytes();
+      provider.processImage(bytes);
     }
   }
 
@@ -55,7 +58,7 @@ class AIDocumentScannerScreen extends StatelessWidget {
             body: SafeArea(
               child: provider.extractedData == null
                   ? _buildUploadState(context, provider)
-                  : _buildResultState(provider),
+                  : _buildResultState(context, provider),
             ),
           );
         },
@@ -63,7 +66,8 @@ class AIDocumentScannerScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildUploadState(BuildContext context, DocumentScannerProvider provider) {
+  Widget _buildUploadState(
+      BuildContext context, DocumentScannerProvider provider) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32.0),
@@ -79,26 +83,41 @@ class AIDocumentScannerScreen extends StatelessWidget {
               ).animate().fadeIn(delay: 200.ms),
               const SizedBox(height: 8),
               Text(
-                '// Future AWS integration: Amazon Textract',
-                style: GoogleFonts.spaceMono(color: AppColors.textMuted, fontSize: 10),
+                'Processing with Amazon Nova Lite...',
+                style: GoogleFonts.spaceMono(
+                    color: AppColors.textMuted, fontSize: 10),
               ).animate().fadeIn(delay: 600.ms)
             ] else ...[
+              if (provider.lastError != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  child: Text(
+                    'Error: ${provider.lastError}',
+                    style: GoogleFonts.inter(
+                        color: Colors.redAccent, fontSize: 12),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               Container(
                 padding: const EdgeInsets.all(48),
                 decoration: BoxDecoration(
                   color: AppColors.accentBlue.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.document_scanner_rounded, size: 80, color: AppColors.accentBlue),
+                child: const Icon(Icons.document_scanner_rounded,
+                    size: 80, color: AppColors.accentBlue),
               ).animate().scale(curve: Curves.easeOutBack),
               const SizedBox(height: 32),
               Text(
                 'Secure AI Document Scan',
-                style: GoogleFonts.playfairDisplay(fontSize: 24, color: Colors.white, fontWeight: FontWeight.bold),
+                style: GoogleFonts.playfairDisplay(
+                    fontSize: 24,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
               Text(
-                'We use offline local models and secure encrypted connections to verify your documents.',
+                'Upload your document and let AI extract the details for your vault.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(color: AppColors.textSecondary),
               ),
@@ -115,7 +134,8 @@ class AIDocumentScannerScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildResultState(DocumentScannerProvider provider) {
+  Widget _buildResultState(
+      BuildContext context, DocumentScannerProvider provider) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -123,7 +143,8 @@ class AIDocumentScannerScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.check_circle, color: AppColors.emeraldLight, size: 32),
+              const Icon(Icons.check_circle,
+                  color: AppColors.emeraldLight, size: 32),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -131,20 +152,22 @@ class AIDocumentScannerScreen extends StatelessWidget {
                   children: [
                     Text(
                       'Scan Successful',
-                      style: GoogleFonts.playfairDisplay(fontSize: 24, color: Colors.white, fontWeight: FontWeight.bold),
+                      style: GoogleFonts.playfairDisplay(
+                          fontSize: 24,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold),
                     ),
                     Text(
                       'Document parsed automatically',
-                      style: GoogleFonts.inter(color: AppColors.emeraldLight, fontSize: 13),
+                      style: GoogleFonts.inter(
+                          color: AppColors.emeraldLight, fontSize: 13),
                     ),
                   ],
                 ),
               )
             ],
           ).animate().slideX(begin: -0.1, end: 0),
-
           const SizedBox(height: 32),
-          
           if (provider.scannedImageBytes != null)
             Center(
               child: ClipRRect(
@@ -157,37 +180,55 @@ class AIDocumentScannerScreen extends StatelessWidget {
                 ),
               ),
             ).animate().fadeIn(),
-
           const SizedBox(height: 32),
-
-          Text('Extracted Data', style: GoogleFonts.poppins(fontSize: 18, color: Colors.white, fontWeight: FontWeight.w600)),
+          Text('Extracted Data',
+              style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600)),
           const SizedBox(height: 16),
-          
           GlassCard(
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                _buildDataRow('Document Type', provider.documentType ?? 'Unknown'),
+                _buildDataRow('Document Type',
+                    (provider.documentType ?? 'Unknown').toUpperCase()),
                 const Divider(color: AppColors.surfaceBorder, height: 24),
                 ...provider.extractedData!.entries.map((e) {
                   return Column(
                     children: [
-                      _buildDataRow(e.key, e.value.toString()),
+                      _buildDataRow(e.key.replaceAll('_', ' ').toUpperCase(),
+                          e.value.toString()),
                       if (e.key != provider.extractedData!.entries.last.key)
-                        const Divider(color: AppColors.surfaceBorder, height: 24),
+                        const Divider(
+                            color: AppColors.surfaceBorder, height: 24),
                     ],
                   );
                 }),
               ],
             ),
           ).animate().slideY(begin: 0.1, end: 0, delay: 200.ms),
-
           const SizedBox(height: 32),
           CviButton(
             text: 'Save to Vault',
             variant: CviButtonVariant.gold,
-            onPressed: () {
-              // Usually calls DocumentVaultProvider to save, skipping for mock
+            onPressed: () async {
+              final success = await provider.saveToVault();
+              if (context.mounted) {
+                final errorMsg =
+                    provider.lastError ?? 'Failed to save to Vault.';
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                        success ? 'Successfully saved to Vault!' : errorMsg),
+                    backgroundColor: success ? Colors.green : Colors.red,
+                  ),
+                );
+                if (success) {
+                  context.read<DocumentVaultProvider>().loadDocuments();
+                  Navigator.pop(context);
+                }
+              }
             },
           ).animate().fadeIn(delay: 500.ms),
         ],
@@ -199,8 +240,16 @@ class AIDocumentScannerScreen extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 14)),
-        Text(value, style: GoogleFonts.poppins(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500)),
+        Expanded(
+            child: Text(label,
+                style: GoogleFonts.inter(
+                    color: AppColors.textMuted, fontSize: 13))),
+        const SizedBox(width: 8),
+        Text(value,
+            style: GoogleFonts.poppins(
+                color: AppColors.textPrimary,
+                fontSize: 13,
+                fontWeight: FontWeight.w500)),
       ],
     );
   }

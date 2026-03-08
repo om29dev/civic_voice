@@ -5,10 +5,11 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/router/app_router.dart';
-import '../../../core/services/form_filler_service.dart';
 import '../../../models/service_model.dart';
+import '../../../providers/language_provider.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SERVICE DETAIL SCREEN V2
@@ -23,7 +24,7 @@ class ServiceDetailScreenV2 extends StatefulWidget {
 }
 
 class _ServiceDetailScreenV2State extends State<ServiceDetailScreenV2>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late TabController _tabCtrl;
   int _currentStep = -1; // -1 = not started
   final _appIdCtrl = TextEditingController();
@@ -58,7 +59,7 @@ class _ServiceDetailScreenV2State extends State<ServiceDetailScreenV2>
     super.dispose();
   }
 
-  Future<void> _launch(String url) async {
+  void _launch(String url) async {
     final uri = Uri.parse(url);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (mounted) {
@@ -72,19 +73,22 @@ class _ServiceDetailScreenV2State extends State<ServiceDetailScreenV2>
     }
   }
 
-  void _openVoiceWithContext() {
-    context.go(Routes.voice);
-  }
-
   String _buildChecklist() {
     final buf = StringBuffer();
     buf.writeln('DOCUMENT CHECKLIST — ${s.localizedName("en")}');
     buf.writeln('=' * 42);
     for (final doc in s.requiredDocuments) {
-      buf.writeln('\n${doc.isOptional ? "[ ] OPTIONAL" : "[*] MANDATORY"} — ${doc.name}');
+      buf.writeln(
+          '\n${doc.isOptional ? "[ ] OPTIONAL" : "[*] MANDATORY"} — ${doc.name}');
       buf.writeln('    ${doc.description}');
     }
     return buf.toString();
+  }
+
+  // ─── AI Scheme Guide (CVI Guide) ──────────────────────────────────────────
+
+  void _onAskCVI() {
+    context.push(Routes.voice, extra: widget.service);
   }
 
   @override
@@ -160,7 +164,7 @@ class _ServiceDetailScreenV2State extends State<ServiceDetailScreenV2>
               // Route to Smart AI Form (with voice readout + profile auto-fill)
               context.push(Routes.smartFormPath(s.id), extra: s);
             },
-            onAskCVI: _openVoiceWithContext,
+            onAskCVI: _onAskCVI,
           ),
         ],
       ),
@@ -227,7 +231,8 @@ class _ServiceHeader extends StatelessWidget {
                         color: accentColor.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                            color: accentColor.withValues(alpha: 0.35), width: 1),
+                            color: accentColor.withValues(alpha: 0.35),
+                            width: 1),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -278,10 +283,10 @@ class _ServiceHeader extends StatelessWidget {
                       child: Text(service.iconEmoji,
                           style: const TextStyle(fontSize: 36)),
                     ),
-                  )
-                      .animate()
-                      .scale(begin: const Offset(0.85, 0.85), duration: 450.ms,
-                          curve: Curves.easeOutBack),
+                  ).animate().scale(
+                      begin: const Offset(0.85, 0.85),
+                      duration: 450.ms,
+                      curve: Curves.easeOutBack),
 
                   const SizedBox(width: 16),
 
@@ -309,21 +314,24 @@ class _ServiceHeader extends StatelessWidget {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          service.localizedName('en'),
-                          style: GoogleFonts.playfairDisplay(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
-                            height: 1.2,
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          service.localizedName('hi'),
-                          style: GoogleFonts.notoSansDevanagari(
-                            fontSize: 12,
-                            color: AppColors.textMuted,
-                          ),
+                          context.watch<LanguageProvider>().languageCode == 'hi'
+                              ? service.localizedName('hi')
+                              : service.localizedName('en'),
+                          style:
+                              context.watch<LanguageProvider>().languageCode ==
+                                      'hi'
+                                  ? GoogleFonts.notoSansDevanagari(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textPrimary,
+                                      height: 1.2,
+                                    )
+                                  : GoogleFonts.playfairDisplay(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textPrimary,
+                                      height: 1.2,
+                                    ),
                         ),
                         const SizedBox(height: 6),
                         // Popular badge
@@ -382,10 +390,10 @@ class _CVITabBar extends StatelessWidget {
         indicatorSize: TabBarIndicatorSize.tab,
         labelColor: accentColor,
         unselectedLabelColor: AppColors.textMuted,
-        labelStyle: GoogleFonts.poppins(
-            fontSize: 11, fontWeight: FontWeight.w600),
-        unselectedLabelStyle: GoogleFonts.poppins(
-            fontSize: 11, fontWeight: FontWeight.w500),
+        labelStyle:
+            GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600),
+        unselectedLabelStyle:
+            GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w500),
         tabs: const [
           Tab(text: 'Overview'),
           Tab(text: 'Documents'),
@@ -679,8 +687,8 @@ class _DocumentsTab extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: accentColor.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(10),
-                  border:
-                      Border.all(color: accentColor.withValues(alpha: 0.3), width: 1),
+                  border: Border.all(
+                      color: accentColor.withValues(alpha: 0.3), width: 1),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -871,8 +879,7 @@ class _DocumentCardState extends State<_DocumentCard> {
               curve: Curves.easeOutCubic,
               child: _expanded
                   ? Padding(
-                      padding:
-                          const EdgeInsets.fromLTRB(14, 0, 14, 14),
+                      padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
                       child: Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(12),
@@ -900,7 +907,9 @@ class _DocumentCardState extends State<_DocumentCard> {
     )
         .animate()
         .fadeIn(delay: Duration(milliseconds: 80 + widget.index * 50))
-        .slideY(begin: 0.05, end: 0,
+        .slideY(
+            begin: 0.05,
+            end: 0,
             delay: Duration(milliseconds: 80 + widget.index * 50));
   }
 }
@@ -941,8 +950,8 @@ class _StepsTab extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: accentColor.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(14),
-                  border:
-                      Border.all(color: accentColor.withValues(alpha: 0.25), width: 1),
+                  border: Border.all(
+                      color: accentColor.withValues(alpha: 0.25), width: 1),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -957,9 +966,8 @@ class _StepsTab extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     LinearProgressIndicator(
-                      value: steps.isEmpty
-                          ? 0
-                          : (currentStep + 1) / steps.length,
+                      value:
+                          steps.isEmpty ? 0 : (currentStep + 1) / steps.length,
                       backgroundColor: AppColors.surfaceBorder,
                       valueColor: AlwaysStoppedAnimation(accentColor),
                       borderRadius: BorderRadius.circular(4),
@@ -1026,7 +1034,10 @@ class _StepsTab extends StatelessWidget {
                   height: 54,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [accentColor, Color.lerp(accentColor, Colors.black, 0.25)!],
+                      colors: [
+                        accentColor,
+                        Color.lerp(accentColor, Colors.black, 0.25)!
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
@@ -1217,11 +1228,8 @@ class _StepTile extends StatelessWidget {
           ],
         ),
       ),
-    )
-        .animate()
-        .fadeIn(delay: Duration(milliseconds: 60 + index * 70))
-        .slideX(begin: 0.04, end: 0,
-            delay: Duration(milliseconds: 60 + index * 70));
+    ).animate().fadeIn(delay: Duration(milliseconds: 60 + index * 70)).slideX(
+        begin: 0.04, end: 0, delay: Duration(milliseconds: 60 + index * 70));
   }
 }
 
@@ -1303,8 +1311,7 @@ class _TrackTab extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.search_rounded,
-                          color: accentColor, size: 18),
+                      Icon(Icons.search_rounded, color: accentColor, size: 18),
                       const SizedBox(width: 8),
                       Text(
                         'Check Status on Official Site',
@@ -1350,8 +1357,7 @@ class _TrackTab extends StatelessWidget {
                 value: service.helplineNumber,
                 color: AppColors.emeraldLight,
                 onTap: () async {
-                  final uri =
-                      Uri.parse('tel:${service.helplineNumber}');
+                  final uri = Uri.parse('tel:${service.helplineNumber}');
                   await launchUrl(uri);
                 },
               ),
@@ -1363,8 +1369,7 @@ class _TrackTab extends StatelessWidget {
                 color: accentColor,
                 onTap: () async {
                   final uri = Uri.parse(service.officialLink);
-                  await launchUrl(uri,
-                      mode: LaunchMode.externalApplication);
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
                 },
               ),
               const SizedBox(height: 12),
@@ -1377,8 +1382,7 @@ class _TrackTab extends StatelessWidget {
                   final query = Uri.encodeComponent(
                       '${service.category.label} office near me');
                   await launchUrl(
-                      Uri.parse(
-                          'https://www.google.com/maps/search/$query'),
+                      Uri.parse('https://www.google.com/maps/search/$query'),
                       mode: LaunchMode.externalApplication);
                 },
               ),
@@ -1436,9 +1440,8 @@ class _StatusTimeline extends StatelessWidget {
                   ),
                 ),
                 child: Center(
-                  child: Text(emoji,
-                      style: TextStyle(
-                          fontSize: isDone ? 16 : 15)),
+                  child:
+                      Text(emoji, style: TextStyle(fontSize: isDone ? 16 : 15)),
                 ),
               ),
               const SizedBox(width: 12),
@@ -1450,7 +1453,8 @@ class _StatusTimeline extends StatelessWidget {
                       label,
                       style: GoogleFonts.poppins(
                         fontSize: 13,
-                        fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500,
+                        fontWeight:
+                            isCurrent ? FontWeight.w700 : FontWeight.w500,
                         color: isCurrent
                             ? AppColors.textPrimary
                             : isDone
@@ -1468,8 +1472,8 @@ class _StatusTimeline extends StatelessWidget {
               ),
               if (isCurrent)
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: accentColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(6),
@@ -1576,7 +1580,8 @@ class _SectionCard extends StatelessWidget {
           Container(
             height: 1.5,
             decoration: BoxDecoration(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(20)),
               gradient: LinearGradient(
                 colors: [
                   accentColor.withValues(alpha: 0.7),
@@ -1638,7 +1643,8 @@ class _StickyBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
       decoration: const BoxDecoration(
         color: AppColors.bgDark,
-        border: Border(top: BorderSide(color: AppColors.surfaceBorder, width: 1)),
+        border:
+            Border(top: BorderSide(color: AppColors.surfaceBorder, width: 1)),
       ),
       child: SafeArea(
         top: false,
@@ -1654,7 +1660,8 @@ class _StickyBar extends StatelessWidget {
                   color: AppColors.bgMid,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                      color: AppColors.saffron.withValues(alpha: 0.3), width: 1),
+                      color: AppColors.saffron.withValues(alpha: 0.3),
+                      width: 1),
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,

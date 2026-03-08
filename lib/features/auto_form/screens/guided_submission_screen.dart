@@ -30,8 +30,7 @@ class GuidedSubmissionScreen extends StatefulWidget {
   });
 
   @override
-  State<GuidedSubmissionScreen> createState() =>
-      _GuidedSubmissionScreenState();
+  State<GuidedSubmissionScreen> createState() => _GuidedSubmissionScreenState();
 }
 
 class _GuidedSubmissionScreenState extends State<GuidedSubmissionScreen> {
@@ -94,7 +93,8 @@ class _GuidedSubmissionScreenState extends State<GuidedSubmissionScreen> {
                         ),
                       ],
                     ),
-                  ).animate(onPlay: (c) => c.repeat(reverse: true))
+                  )
+                      .animate(onPlay: (c) => c.repeat(reverse: true))
                       .fade(begin: 0.5, end: 1.0, duration: 1000.ms),
                   const SizedBox(width: 8),
                   Flexible(
@@ -116,7 +116,7 @@ class _GuidedSubmissionScreenState extends State<GuidedSubmissionScreen> {
             if (_showDataPanel) _buildDataPanel(),
             // Loading indicator
             if (_isLoading)
-              LinearProgressIndicator(
+              const LinearProgressIndicator(
                 color: AppColors.saffron,
                 backgroundColor: AppColors.bgDark,
                 minHeight: 3,
@@ -186,12 +186,12 @@ class _GuidedSubmissionScreenState extends State<GuidedSubmissionScreen> {
           IconButton(
             icon: Icon(
               Icons.content_copy_rounded,
-              color: _showDataPanel ? AppColors.saffron : AppColors.textSecondary,
+              color:
+                  _showDataPanel ? AppColors.saffron : AppColors.textSecondary,
               size: 20,
             ),
             tooltip: 'Your Data',
-            onPressed: () =>
-                setState(() => _showDataPanel = !_showDataPanel),
+            onPressed: () => setState(() => _showDataPanel = !_showDataPanel),
           ),
         ],
       ),
@@ -216,7 +216,7 @@ class _GuidedSubmissionScreenState extends State<GuidedSubmissionScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.assistant_rounded,
+              const Icon(Icons.assistant_rounded,
                   color: AppColors.gold, size: 16),
               const SizedBox(width: 6),
               Text(
@@ -247,16 +247,14 @@ class _GuidedSubmissionScreenState extends State<GuidedSubmissionScreen> {
               if (_currentStep > 0)
                 _StepButton(
                   label: '← Previous',
-                  onTap: () =>
-                      setState(() => _currentStep--),
+                  onTap: () => setState(() => _currentStep--),
                 ),
               const Spacer(),
               if (_currentStep < widget.submitSteps.length - 1)
                 _StepButton(
                   label: 'Next Step →',
                   isPrimary: true,
-                  onTap: () =>
-                      setState(() => _currentStep++),
+                  onTap: () => setState(() => _currentStep++),
                 ),
               if (_currentStep == widget.submitSteps.length - 1)
                 _StepButton(
@@ -299,7 +297,7 @@ class _GuidedSubmissionScreenState extends State<GuidedSubmissionScreen> {
             padding: const EdgeInsets.fromLTRB(14, 10, 14, 6),
             child: Row(
               children: [
-                Icon(Icons.data_object_rounded,
+                const Icon(Icons.data_object_rounded,
                     color: AppColors.saffron, size: 16),
                 const SizedBox(width: 6),
                 Text(
@@ -323,14 +321,12 @@ class _GuidedSubmissionScreenState extends State<GuidedSubmissionScreen> {
           ),
           Flexible(
             child: ListView.separated(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
               shrinkWrap: true,
               itemCount: widget.formData.entries.length,
               separatorBuilder: (_, __) => const SizedBox(height: 4),
               itemBuilder: (context, index) {
-                final entry =
-                    widget.formData.entries.elementAt(index);
+                final entry = widget.formData.entries.elementAt(index);
                 return _CopyableDataRow(
                   label: _humanizeKey(entry.key),
                   value: entry.value,
@@ -349,9 +345,8 @@ class _GuidedSubmissionScreenState extends State<GuidedSubmissionScreen> {
     return key
         .replaceAll('_', ' ')
         .split(' ')
-        .map((w) => w.isNotEmpty
-            ? '${w[0].toUpperCase()}${w.substring(1)}'
-            : '')
+        .map(
+            (w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
         .join(' ');
   }
 }
@@ -376,9 +371,7 @@ class _StepButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
-          color: isPrimary
-              ? AppColors.saffron
-              : AppColors.bgMid,
+          color: isPrimary ? AppColors.saffron : AppColors.bgMid,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Text(
@@ -455,9 +448,7 @@ class _CopyableDataRowState extends State<_CopyableDataRow> {
               ),
             ),
             Icon(
-              _copied
-                  ? Icons.check_circle_rounded
-                  : Icons.copy_rounded,
+              _copied ? Icons.check_circle_rounded : Icons.copy_rounded,
               color: _copied ? AppColors.emeraldLight : AppColors.textMuted,
               size: 18,
             ),

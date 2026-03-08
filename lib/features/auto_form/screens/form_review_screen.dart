@@ -44,9 +44,9 @@ class _FormReviewScreenState extends State<FormReviewScreen> {
     return Consumer<AutoFormProvider>(
       builder: (context, provider, _) {
         if (provider.template == null) {
-          return Scaffold(
+          return const Scaffold(
             backgroundColor: AppColors.bgDeep,
-            body: const Center(child: Text('No form data')),
+            body: Center(child: Text('No form data')),
           );
         }
 
@@ -86,10 +86,10 @@ class _FormReviewScreenState extends State<FormReviewScreen> {
                       final idx = e.key;
                       final field = e.value;
                       final value = provider.filledValues[field.id];
-                      final hasValue =
-                          value != null && value.isNotEmpty;
+                      final hasValue = value != null && value.isNotEmpty;
                       final src = provider.getSourceLabel(field.id);
-                      final isHighlighted = _isSpeaking && _currentFieldIdx == idx;
+                      final isHighlighted =
+                          _isSpeaking && _currentFieldIdx == idx;
 
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 8),
@@ -144,9 +144,7 @@ class _FormReviewScreenState extends State<FormReviewScreen> {
                 isComplete
                     ? Icons.check_circle_rounded
                     : Icons.info_outline_rounded,
-                color: isComplete
-                    ? AppColors.emeraldLight
-                    : AppColors.gold,
+                color: isComplete ? AppColors.emeraldLight : AppColors.gold,
                 size: 22,
               ),
               const SizedBox(width: 10),
@@ -154,9 +152,7 @@ class _FormReviewScreenState extends State<FormReviewScreen> {
                 child: Text(
                   isComplete ? '✓ Ready to submit' : 'Review your data',
                   style: GoogleFonts.poppins(
-                    color: isComplete
-                        ? AppColors.emeraldLight
-                        : AppColors.gold,
+                    color: isComplete ? AppColors.emeraldLight : AppColors.gold,
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
@@ -253,20 +249,18 @@ class _FormReviewScreenState extends State<FormReviewScreen> {
                 Text(
                   displayValue,
                   style: GoogleFonts.poppins(
-                    color: hasValue
-                        ? AppColors.textPrimary
-                        : AppColors.textMuted,
+                    color:
+                        hasValue ? AppColors.textPrimary : AppColors.textMuted,
                     fontSize: 14,
-                    fontWeight:
-                        hasValue ? FontWeight.w600 : FontWeight.w400,
+                    fontWeight: hasValue ? FontWeight.w600 : FontWeight.w400,
                   ),
                 ),
               ],
             ),
           ),
           if (isHighlighted)
-            Padding(
-              padding: const EdgeInsets.only(left: 6),
+            const Padding(
+              padding: EdgeInsets.only(left: 6),
               child: Icon(Icons.volume_up_rounded,
                   color: AppColors.saffron, size: 16),
             ),
@@ -297,7 +291,7 @@ class _FormReviewScreenState extends State<FormReviewScreen> {
               padding: const EdgeInsets.only(bottom: 10),
               child: Row(
                 children: [
-                  SizedBox(
+                  const SizedBox(
                     width: 16,
                     height: 16,
                     child: CircularProgressIndicator(
@@ -399,14 +393,10 @@ class _FormReviewScreenState extends State<FormReviewScreen> {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: isSelected
-                ? AppColors.saffron
-                : AppColors.bgMid,
+            color: isSelected ? AppColors.saffron : AppColors.bgMid,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isSelected
-                  ? AppColors.saffron
-                  : AppColors.surfaceBorder,
+              color: isSelected ? AppColors.saffron : AppColors.surfaceBorder,
             ),
           ),
           child: Column(
@@ -483,9 +473,9 @@ class _FormReviewScreenState extends State<FormReviewScreen> {
       String speech;
       if (hasValue) {
         // Mask sensitive values in voice
-        final displayVal = field.sensitive && value!.length > 4
+        final displayVal = field.sensitive && value.length > 4
             ? _getSensitiveVoice(value, langCode)
-            : value!;
+            : value;
         final speechMap = {
           'en': '$label is $displayVal.',
           'hi': '$label है $displayVal.',
@@ -516,10 +506,14 @@ class _FormReviewScreenState extends State<FormReviewScreen> {
     final empty = provider.emptyFieldIds.length;
 
     final summaryMap = {
-      'en': 'Total $filled out of $total fields are filled. $empty fields are empty and need your input.',
-      'hi': 'कुल $total में से $filled फ़ील्ड भरे हैं। $empty फ़ील्ड खाली हैं और आपका इनपुट चाहिए।',
-      'ta': 'மொத்தம் $total புலங்களில் $filled நிரப்பப்பட்டுள்ளன. $empty புலங்கள் காலியாக உள்ளன.',
-      'mr': 'एकूण $total पैकी $filled फील्ड भरले आहेत. $empty फील्ड रिकामे आहेत.',
+      'en':
+          'Total $filled out of $total fields are filled. $empty fields are empty and need your input.',
+      'hi':
+          'कुल $total में से $filled फ़ील्ड भरे हैं। $empty फ़ील्ड खाली हैं और आपका इनपुट चाहिए।',
+      'ta':
+          'மொத்தம் $total புலங்களில் $filled நிரப்பப்பட்டுள்ளன. $empty புலங்கள் காலியாக உள்ளன.',
+      'mr':
+          'एकूण $total पैकी $filled फील्ड भरले आहेत. $empty फील्ड रिकामे आहेत.',
     };
     await voiceProvider.speakAndWait(summaryMap[langCode] ?? summaryMap['en']!);
 
@@ -542,17 +536,6 @@ class _FormReviewScreenState extends State<FormReviewScreen> {
       'mr': '$last4 वर संपणारा',
     };
     return map[langCode] ?? map['en']!;
-  }
-
-  Future<void> _waitForTTS(VoiceProvider voiceProvider) async {
-    int waited = 0;
-    while (voiceProvider.isSpeaking && waited < 300 && _isSpeaking) {
-      await Future.delayed(const Duration(milliseconds: 100));
-      waited++;
-    }
-    if (_isSpeaking) {
-      await Future.delayed(const Duration(milliseconds: 300));
-    }
   }
 
   void _stopVoice() {

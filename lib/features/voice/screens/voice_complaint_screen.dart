@@ -6,9 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:geolocator/geolocator.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../models/complaint_model.dart';
 import '../../../../providers/complaint_provider.dart';
 import '../../../../widgets/glass_card.dart';
 import '../../../../providers/voice_provider.dart';
@@ -23,7 +21,7 @@ class VoiceComplaintScreen extends StatefulWidget {
 
 class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
   final TextEditingController _mockVoiceInput = TextEditingController();
-  
+
   // 0 = Record Complaint, 1 = Provide Location
   int _step = 0;
   String _capturedComplaint = '';
@@ -40,11 +38,14 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
 
     if (voice.state == VoiceState.listening) {
       await voice.stopListening();
-      final text = voice.transcribedText.isNotEmpty 
-          ? voice.transcribedText 
-          : (voice.partialText.isNotEmpty ? voice.partialText : _mockVoiceInput.text);
-      
-      final finalText = text.isNotEmpty ? text : 'Road is completely broken in XYZ area';
+      final text = voice.transcribedText.isNotEmpty
+          ? voice.transcribedText
+          : (voice.partialText.isNotEmpty
+              ? voice.partialText
+              : _mockVoiceInput.text);
+
+      final finalText =
+          text.isNotEmpty ? text : 'Road is completely broken in XYZ area';
       setState(() {
         _capturedComplaint = finalText;
         _step = 1;
@@ -55,7 +56,9 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
         localeId: lang == 'hi' ? 'hi_IN' : 'en_IN',
         onFinalResult: (text) async {
           setState(() {
-            _capturedComplaint = text.isNotEmpty ? text : 'Road is completely broken in XYZ area';
+            _capturedComplaint = text.isNotEmpty
+                ? text
+                : 'Road is completely broken in XYZ area';
             _step = 1;
             _mockVoiceInput.clear();
           });
@@ -71,10 +74,12 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
 
     if (voice.state == VoiceState.listening) {
       await voice.stopListening();
-      final text = voice.transcribedText.isNotEmpty 
-          ? voice.transcribedText 
-          : (voice.partialText.isNotEmpty ? voice.partialText : _mockVoiceInput.text);
-      
+      final text = voice.transcribedText.isNotEmpty
+          ? voice.transcribedText
+          : (voice.partialText.isNotEmpty
+              ? voice.partialText
+              : _mockVoiceInput.text);
+
       final finalText = text.isNotEmpty ? text : 'Unknown Location';
       await cp.processVoiceComplaint(_capturedComplaint, finalText);
     } else {
@@ -84,50 +89,6 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
           await cp.processVoiceComplaint(_capturedComplaint, text);
         },
       );
-    }
-  }
-
-  Future<void> _fetchGpsLocation(BuildContext context) async {
-    final cp = context.read<ComplaintProvider>();
-    
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location services are disabled.')));
-      return;
-    }
-
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location permissions are denied')));
-        return;
-      }
-    }
-    
-    if (permission == LocationPermission.deniedForever) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location permissions are permanently denied.')));
-      return;
-    }
-
-    // Show loading indicator
-    if (mounted) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (ctx) => const Center(child: CircularProgressIndicator(color: AppColors.emerald)),
-      );
-    }
-
-    try {
-      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-      if (mounted) Navigator.pop(context); // hide loading
-      
-      // Pass the GPS coordinates as the location string
-      await cp.processVoiceComplaint(_capturedComplaint, 'GPS: ${position.latitude}, ${position.longitude}');
-    } catch (e) {
-      if (mounted) Navigator.pop(context); // hide loading
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to get location: $e')));
     }
   }
 
@@ -174,9 +135,9 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
           ],
         ),
         centerTitle: true,
-        actions: [
+        actions: const [
           Padding(
-            padding: const EdgeInsets.only(right: 16.0),
+            padding: EdgeInsets.only(right: 16.0),
             child: Icon(Icons.security, color: AppColors.emerald, size: 20),
           ),
         ],
@@ -188,9 +149,11 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
-                child: provider.draftComplaint == null 
-                  ? (_step == 0 ? _buildComplaintInputView(voice, isRecording) : _buildLocationInputView(voice, isRecording))
-                  : _buildReviewView(provider),
+                child: provider.draftComplaint == null
+                    ? (_step == 0
+                        ? _buildComplaintInputView(voice, isRecording)
+                        : _buildLocationInputView(voice, isRecording))
+                    : _buildReviewView(provider),
               ),
             ),
           ],
@@ -210,7 +173,8 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
             AppColors.emerald.withValues(alpha: 0.1),
           ],
         ),
-        border: Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
+        border: Border(
+            bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -247,11 +211,12 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
         Text(
           'Describe your issue clearly. We will ask for the location next.',
           textAlign: TextAlign.center,
-          style: GoogleFonts.poppins(color: AppColors.textSecondary, fontSize: 13),
+          style:
+              GoogleFonts.poppins(color: AppColors.textSecondary, fontSize: 13),
         ).animate().fadeIn(delay: 200.ms),
-        
+
         const Spacer(),
-        
+
         // Voice Record Interaction Area
         GestureDetector(
           onTap: () => _onComplaintMicTap(context),
@@ -264,10 +229,16 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
                   height: 220,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.saffron.withValues(alpha: 0.2), width: 1),
+                    border: Border.all(
+                        color: AppColors.saffron.withValues(alpha: 0.2),
+                        width: 1),
                   ),
-                ).animate(onPlay: (c) => c.repeat()).scale(begin: const Offset(0.8, 0.8), end: const Offset(1.5, 1.5)).fadeOut(),
-              
+                )
+                    .animate(onPlay: (c) => c.repeat())
+                    .scale(
+                        begin: const Offset(0.8, 0.8),
+                        end: const Offset(1.5, 1.5))
+                    .fadeOut(),
               AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 width: isRecording ? 180 : 150,
@@ -275,15 +246,18 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: LinearGradient(
-                    colors: isRecording 
-                      ? [AppColors.semanticError, const Color(0xFFC0392B)] 
-                      : [AppColors.accentBlue, const Color(0xFF2980B9)],
+                    colors: isRecording
+                        ? [AppColors.semanticError, const Color(0xFFC0392B)]
+                        : [AppColors.accentBlue, const Color(0xFF2980B9)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: (isRecording ? AppColors.semanticError : AppColors.accentBlue).withValues(alpha: 0.4),
+                      color: (isRecording
+                              ? AppColors.semanticError
+                              : AppColors.accentBlue)
+                          .withValues(alpha: 0.4),
                       blurRadius: 30,
                       spreadRadius: 5,
                     )
@@ -298,13 +272,13 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
             ],
           ),
         ).animate(target: isRecording ? 1 : 0).shimmer(duration: 2.seconds),
-        
+
         const SizedBox(height: 40),
-        
+
         _buildTrustIndicators(),
-        
+
         const Spacer(),
-        
+
         if (isRecording)
           TextField(
             controller: _mockVoiceInput,
@@ -314,7 +288,9 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
               hintStyle: const TextStyle(color: Colors.white30),
               filled: true,
               fillColor: Colors.white.withValues(alpha: 0.05),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none),
             ),
           ).animate().fadeIn(),
       ],
@@ -339,9 +315,12 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
           textAlign: TextAlign.center,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          style: GoogleFonts.poppins(color: AppColors.saffron, fontSize: 13, fontStyle: FontStyle.italic),
+          style: GoogleFonts.poppins(
+              color: AppColors.saffron,
+              fontSize: 13,
+              fontStyle: FontStyle.italic),
         ).animate().fadeIn(delay: 200.ms),
-        
+
         const Spacer(),
 
         // Voice Record Interaction Area
@@ -356,10 +335,16 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
                   height: 140,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.saffron.withValues(alpha: 0.2), width: 1),
+                    border: Border.all(
+                        color: AppColors.saffron.withValues(alpha: 0.2),
+                        width: 1),
                   ),
-                ).animate(onPlay: (c) => c.repeat()).scale(begin: const Offset(0.8, 0.8), end: const Offset(1.5, 1.5)).fadeOut(),
-              
+                )
+                    .animate(onPlay: (c) => c.repeat())
+                    .scale(
+                        begin: const Offset(0.8, 0.8),
+                        end: const Offset(1.5, 1.5))
+                    .fadeOut(),
               AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 width: isRecording ? 100 : 80,
@@ -367,9 +352,9 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: LinearGradient(
-                    colors: isRecording 
-                      ? [AppColors.semanticError, const Color(0xFFC0392B)] 
-                      : [AppColors.bgMid, AppColors.bgLight],
+                    colors: isRecording
+                        ? [AppColors.semanticError, const Color(0xFFC0392B)]
+                        : [AppColors.bgMid, AppColors.bgLight],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -392,9 +377,9 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
             ],
           ),
         ).animate(target: isRecording ? 1 : 0).shimmer(duration: 2.seconds),
-        
+
         const Spacer(),
-        
+
         if (isRecording)
           TextField(
             controller: _mockVoiceInput,
@@ -404,7 +389,9 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
               hintStyle: const TextStyle(color: Colors.white30),
               filled: true,
               fillColor: Colors.white.withValues(alpha: 0.05),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none),
             ),
           ).animate().fadeIn(),
       ],
@@ -429,7 +416,10 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
         const SizedBox(height: 8),
         Text(
           label,
-          style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 10, fontWeight: FontWeight.bold),
+          style: GoogleFonts.inter(
+              color: AppColors.textMuted,
+              fontSize: 10,
+              fontWeight: FontWeight.bold),
         ),
       ],
     );
@@ -437,14 +427,18 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
 
   Widget _buildReviewView(ComplaintProvider provider) {
     final complaint = provider.draftComplaint!;
-    
+
     return ListView(
       physics: const BouncingScrollPhysics(),
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Review Draft', style: GoogleFonts.playfairDisplay(fontSize: 28, color: Colors.white, fontWeight: FontWeight.bold)),
+            Text('Review Draft',
+                style: GoogleFonts.playfairDisplay(
+                    fontSize: 28,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold)),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
@@ -454,16 +448,21 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.gps_fixed, color: AppColors.emerald, size: 12),
+                  const Icon(Icons.gps_fixed,
+                      color: AppColors.emerald, size: 12),
                   const SizedBox(width: 4),
-                  Text('GPS LOCATED', style: GoogleFonts.inter(color: AppColors.emerald, fontSize: 10, fontWeight: FontWeight.bold)),
+                  Text('GPS LOCATED',
+                      style: GoogleFonts.inter(
+                          color: AppColors.emerald,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
           ],
         ),
         const SizedBox(height: 24),
-        
+
         // Status Section
         GlassCard(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -475,11 +474,16 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Location Captured', style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 10, fontWeight: FontWeight.bold)),
+                    Text('Location Captured',
+                        style: GoogleFonts.inter(
+                            color: AppColors.textMuted,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold)),
                     const SizedBox(height: 2),
                     Text(
-                      complaint.location ?? 'GPS Coordinates Attached',
-                      style: GoogleFonts.poppins(color: Colors.white, fontSize: 13),
+                      complaint.location,
+                      style: GoogleFonts.poppins(
+                          color: Colors.white, fontSize: 13),
                     ),
                   ],
                 ),
@@ -487,31 +491,36 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
             ],
           ),
         ),
-        
+
         const SizedBox(height: 24),
-        
+
         GlassCard(
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildField('Authority', complaint.authorityEmail ?? 'Detecting...', Icons.account_balance, isGold: true),
+              _buildField(
+                  'Authority',
+                  complaint.authorityEmail ?? 'Detecting...',
+                  Icons.account_balance,
+                  isGold: true),
               const Divider(color: AppColors.surfaceBorder, height: 32),
               _buildField('Category', complaint.category, Icons.category),
               const Divider(color: AppColors.surfaceBorder, height: 32),
-              _buildField('Description', complaint.description, Icons.description),
+              _buildField(
+                  'Description', complaint.description, Icons.description),
             ],
           ),
         ).animate().fadeIn(),
 
         const SizedBox(height: 24),
-        
+
         _buildMediaSection(provider),
-        
+
         const SizedBox(height: 32),
-        
+
         _buildActionButtons(provider),
-        
+
         const SizedBox(height: 40),
       ],
     );
@@ -533,11 +542,14 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
                 border: Border.all(color: AppColors.surfaceBorder),
               ),
               child: provider.draftComplaint!.base64Image != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.memory(base64Decode(provider.draftComplaint!.base64Image!), fit: BoxFit.cover),
-                  )
-                : const Icon(Icons.add_a_photo, color: AppColors.saffron, size: 24),
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.memory(
+                          base64Decode(provider.draftComplaint!.base64Image!),
+                          fit: BoxFit.cover),
+                    )
+                  : const Icon(Icons.add_a_photo,
+                      color: AppColors.saffron, size: 24),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -545,13 +557,19 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    provider.draftComplaint!.base64Image != null ? 'Evidence Attached' : 'Attach Visual Evidence',
-                    style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                    provider.draftComplaint!.base64Image != null
+                        ? 'Evidence Attached'
+                        : 'Attach Visual Evidence',
+                    style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Photos help authorities resolve issues 40% faster.',
-                    style: GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 11),
+                    style: GoogleFonts.inter(
+                        color: AppColors.textSecondary, fontSize: 11),
                   ),
                 ],
               ),
@@ -574,7 +592,11 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
               setState(() => _step = 0);
               provider.discardDraft();
             },
-            child: Text('DISCARD', style: GoogleFonts.inter(color: AppColors.textMuted, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+            child: Text('DISCARD',
+                style: GoogleFonts.inter(
+                    color: AppColors.textMuted,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.5)),
           ),
         ),
         const SizedBox(width: 16),
@@ -585,85 +607,131 @@ class _VoiceComplaintScreenState extends State<VoiceComplaintScreen> {
               backgroundColor: AppColors.emerald,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 18),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
               elevation: 8,
               shadowColor: AppColors.emerald.withValues(alpha: 0.3),
             ),
-            onPressed: provider.isProcessing ? null : () async {
-              final refId = 'GOI-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
-              await provider.submitComplaint();
-              if (mounted) {
-                showDialog(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    backgroundColor: AppColors.bgDeep,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24), side: const BorderSide(color: AppColors.emerald)),
-                    title: Column(
-                      children: [
-                        const Icon(Icons.verified_user, color: AppColors.emerald, size: 48),
-                        const SizedBox(height: 16),
-                        Text('FILED OFFICIALLY', style: GoogleFonts.playfairDisplay(color: Colors.white, fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('Your complaint has been encrypted and routed to:', textAlign: TextAlign.center, style: GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 12)),
-                        const SizedBox(height: 8),
-                        Text(provider.complaints.last.authorityEmail ?? 'Central Authority', style: GoogleFonts.poppins(color: AppColors.gold, fontWeight: FontWeight.bold)),
-                        const Divider(color: AppColors.surfaceBorder, height: 32),
-                        Text('FILING REFERENCE NUMBER', style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 1)),
-                        const SizedBox(height: 8),
-                        SelectableText(refId, style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 2)),
-                      ],
-                    ),
-                    actions: [
-                      Center(
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(backgroundColor: AppColors.emerald, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                          onPressed: () {
-                            Navigator.of(ctx).pop();
-                            setState(() => _step = 0);
-                            provider.discardDraft();
-                          },
-                          child: const Text('ACKNOWLEDGE', style: TextStyle(color: Colors.white)),
+            onPressed: provider.isProcessing
+                ? null
+                : () async {
+                    final refId =
+                        'GOI-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+                    await provider.submitComplaint();
+                    if (mounted) {
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: AppColors.bgDeep,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                              side: const BorderSide(color: AppColors.emerald)),
+                          title: Column(
+                            children: [
+                              const Icon(Icons.verified_user,
+                                  color: AppColors.emerald, size: 48),
+                              const SizedBox(height: 16),
+                              Text('FILED OFFICIALLY',
+                                  style: GoogleFonts.playfairDisplay(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                  'Your complaint has been encrypted and routed to:',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.inter(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 12)),
+                              const SizedBox(height: 8),
+                              Text(
+                                  provider.complaints.last.authorityEmail ??
+                                      'Central Authority',
+                                  style: GoogleFonts.poppins(
+                                      color: AppColors.gold,
+                                      fontWeight: FontWeight.bold)),
+                              const Divider(
+                                  color: AppColors.surfaceBorder, height: 32),
+                              Text('FILING REFERENCE NUMBER',
+                                  style: GoogleFonts.inter(
+                                      color: AppColors.textMuted,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 1)),
+                              const SizedBox(height: 8),
+                              SelectableText(refId,
+                                  style: GoogleFonts.robotoMono(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 2)),
+                            ],
+                          ),
+                          actions: [
+                            Center(
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.emerald,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(12))),
+                                onPressed: () {
+                                  Navigator.of(ctx).pop();
+                                  setState(() => _step = 0);
+                                  provider.discardDraft();
+                                },
+                                child: const Text('ACKNOWLEDGE',
+                                    style: TextStyle(color: Colors.white)),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-                  ),
-                );
-              }
-            },
+                      );
+                    }
+                  },
             child: provider.isProcessing
-              ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-              : Text('SUBMIT OFFICIALLY', style: GoogleFonts.inter(fontWeight: FontWeight.w900, letterSpacing: 1.2)),
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                        color: Colors.white, strokeWidth: 2))
+                : Text('SUBMIT OFFICIALLY',
+                    style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w900, letterSpacing: 1.2)),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildField(String label, String val, IconData icon, {bool isGold = false}) {
+  Widget _buildField(String label, String val, IconData icon,
+      {bool isGold = false}) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: isGold ? AppColors.gold : AppColors.textMuted, size: 20),
+        Icon(icon,
+            color: isGold ? AppColors.gold : AppColors.textMuted, size: 20),
         const SizedBox(width: 16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label.toUpperCase(), style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 1)),
+              Text(label.toUpperCase(),
+                  style: GoogleFonts.inter(
+                      color: AppColors.textMuted,
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1)),
               const SizedBox(height: 6),
-              Text(
-                val, 
-                style: GoogleFonts.poppins(
-                  color: isGold ? AppColors.gold : AppColors.textPrimary, 
-                  fontSize: 15, 
-                  fontWeight: isGold ? FontWeight.bold : FontWeight.w500
-                )
-              ),
+              Text(val,
+                  style: GoogleFonts.poppins(
+                      color: isGold ? AppColors.gold : AppColors.textPrimary,
+                      fontSize: 15,
+                      fontWeight: isGold ? FontWeight.bold : FontWeight.w500)),
             ],
           ),
         )

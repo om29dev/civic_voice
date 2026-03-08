@@ -40,7 +40,9 @@ class ApplicationDashboardScreen extends StatelessWidget {
             ),
             body: SafeArea(
               child: provider.isLoading
-                  ? const Center(child: CircularProgressIndicator(color: AppColors.saffron))
+                  ? const Center(
+                      child:
+                          CircularProgressIndicator(color: AppColors.saffron))
                   : RefreshIndicator(
                       onRefresh: () async => provider.refreshData(),
                       color: AppColors.saffron,
@@ -49,7 +51,11 @@ class ApplicationDashboardScreen extends StatelessWidget {
                         children: [
                           _buildSummaryMetrics(provider),
                           const SizedBox(height: 32),
-                          Text('Recent Applications', style: GoogleFonts.playfairDisplay(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold)),
+                          Text('Recent Applications',
+                              style: GoogleFonts.playfairDisplay(
+                                  fontSize: 20,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold)),
                           const SizedBox(height: 16),
                           ...provider.applications.map((app) {
                             return _buildStatusCard(app);
@@ -66,16 +72,25 @@ class ApplicationDashboardScreen extends StatelessWidget {
 
   Widget _buildSummaryMetrics(ApplicationTrackerProvider provider) {
     int total = provider.applications.length;
-    int pending = provider.applications.where((a) => a.status == 'Pending' || a.status == 'In Progress').length;
-    int done = provider.applications.where((a) => a.status == 'Completed').length;
+    int pending = provider.applications
+        .where((a) => a.status == 'Pending' || a.status == 'In Progress')
+        .length;
+    int done =
+        provider.applications.where((a) => a.status == 'Completed').length;
 
     return Row(
       children: [
-        Expanded(child: _metricCard('Total', total.toString(), AppColors.accentBlue)),
+        Expanded(
+            child:
+                _metricCard('Total', total.toString(), AppColors.accentBlue)),
         const SizedBox(width: 16),
-        Expanded(child: _metricCard('Pending', pending.toString(), AppColors.saffron)),
+        Expanded(
+            child:
+                _metricCard('Pending', pending.toString(), AppColors.saffron)),
         const SizedBox(width: 16),
-        Expanded(child: _metricCard('Done', done.toString(), AppColors.emeraldLight)),
+        Expanded(
+            child:
+                _metricCard('Done', done.toString(), AppColors.emeraldLight)),
       ],
     ).animate().fadeIn().slideY(begin: 0.1, end: 0);
   }
@@ -85,15 +100,19 @@ class ApplicationDashboardScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 20),
       child: Column(
         children: [
-          Text(count, style: GoogleFonts.playfairDisplay(fontSize: 28, fontWeight: FontWeight.bold, color: color)),
+          Text(count,
+              style: GoogleFonts.playfairDisplay(
+                  fontSize: 28, fontWeight: FontWeight.bold, color: color)),
           const SizedBox(height: 4),
-          Text(label, style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textSecondary)),
+          Text(label,
+              style: GoogleFonts.poppins(
+                  fontSize: 12, color: AppColors.textSecondary)),
         ],
       ),
     );
   }
 
-  Widget _buildStatusCard(app) {
+  Widget _buildStatusCard(dynamic app) {
     Color statusColor;
     IconData statusIcon;
 
@@ -125,28 +144,42 @@ class ApplicationDashboardScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('ID: ${app.id}', style: GoogleFonts.spaceMono(color: AppColors.textMuted, fontSize: 13)),
+                Text('ID: ${app.id}',
+                    style: GoogleFonts.spaceMono(
+                        color: AppColors.textMuted, fontSize: 13)),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+                    border:
+                        Border.all(color: statusColor.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     children: [
                       Icon(statusIcon, color: statusColor, size: 14),
                       const SizedBox(width: 4),
-                      Text(app.status, style: GoogleFonts.inter(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold)),
+                      Text(app.status,
+                          style: GoogleFonts.inter(
+                              color: statusColor,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold)),
                     ],
                   ),
                 )
               ],
             ),
             const SizedBox(height: 16),
-            Text(app.schemeName, style: GoogleFonts.playfairDisplay(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+            Text(app.schemeName,
+                style: GoogleFonts.playfairDisplay(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white)),
             const SizedBox(height: 4),
-            Text(app.department, style: GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 13)),
+            Text(app.department,
+                style: GoogleFonts.inter(
+                    color: AppColors.textSecondary, fontSize: 13)),
             const SizedBox(height: 16),
             const Divider(color: AppColors.surfaceBorder),
             const SizedBox(height: 12),
@@ -156,16 +189,27 @@ class ApplicationDashboardScreen extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Submitted', style: GoogleFonts.inter(fontSize: 11, color: AppColors.textMuted)),
-                    Text(DateFormat('dd MMM, yyyy').format(app.submittedDate), style: GoogleFonts.poppins(fontSize: 13, color: Colors.white)),
+                    Text('Submitted',
+                        style: GoogleFonts.inter(
+                            fontSize: 11, color: AppColors.textMuted)),
+                    Text(DateFormat('dd MMM, yyyy').format(app.submittedDate),
+                        style: GoogleFonts.poppins(
+                            fontSize: 13, color: Colors.white)),
                   ],
                 ),
-                if (app.estimatedCompletion != null && app.status != 'Completed')
+                if (app.estimatedCompletion != null &&
+                    app.status != 'Completed')
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text('Est. Completion', style: GoogleFonts.inter(fontSize: 11, color: AppColors.textMuted)),
-                      Text(DateFormat('dd MMM, yyyy').format(app.estimatedCompletion!), style: GoogleFonts.poppins(fontSize: 13, color: AppColors.saffron)),
+                      Text('Est. Completion',
+                          style: GoogleFonts.inter(
+                              fontSize: 11, color: AppColors.textMuted)),
+                      Text(
+                          DateFormat('dd MMM, yyyy')
+                              .format(app.estimatedCompletion!),
+                          style: GoogleFonts.poppins(
+                              fontSize: 13, color: AppColors.saffron)),
                     ],
                   ),
               ],

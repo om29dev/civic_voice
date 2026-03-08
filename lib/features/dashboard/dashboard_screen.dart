@@ -85,7 +85,11 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ),
                 const SizedBox(height: 14),
                 _ServicesGrid(
-                  services: context.watch<ServicesProvider>().allServices.take(6).toList(),
+                  services: context
+                      .watch<ServicesProvider>()
+                      .allServices
+                      .take(6)
+                      .toList(),
                 )
                     .animate()
                     .fadeIn(delay: 300.ms)
@@ -97,7 +101,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                 const SizedBox(height: 28),
 
                 // Recent Activity
-                const _SectionHeader(hindi: 'हाल की गतिविधि', english: 'Recent Activity'),
+                const _SectionHeader(
+                    hindi: 'हाल की गतिविधि', english: 'Recent Activity'),
                 const SizedBox(height: 14),
                 const _RecentActivity().animate().fadeIn(delay: 500.ms),
               ]),
@@ -162,9 +167,15 @@ class _HeroHeaderState extends State<_HeroHeader> {
   String get _greeting {
     final h = DateTime.now().hour;
     final lang = context.read<LanguageProvider>().currentLanguage;
-    final name = context.read<AuthProvider>().currentUser?.name.split(' ').first ?? 'there';
+    final name =
+        context.read<AuthProvider>().currentUser?.name.split(' ').first ??
+            'there';
     if (lang == 'hi' || lang == 'mr') return 'नमस्ते, $name 🙏';
-    final gr = h < 12 ? 'Good Morning' : h < 17 ? 'Good Afternoon' : 'Good Evening';
+    final gr = h < 12
+        ? 'Good Morning'
+        : h < 17
+            ? 'Good Afternoon'
+            : 'Good Evening';
     return '$gr, $name';
   }
 
@@ -249,7 +260,10 @@ class _HeroHeaderState extends State<_HeroHeader> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               gradient: const LinearGradient(
-                                colors: [AppColors.saffron, AppColors.saffronDeep],
+                                colors: [
+                                  AppColors.saffron,
+                                  AppColors.saffronDeep
+                                ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
@@ -259,7 +273,8 @@ class _HeroHeaderState extends State<_HeroHeader> {
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.saffron.withValues(alpha: 0.25),
+                                  color:
+                                      AppColors.saffron.withValues(alpha: 0.25),
                                   blurRadius: 12,
                                   spreadRadius: 1,
                                 ),
@@ -302,8 +317,9 @@ class _HeroHeaderState extends State<_HeroHeader> {
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.saffron.withValues(alpha: 
-                                      0.05 + widget.micPulse.value * 0.08),
+                                  color: AppColors.saffron.withValues(
+                                      alpha:
+                                          0.05 + widget.micPulse.value * 0.08),
                                   blurRadius: 16,
                                   offset: const Offset(0, 4),
                                 ),
@@ -334,9 +350,11 @@ class _HeroHeaderState extends State<_HeroHeader> {
                                     borderRadius: BorderRadius.circular(13),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: AppColors.saffron.withValues(alpha: 
-                                            0.3 + widget.micPulse.value * 0.25),
-                                        blurRadius: 10 + widget.micPulse.value * 6,
+                                        color: AppColors.saffron.withValues(
+                                            alpha: 0.3 +
+                                                widget.micPulse.value * 0.25),
+                                        blurRadius:
+                                            10 + widget.micPulse.value * 6,
                                       ),
                                     ],
                                   ),
@@ -376,8 +394,8 @@ class _HeroHeaderState extends State<_HeroHeader> {
                                 color: AppColors.saffron,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.saffron
-                                        .withValues(alpha: widget.micPulse.value),
+                                    color: AppColors.saffron.withValues(
+                                        alpha: widget.micPulse.value),
                                     blurRadius: 6,
                                     spreadRadius: 1,
                                   ),
@@ -402,10 +420,28 @@ class _HeroHeaderState extends State<_HeroHeader> {
 
   String _formattedDate() {
     final d = DateTime.now();
-    final days = ['रविवार', 'सोमवार', 'मंगलवार', 'बुधवार', 'गुरुवार', 'शुक्रवार', 'शनिवार'];
+    final days = [
+      'रविवार',
+      'सोमवार',
+      'मंगलवार',
+      'बुधवार',
+      'गुरुवार',
+      'शुक्रवार',
+      'शनिवार'
+    ];
     final months = [
-      'जनवरी', 'फरवरी', 'मार्च', 'अप्रैल', 'मई', 'जून',
-      'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'
+      'जनवरी',
+      'फरवरी',
+      'मार्च',
+      'अप्रैल',
+      'मई',
+      'जून',
+      'जुलाई',
+      'अगस्त',
+      'सितंबर',
+      'अक्टूबर',
+      'नवंबर',
+      'दिसंबर'
     ];
     return '${days[d.weekday % 7]}, ${d.day} ${months[d.month - 1]} ${d.year}';
   }
@@ -428,8 +464,8 @@ class _StatsRow extends StatelessWidget {
           AppColors.gold, Icons.assignment_outlined),
       _StatData('${stats['totalServices']}', 'Services', 'सेवाएं देखी',
           AppColors.emeraldLight, Icons.grid_view_rounded),
-      const _StatData('94%', 'Accuracy', 'सटीकता',
-          AppColors.accentBlue, Icons.verified_outlined),
+      const _StatData('94%', 'Accuracy', 'सटीकता', AppColors.accentBlue,
+          Icons.verified_outlined),
     ];
 
     return SizedBox(
@@ -520,22 +556,21 @@ class _StatCard extends StatelessWidget {
                     color: AppColors.textSecondary,
                   ),
                 ),
-                Text(
-                  data.hindi,
-                  style: GoogleFonts.notoSansDevanagari(
-                    fontSize: 9,
-                    color: AppColors.textMuted,
+                if (context.watch<LanguageProvider>().languageCode == 'hi')
+                  Text(
+                    data.hindi,
+                    style: GoogleFonts.notoSansDevanagari(
+                      fontSize: 9,
+                      color: AppColors.textMuted,
+                    ),
                   ),
-                ),
               ],
             ),
           ),
         ],
       ),
-    )
-        .animate()
-        .fadeIn(delay: Duration(milliseconds: 150 + index * 80))
-        .slideX(begin: 0.12, end: 0, delay: Duration(milliseconds: 150 + index * 80));
+    ).animate().fadeIn(delay: Duration(milliseconds: 150 + index * 80)).slideX(
+        begin: 0.12, end: 0, delay: Duration(milliseconds: 150 + index * 80));
   }
 }
 
@@ -563,20 +598,20 @@ class _SectionHeader extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              hindi,
-              style: GoogleFonts.notoSansDevanagari(
-                fontSize: 11,
-                color: AppColors.gold,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            Text(
-              english,
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              ),
+              context.watch<LanguageProvider>().languageCode == 'hi'
+                  ? hindi
+                  : english,
+              style: context.watch<LanguageProvider>().languageCode == 'hi'
+                  ? GoogleFonts.notoSansDevanagari(
+                      fontSize: 14,
+                      color: AppColors.gold,
+                      fontWeight: FontWeight.w600,
+                    )
+                  : GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
             ),
           ],
         ),
@@ -589,7 +624,8 @@ class _SectionHeader extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.saffron.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.saffron.withValues(alpha: 0.25)),
+                border: Border.all(
+                    color: AppColors.saffron.withValues(alpha: 0.25)),
               ),
               child: Text(
                 'View All →',
@@ -665,8 +701,8 @@ class _ServicesGrid extends StatelessWidget {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: color.withValues(alpha: 0.10),
-                      borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(17)),
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(17)),
                     ),
                     child: Center(
                       child: Text(
@@ -680,8 +716,8 @@ class _ServicesGrid extends StatelessWidget {
                 Expanded(
                   flex: 4,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -721,10 +757,8 @@ class _ServicesGrid extends StatelessWidget {
               ],
             ),
           ),
-        )
-            .animate()
-            .fadeIn(delay: Duration(milliseconds: 300 + i * 60))
-            .slideY(begin: 0.1, end: 0, delay: Duration(milliseconds: 300 + i * 60));
+        ).animate().fadeIn(delay: Duration(milliseconds: 300 + i * 60)).slideY(
+            begin: 0.1, end: 0, delay: Duration(milliseconds: 300 + i * 60));
       },
     );
   }
@@ -765,8 +799,8 @@ class _SchemeBanner extends StatelessWidget {
             child: Container(
               width: 3,
               decoration: const BoxDecoration(
-                borderRadius: BorderRadius.horizontal(
-                    left: Radius.circular(20)),
+                borderRadius:
+                    BorderRadius.horizontal(left: Radius.circular(20)),
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -863,8 +897,8 @@ class _RecentActivity extends StatelessWidget {
     final items = [
       const _ActivityData('🛂', 'Passport Application', 'पासपोर्ट आवेदन',
           '2 min ago', AppColors.accentBlue),
-      const _ActivityData('🌾', 'Kisan Credit Card Query', 'किसान क्रेडिट कार्ड',
-          '1 hr ago', AppColors.emeraldLight),
+      const _ActivityData('🌾', 'Kisan Credit Card Query',
+          'किसान क्रेडिट कार्ड', '1 hr ago', AppColors.emeraldLight),
       const _ActivityData('🏥', 'Ayushman Bharat Check', 'आयुष्मान भारत',
           '2 days ago', AppColors.accentTeal),
     ];
@@ -885,8 +919,8 @@ class _RecentActivity extends StatelessWidget {
                   ),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 14),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   child: Row(
                     children: [
                       Container(
@@ -939,7 +973,10 @@ class _RecentActivity extends StatelessWidget {
               )
                   .animate()
                   .fadeIn(delay: Duration(milliseconds: 500 + e.key * 80))
-                  .slideX(begin: -0.05, end: 0, delay: Duration(milliseconds: 500 + e.key * 80)),
+                  .slideX(
+                      begin: -0.05,
+                      end: 0,
+                      delay: Duration(milliseconds: 500 + e.key * 80)),
             ),
           )
           .toList(),
@@ -950,7 +987,8 @@ class _RecentActivity extends StatelessWidget {
 class _ActivityData {
   final String emoji, english, hindi, time;
   final Color color;
-  const _ActivityData(this.emoji, this.english, this.hindi, this.time, this.color);
+  const _ActivityData(
+      this.emoji, this.english, this.hindi, this.time, this.color);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -963,12 +1001,18 @@ class _SmartFeaturesGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final features = [
-      _FeatureData('💬', 'Voice Complaint', 'शिकायत दर्ज करें', AppColors.accentBlue, Routes.voiceComplaint),
-      _FeatureData('📄', 'AI Scanner', 'दस्तावेज़ स्कैन', AppColors.accentTeal, Routes.documentScanner),
-      _FeatureData('🔍', 'Scheme Finder', 'योजना खोजें', AppColors.gold, Routes.schemeDiscovery),
-      _FeatureData('📊', 'App Tracker', 'आवेदन स्थिति', AppColors.emeraldLight, Routes.appTracker),
-      _FeatureData('📶', 'Offline Guide', 'ऑफ़लाइन मदद', AppColors.accentPurple, Routes.offlineGuidance),
-      _FeatureData('👤', 'Citizen Profile', 'नागरिक प्रोफाइल', AppColors.accentAmber, Routes.citizenProfile),
+      const _FeatureData('💬', 'Voice Complaint', 'शिकायत दर्ज करें',
+          AppColors.accentBlue, Routes.voiceComplaint),
+      const _FeatureData('📄', 'AI Scanner', 'दस्तावेज़ स्कैन',
+          AppColors.accentTeal, Routes.documentScanner),
+      const _FeatureData('🔍', 'Scheme Finder', 'योजना खोजें', AppColors.gold,
+          Routes.schemeDiscovery),
+      const _FeatureData('📊', 'App Tracker', 'आवेदन स्थिति',
+          AppColors.emeraldLight, Routes.appTracker),
+      const _FeatureData('📶', 'Offline Guide', 'ऑफ़लाइन मदद',
+          AppColors.accentPurple, Routes.offlineGuidance),
+      const _FeatureData('👤', 'Citizen Profile', 'नागरिक प्रोफाइल',
+          AppColors.accentAmber, Routes.citizenProfile),
     ];
 
     return GridView.builder(
@@ -1040,10 +1084,9 @@ class _SmartFeaturesGrid extends StatelessWidget {
               ],
             ),
           ),
-        )
-        .animate()
-        .fadeIn(delay: Duration(milliseconds: 200 + i * 50))
-        .scale(begin: const Offset(0.9, 0.9), delay: Duration(milliseconds: 200 + i * 50));
+        ).animate().fadeIn(delay: Duration(milliseconds: 200 + i * 50)).scale(
+            begin: const Offset(0.9, 0.9),
+            delay: Duration(milliseconds: 200 + i * 50));
       },
     );
   }
@@ -1052,5 +1095,6 @@ class _SmartFeaturesGrid extends StatelessWidget {
 class _FeatureData {
   final String emoji, english, hindi, route;
   final Color color;
-  const _FeatureData(this.emoji, this.english, this.hindi, this.color, this.route);
+  const _FeatureData(
+      this.emoji, this.english, this.hindi, this.color, this.route);
 }

@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 // Note: We'll use the standard webview_flutter which supports file selection on Android/iOS natively if configured,
@@ -7,7 +6,6 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/services/document_vault_service.dart';
 
 class SmartBrowserScreen extends StatefulWidget {
   final String url;
@@ -42,7 +40,8 @@ class _SmartBrowserScreenState extends State<SmartBrowserScreen> {
   @override
   void initState() {
     super.initState();
-    _isTranslationEnabled = widget.initialTranslate && widget.languageCode != 'en';
+    _isTranslationEnabled =
+        widget.initialTranslate && widget.languageCode != 'en';
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000))
@@ -102,17 +101,21 @@ class _SmartBrowserScreenState extends State<SmartBrowserScreen> {
     );
   }
 
-  Future<void> _handleFileRequest(String requestedDocType, String inputId) async {
+  Future<void> _handleFileRequest(
+      String requestedDocType, String inputId) async {
     // Check if we have this document in the vault
     final doc = widget.documents.firstWhere(
-      (d) => d['document_type'].toString().toLowerCase().contains(requestedDocType.toLowerCase()),
+      (d) => d['document_type']
+          .toString()
+          .toLowerCase()
+          .contains(requestedDocType.toLowerCase()),
       orElse: () => {},
     );
 
     if (doc.isNotEmpty) {
-      final filePath = doc['file_path'];
-      _showToast('📂 Found matching ${requestedDocType.toUpperCase()} in your vault!');
-      
+      _showToast(
+          '📂 Found matching ${requestedDocType.toUpperCase()} in your vault!');
+
       // We can't actually "push" binary data into a file input for security.
       // But we can guide the user or show a selection overlay.
       // Optimization: In a real system, you'd use a custom file provider.
@@ -121,7 +124,8 @@ class _SmartBrowserScreenState extends State<SmartBrowserScreen> {
 
   Future<void> _injectAntigravityEngine() async {
     final jsData = jsonEncode(widget.formData);
-    final docInfo = jsonEncode(widget.documents.map((d) => d['document_type']).toList());
+    final docInfo =
+        jsonEncode(widget.documents.map((d) => d['document_type']).toList());
 
     final engineCode = '''
       (function() {
@@ -247,9 +251,9 @@ class _SmartBrowserScreenState extends State<SmartBrowserScreen> {
 
   Future<void> _injectTranslationEngine() async {
     if (widget.languageCode == 'en') return;
-    
+
     final targetLang = widget.languageCode;
-    
+
     // Antigravity Regional Translation Engine
     // This uses the official Google Translate Element logic
     final translateCode = '''
@@ -339,7 +343,10 @@ class _SmartBrowserScreenState extends State<SmartBrowserScreen> {
                     color: AppColors.emerald,
                     shape: BoxShape.circle,
                   ),
-                ).animate(onPlay: (c) => c.repeat()).fadeIn(duration: 500.ms).fadeOut(delay: 500.ms),
+                )
+                    .animate(onPlay: (c) => c.repeat())
+                    .fadeIn(duration: 500.ms)
+                    .fadeOut(delay: 500.ms),
                 const SizedBox(width: 4),
                 Text(
                   'Antigravity DOM Active',
@@ -366,16 +373,17 @@ class _SmartBrowserScreenState extends State<SmartBrowserScreen> {
               ? LinearProgressIndicator(
                   value: _progress,
                   backgroundColor: AppColors.bgMid,
-                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.saffron),
+                  valueColor:
+                      const AlwaysStoppedAnimation<Color>(AppColors.saffron),
                   minHeight: 2,
                 )
-              : Container(height: 2, color: AppColors.emerald.withOpacity(0.3)),
+              : Container(height: 2, color: AppColors.emerald.withValues(alpha: 0.3)),
         ),
       ),
       body: Stack(
         children: [
           WebViewWidget(controller: _controller),
-          
+
           // Translation Prompt Overlay
           if (_showTranslationPrompt && widget.languageCode != 'en')
             Positioned(
@@ -409,7 +417,7 @@ class _SmartBrowserScreenState extends State<SmartBrowserScreen> {
                 ),
               ),
             ),
-            
+
           // Floating Assistant Info
           Positioned(
             bottom: 24,
@@ -426,12 +434,12 @@ class _SmartBrowserScreenState extends State<SmartBrowserScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1208).withOpacity(0.95),
+        color: const Color(0xFF1A1208).withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.gold.withOpacity(0.3)),
+        border: Border.all(color: AppColors.gold.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.black.withValues(alpha: 0.4),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -439,7 +447,8 @@ class _SmartBrowserScreenState extends State<SmartBrowserScreen> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.auto_awesome_rounded, color: AppColors.gold, size: 20),
+          const Icon(Icons.auto_awesome_rounded,
+              color: AppColors.gold, size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -474,9 +483,12 @@ class _SmartBrowserScreenState extends State<SmartBrowserScreen> {
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               minimumSize: Size.zero,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
-            child: Text('Force Fill', style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold)),
+            child: Text('Force Fill',
+                style: GoogleFonts.outfit(
+                    fontSize: 11, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -490,10 +502,11 @@ class _SmartBrowserScreenState extends State<SmartBrowserScreen> {
         alignment: Alignment.center,
         children: [
           IconButton(
-            icon: const Icon(Icons.folder_shared_rounded, color: Colors.white70),
+            icon:
+                const Icon(Icons.folder_shared_rounded, color: Colors.white70),
             onPressed: () {
-               // Show a small overlay with vault items for easy access
-               _showVaultOverlay();
+              // Show a small overlay with vault items for easy access
+              _showVaultOverlay();
             },
           ),
           Positioned(
@@ -501,10 +514,14 @@ class _SmartBrowserScreenState extends State<SmartBrowserScreen> {
             right: 10,
             child: Container(
               padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(color: AppColors.saffron, shape: BoxShape.circle),
+              decoration: const BoxDecoration(
+                  color: AppColors.saffron, shape: BoxShape.circle),
               child: Text(
                 '${widget.documents.length}',
-                style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 8,
+                    fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -517,7 +534,8 @@ class _SmartBrowserScreenState extends State<SmartBrowserScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.bgDeep,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (context) {
         return Container(
           padding: const EdgeInsets.all(24),
@@ -527,7 +545,10 @@ class _SmartBrowserScreenState extends State<SmartBrowserScreen> {
             children: [
               Text(
                 '💾 Your Document Vault',
-                style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
@@ -542,10 +563,16 @@ class _SmartBrowserScreenState extends State<SmartBrowserScreen> {
                   itemBuilder: (context, i) {
                     final d = widget.documents[i];
                     return ListTile(
-                      leading: const Icon(Icons.description_rounded, color: AppColors.gold),
-                      title: Text(d['document_type'].toString().toUpperCase(), style: const TextStyle(color: Colors.white)),
-                      subtitle: Text('Verified on ${d['created_at'].toString().split('T')[0]}', style: const TextStyle(color: Colors.white60, fontSize: 11)),
-                      trailing: const Icon(Icons.copy_rounded, color: Colors.white38, size: 18),
+                      leading: const Icon(Icons.description_rounded,
+                          color: AppColors.gold),
+                      title: Text(d['document_type'].toString().toUpperCase(),
+                          style: const TextStyle(color: Colors.white)),
+                      subtitle: Text(
+                          'Verified on ${d['created_at'].toString().split('T')[0]}',
+                          style: const TextStyle(
+                              color: Colors.white60, fontSize: 11)),
+                      trailing: const Icon(Icons.copy_rounded,
+                          color: Colors.white38, size: 18),
                       onTap: () {
                         // Copy data logic
                         Navigator.pop(context);
@@ -578,7 +605,7 @@ class _SmartBrowserScreenState extends State<SmartBrowserScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -604,7 +631,7 @@ class _SmartBrowserScreenState extends State<SmartBrowserScreen> {
                 Text(
                   'Read the form in your own language.',
                   style: GoogleFonts.outfit(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     fontSize: 11,
                   ),
                 ),
@@ -613,7 +640,8 @@ class _SmartBrowserScreenState extends State<SmartBrowserScreen> {
           ),
           TextButton(
             onPressed: () => setState(() => _showTranslationPrompt = false),
-            child: Text('NOT NOW', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 11)),
+            child: Text('NOT NOW',
+                style: GoogleFonts.outfit(color: Colors.white70, fontSize: 11)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -627,13 +655,19 @@ class _SmartBrowserScreenState extends State<SmartBrowserScreen> {
               backgroundColor: Colors.white,
               foregroundColor: AppColors.saffron,
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
               padding: const EdgeInsets.symmetric(horizontal: 12),
             ),
-            child: Text('TRANSLATE', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 11)),
+            child: Text('TRANSLATE',
+                style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.bold, fontSize: 11)),
           ),
         ],
       ),
-    ).animate().slideY(begin: -1.0, end: 0.0, curve: Curves.easeOutCubic).fadeIn();
+    )
+        .animate()
+        .slideY(begin: -1.0, end: 0.0, curve: Curves.easeOutCubic)
+        .fadeIn();
   }
 }

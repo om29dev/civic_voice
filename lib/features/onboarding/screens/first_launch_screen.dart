@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/router/app_router.dart';
+import '../../../providers/auth_provider.dart';
 import '../../../providers/language_provider.dart';
 import '../../../providers/services_provider.dart';
 import '../../../widgets/particle_background.dart';
@@ -46,7 +47,11 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> {
   Future<void> _finishOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('cvi_onboarded', true);
-    if (mounted) context.go(Routes.auth);
+    if (!mounted) return;
+    // Keep the in-memory seenOnboard cache in sync so the router redirect
+    // doesn't need a full cold-start to pick up the new value.
+    context.read<AuthProvider>().markOnboarded();
+    context.go(Routes.auth);
   }
 
   @override
@@ -59,7 +64,7 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> {
           const Positioned.fill(
             child: ParticleBackground(),
           ),
-          
+
           SafeArea(
             child: Column(
               children: [
@@ -102,7 +107,9 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> {
                 height: 8,
                 width: _currentPage == index ? 24 : 8,
                 decoration: BoxDecoration(
-                  color: _currentPage == index ? AppColors.saffron : AppColors.surfaceBorder,
+                  color: _currentPage == index
+                      ? AppColors.saffron
+                      : AppColors.surfaceBorder,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -131,10 +138,14 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> {
                 children: [
                   TText(
                     _currentPage == 2 ? 'Get Started' : 'Next',
-                    style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
+                    style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white),
                   ),
                   const SizedBox(width: 8),
-                  const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 20),
+                  const Icon(Icons.arrow_forward_rounded,
+                      color: Colors.white, size: 20),
                 ],
               ),
             ),
@@ -159,27 +170,39 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: AppColors.saffron.withValues(alpha: 0.1),
-              border: Border.all(color: AppColors.saffron.withValues(alpha: 0.3), width: 2),
+              border: Border.all(
+                  color: AppColors.saffron.withValues(alpha: 0.3), width: 2),
               boxShadow: [
-                BoxShadow(color: AppColors.saffron.withValues(alpha: 0.2), blurRadius: 40),
+                BoxShadow(
+                    color: AppColors.saffron.withValues(alpha: 0.2),
+                    blurRadius: 40),
               ],
             ),
             child: const Center(
-              child: Icon(Icons.mic_rounded, size: 56, color: AppColors.saffron),
+              child:
+                  Icon(Icons.mic_rounded, size: 56, color: AppColors.saffron),
             ),
-          ).animate(onPlay: (c) => c.repeat(reverse: true)).scale(begin: const Offset(1, 1), end: const Offset(1.1, 1.1), duration: 2.seconds),
+          ).animate(onPlay: (c) => c.repeat(reverse: true)).scale(
+              begin: const Offset(1, 1),
+              end: const Offset(1.1, 1.1),
+              duration: 2.seconds),
           const SizedBox(height: 48),
 
           const TText(
             'Voice-First for Bharat',
-            style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: AppColors.saffron, height: 1.1),
+            style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.w800,
+                color: AppColors.saffron,
+                height: 1.1),
             textAlign: TextAlign.center,
           ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
           const SizedBox(height: 16),
 
           const TText(
             'Just speak naturally in your language. CVI understands you instantly.',
-            style: TextStyle(fontSize: 16, color: AppColors.textSecondary, height: 1.5),
+            style: TextStyle(
+                fontSize: 16, color: AppColors.textSecondary, height: 1.5),
             textAlign: TextAlign.center,
           ).animate().fadeIn(delay: 400.ms),
           const SizedBox(height: 48),
@@ -187,10 +210,14 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> {
           // Language Selector
           const TText(
             'SELECT LANGUAGE',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textMuted, letterSpacing: 2),
+            style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textMuted,
+                letterSpacing: 2),
           ).animate().fadeIn(delay: 600.ms),
           const SizedBox(height: 16),
-          
+
           Consumer<LanguageProvider>(
             builder: (context, lang, child) {
               return Wrap(
@@ -198,10 +225,14 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> {
                 runSpacing: 12,
                 alignment: WrapAlignment.center,
                 children: [
-                  _LangChip('English', 'en', lang.languageCode == 'en', () => lang.setLanguageByCode('en')),
-                  _LangChip('हिंदी', 'hi', lang.languageCode == 'hi', () => lang.setLanguageByCode('hi')),
-                  _LangChip('मराठी', 'mr', lang.languageCode == 'mr', () => lang.setLanguageByCode('mr')),
-                  _LangChip('தமிழ்', 'ta', lang.languageCode == 'ta', () => lang.setLanguageByCode('ta')),
+                  _LangChip('English', 'en', lang.languageCode == 'en',
+                      () => lang.setLanguageByCode('en')),
+                  _LangChip('हिंदी', 'hi', lang.languageCode == 'hi',
+                      () => lang.setLanguageByCode('hi')),
+                  _LangChip('मराठी', 'mr', lang.languageCode == 'mr',
+                      () => lang.setLanguageByCode('mr')),
+                  _LangChip('தமிழ்', 'ta', lang.languageCode == 'ta',
+                      () => lang.setLanguageByCode('ta')),
                 ],
               );
             },
@@ -214,7 +245,8 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> {
   // ─── STEP 2: SERVICES GRID ──────────────────────────────────────────────────
 
   Widget _buildStep2() {
-    final services = context.watch<ServicesProvider>().allServices.take(6).toList();
+    final services =
+        context.watch<ServicesProvider>().allServices.take(6).toList();
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -236,30 +268,40 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> {
                   decoration: BoxDecoration(
                     color: AppColors.bgMid,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.accentBlue.withValues(alpha: 0.3)),
+                    border: Border.all(
+                        color: AppColors.accentBlue.withValues(alpha: 0.3)),
                     boxShadow: [
-                      BoxShadow(color: AppColors.accentBlue.withValues(alpha: 0.1), blurRadius: 10),
+                      BoxShadow(
+                          color: AppColors.accentBlue.withValues(alpha: 0.1),
+                          blurRadius: 10),
                     ],
                   ),
                   child: Center(
-                    child: Text(services[index].iconEmoji, style: const TextStyle(fontSize: 32)),
+                    child: Text(services[index].iconEmoji,
+                        style: const TextStyle(fontSize: 32)),
                   ),
-                ).animate().fadeIn(delay: Duration(milliseconds: 200 + index * 100)).scale();
+                )
+                    .animate()
+                    .fadeIn(delay: Duration(milliseconds: 200 + index * 100))
+                    .scale();
               },
             ),
           ),
           const SizedBox(height: 24),
-
           const TText(
             '16 Govt Services',
-            style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: AppColors.accentBlue, height: 1.1),
+            style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.w800,
+                color: AppColors.accentBlue,
+                height: 1.1),
             textAlign: TextAlign.center,
           ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.2),
           const SizedBox(height: 16),
-
           const TText(
             'Aadhaar, PAN, Passport, Certificates and more — all in one place.',
-            style: TextStyle(fontSize: 16, color: AppColors.textSecondary, height: 1.5),
+            style: TextStyle(
+                fontSize: 16, color: AppColors.textSecondary, height: 1.5),
             textAlign: TextAlign.center,
           ).animate().fadeIn(delay: 1000.ms),
         ],
@@ -285,30 +327,41 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> {
                   shape: BoxShape.circle,
                   color: AppColors.emerald.withValues(alpha: 0.1),
                 ),
-              ).animate(onPlay: (c) => c.repeat(reverse: true)).scale(begin: const Offset(1, 1), end: const Offset(1.2, 1.2), duration: 2.seconds),
-              const Icon(Icons.shield_rounded, size: 80, color: AppColors.emerald)
+              ).animate(onPlay: (c) => c.repeat(reverse: true)).scale(
+                  begin: const Offset(1, 1),
+                  end: const Offset(1.2, 1.2),
+                  duration: 2.seconds),
+              const Icon(Icons.shield_rounded,
+                      size: 80, color: AppColors.emerald)
                   .animate()
                   .fadeIn(delay: 200.ms)
                   .scale(curve: Curves.elasticOut, duration: 800.ms),
               Positioned(
-                top: 20, right: 10,
-                child: const Icon(Icons.check_circle_rounded, color: Colors.white, size: 24)
-                    .animate().fadeIn(delay: 800.ms).scale(),
+                top: 20,
+                right: 10,
+                child: const Icon(Icons.check_circle_rounded,
+                        color: Colors.white, size: 24)
+                    .animate()
+                    .fadeIn(delay: 800.ms)
+                    .scale(),
               ),
             ],
           ),
           const SizedBox(height: 48),
-
           const TText(
             'Your Data Stays Safe',
-            style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: AppColors.emeraldLight, height: 1.1),
+            style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.w800,
+                color: AppColors.emeraldLight,
+                height: 1.1),
             textAlign: TextAlign.center,
           ).animate().fadeIn(delay: 1000.ms).slideY(begin: 0.2),
           const SizedBox(height: 16),
-
           const TText(
             'End-to-end encrypted. No data is shared with third parties without your explicit consent.',
-            style: TextStyle(fontSize: 16, color: AppColors.textSecondary, height: 1.5),
+            style: TextStyle(
+                fontSize: 16, color: AppColors.textSecondary, height: 1.5),
             textAlign: TextAlign.center,
           ).animate().fadeIn(delay: 1200.ms),
         ],
@@ -334,14 +387,20 @@ class _LangChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.saffron.withValues(alpha: 0.2) : AppColors.bgMid,
+          color: isSelected
+              ? AppColors.saffron.withValues(alpha: 0.2)
+              : AppColors.bgMid,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? AppColors.saffron : AppColors.surfaceBorder,
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
-              ? [BoxShadow(color: AppColors.saffron.withValues(alpha: 0.2), blurRadius: 8)]
+              ? [
+                  BoxShadow(
+                      color: AppColors.saffron.withValues(alpha: 0.2),
+                      blurRadius: 8)
+                ]
               : null,
         ),
         child: Text(

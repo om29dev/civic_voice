@@ -1,132 +1,51 @@
-# 🎨 Design Document - A Futuristic Civic Experience
+# Civic Voice - Architecture and Design
 
-## 1. Design Philosophy
+## 🏛️ Application Architecture
 
-### 1.1 Vision: Crafting a Digital Masterpiece
-Our goal is to create a **premium, futuristic interface** that transforms the mundane into the magical. We are not just building an app; we are building a *Silicon Valley-grade experience* for Indian government services. It simulates the feeling of interacting with advanced technology from the future—sleek, responsive, and incredibly empowering.
+Civic Voice is built upon a scalable, modular architecture leveraging the Flutter framework for the frontend client and AWS Amplify for cloud infrastructure. 
 
-### 1.2 Guiding Principles
--   **Future-Ready Aesthetics**: Hollywood-level animations and glassmorphism that wow the user.
--   **Inclusive Innovation**: Advanced technology made accessible to everyone through voice and intuitive design.
--   **Information as Art**: Presenting complex data in beautiful, digestible formats.
--   **Joy of Use**: Every tap, swipe, and voice command should feel delightful and responsive.
--   **Performance as a Feature**: A rock-solid 60 FPS experience that never stutters.
+### Frontend Organization
 
-### 1.3 The Vibe
-Think **Iron Man meets Digital India**. A $10M startup aesthetic that inspires confidence and excitement.
+The Flutter client employs a feature-first architectural pattern combined with Provider for robust state management.
 
-## 2. Visual Design System
+1.  **Core (`lib/core/`)**:
+    *   **Theme**: Centralized definitions for colors (`AppColors`), typography (`GoogleFonts`), and stylistic constants.
+    *   **Routing**: Defined using `go_router` for deep linking and straightforward navigation.
+    *   **Services**: Abstraction layers for backend communication (`ApiService`, `AuthService`, `CitizenProfileService`).
+2.  **Features (`lib/features/`)**:
+    *   **Auth**: Login, signup, verification, and reset flows handling the entry and authentication state.
+    *   **Dashboard**: The primary user hub, available in Data-Rich (Main) and Minimalist (Premium) variants.
+    *   **Services**: Interactive directory, categorization, and detailed guides for public services.
+    *   **Voice (CVI)**: The conversational AI interface, implementing voice-to-text, generative AI inference, and text-to-speech.
+    *   **Profile**: User data management and application history tracking.
+3.  **State Management (`lib/providers/`)**:
+    *   `AuthProvider`: Manages the Cognito session lifecycle.
+    *   `UserProvider`: Centralizes access to the active user's details and active applications.
+    *   `ConversationProvider`: Manages the history and state of interaction with the AI assistant.
+    *   `LanguageProvider`: Facilitates instantaneous, app-wide language switching (English/Hindi).
+    *   `ServicesProvider`: Caches and provides data related to the various available government services.
+    *   `AnalyticsProvider`: Tracks non-identifiable usage statistics for performance monitoring.
+    *   `NotificationProvider`: Manages in-app alerts and notifications.
+4.  **Widgets (`lib/widgets/`)**:
+    *   Reusable UI components enforcing consistency (e.g., `IndianCard`, `JaliPattern`, `TricolorBar`, `BilingualLabel`).
 
-### 2.1 The Cosmic Palette
-A deep, immersive color scheme that feels like looking into the future.
+### Cloud Architecture (AWS Amplify)
 
-#### Primary Colors
--   **Deep Space Blue**: `#0A192F` - A rich, infinite background that adds depth.
--   **Electric Blue**: `#00D4FF` - The energy source; used for primary actions and focus.
--   **Neon Cyan**: `#00FFE0` - Vibrant highlights that pop against the dark theme.
+The backend infrastructure is provisioned and managed entirely via AWS Amplify.
 
-#### Semantic Brilliance
--   **Success Green**: `#00FF9D` - Bright and affirmative.
--   **Warning Amber**: `#FFD166` - Clear and visible.
--   **Error Red**: `#FF6B6B` - Urgent but not aggressive.
--   **Info Blue**: `#64B5F6` - Helpful and calm.
+1.  **Authentication (Amazon Cognito)**:
+    *   Handles secure user registration, verification, and JWT token issuance.
+2.  **API & Data (AWS AppSync & DynamoDB)**:
+    *   GraphQL API mapping directly to DynamoDB tables for storing user profiles, service details, and application data. Models are automatically synchronized using DataStore/API capabilities.
+3.  **Artificial Intelligence (Amazon Bedrock via API Gateway/Lambda)**:
+    *   The `CVI` Voice feature utilizes Amazon Bedrock (invoking models like Meta Llama 3) to process natural language queries regarding civic services and respond intelligently to the user.
 
-### 2.2 Typography: Bold & Clean
--   **Headlines**: **Poppins (Bold)** - Modern, geometric, and impactful.
--   **Body**: **Inter (Regular/SemiBold)** - Highly readable and screen-optimized.
--   **Code/Data**: **JetBrains Mono** - For that technical, precision feel.
+## 🎨 Design System
 
-### 2.3 The Glassmorphism Effect
-We use a premium glass effect to create depth and hierarchy.
--   **Background**: `rgba(255, 255, 255, 0.05)` - Subtle and sophisticated.
--   **Blur**: `10px` - Creating a frosted, premium look.
--   **Border**: Thin, semi-transparent white borders that catch the light.
--   **Glow**: Subtle blue glows for active elements that breathe life into the UI.
+The visual design of Civic Voice is a core focus, aiming for a "premium" feel that is both accessible and culturally resonant.
 
-## 3. Component Design
-
-### 3.1 Interactive Elements
-#### Buttons that Pop
--   **Primary**: Electric Blue gradients that pulse slightly, inviting the touch.
--   **Secondary**: Elegant outlines that complement the primary actions.
--   **FAB**: A pulsing, glowing microphone button that anchors the voice experience.
-
-#### Inputs from the Future
--   Sleek, glass-paneled text fields with glowing borders on focus.
--   Pill-shaped search bars that float elegantly over the content.
-
-### 3.2 Cards & Containers
--   **Service Cards**: Glass tiles that lift and glow when hovered or tapped.
--   **Stat Cards**: Dynamic displays with counting numbers and pulsing icons.
--   **Activity Cards**: Clean, organized rows that make history easy to scan.
-
-### 3.3 Navigation
--   **App Bar**: Transparent and minimal, letting the content shine.
--   **Bottom Nav**: A floating glass dock (if used) that feels weightless.
-
-## 4. Animation: Bringing it to Life
-
-### 4.1 Living Backgrounds
--   **Particle System**: 40-80 floating particles connected by faint lines, drifting like constellations. This creates a sense of depth and continuous, gentle motion.
-
-### 4.2 Entrance Choreography
--   **Staggered Entry**: Cards and lists don't just appear; they slide and fade in sequence, creating a cascading effect.
--   **Hero Scale**: Main elements spring into place with a subtle elastic bounce.
-
-### 4.3 Micro-Interactions
--   **Button Press**: Satisfying scale-down effect for tactile feedback.
--   **Hover Glow**: Elements light up when you interact with them.
--   **Pulsing**: Key actions breathe with a gentle, rhythmic glow.
-
-### 4.4 The Voice Visualizer
--   **AI Core**: Three concentric rings rotating at different speeds, reacting to the AI's state.
--   **Waveform**: Real-time frequency bars that dance to the user's voice, providing instant visual feedback.
-
-## 5. Screen Layouts
-
-### 5.1 Authentication: A Grand Entrance
--   **Login/Register**: Not just forms, but experiences. Set against the living particle background, glass cards float centrally.
--   **Transitions**: Smooth shifts between login, register, and OTP screens.
-
-### 5.2 Dashboard: The Command Center
--   **Header**: Personal and welcoming.
--   **Stats**: engaging animations showing real-time usage.
--   **Quick Services**: A horizontal glide through essential services.
--   **Activity**: A timeline of your civic journey.
-
-### 5.3 Services: Discovery Made Beautiful
--   **Grid**: A clean, organized layout of glass tiles.
--   **Detail View**: A hero header followed by clearly organized, easily digestible information sections.
-
-### 5.4 Voice Dashboard: The Sci-Fi Core
--   **Visual Focus**: The AI visualizer takes center stage.
--   **Conversation**: Chat bubbles appear naturally, scrolling smoothly as the dialogue flows.
-
-### 5.5 Profile: Your Personal Space
--   **Organization**: Clear sections for personal info, settings, and preferences.
--   **Feedback**: Toggles and selectors that offer immediate visual response.
-
-## 6. Experience & Accessibility
-
-### 6.1 Responsive & Adaptive
--   **Mobile First**: Perfected for the handheld experience.
--   **Tablet Ready**: expanding gracefully to fill larger screens with multi-column layouts.
-
-### 6.2 Universal Access
--   **High Contrast**: Clear visibility for all users.
--   **Screen Reader Optimization**: Every element is properly labeled.
--   **Touch Targets**: Generous spacing ensures ease of use for everyone.
-
-## 7. Technical Artistry
-
-### 7.1 Asset Quality
--   **Vectors**: crisp SVG icons that look sharp at any size.
--   **Lottie**: Complex animations delivered as lightweight vectors.
-
-### 7.2 Performance Targets
--   **Fluidity**: 60 FPS is the baseline.
--   **Efficiency**: Optimized particle systems that look great without draining battery.
-
----
-
-**Civic Voice Interface: Designed to Dazzle, Built to Serve.** ✨
+*   **Color Palette**: Grounded in deep, sophisticated backgrounds (`bgDeep`: 0xFF121212) contrasted with vibrant accent colors inspired by the Indian flag (Saffron, White, Emerald, Navy, and elegant Gold).
+*   **Typography**: A modern pairing of `Playfair Display` for elegant primary headings, `Poppins` for clean, legible body text and UI elements, and `Noto Sans Devanagari` for precise Hindi rendering.
+*   **Visual Motifs**: Integration of subtle cultural elements such as glassmorphic `IndianCard` components, semi-transparent `JaliPattern` overlays, and waving `TricolorBar` accents to instill trust and familiarity.
+*   **Motion**: Extensive use of `flutter_animate` for smooth transitions, list loading staggers, and dynamic interaction feedback (such as the pulsing microphone in the Voice interface).
+*   **Accessibility**: High color contrast ratios, clear bilingual labeling, and a Voice-First UI approach for the core assistant feature.

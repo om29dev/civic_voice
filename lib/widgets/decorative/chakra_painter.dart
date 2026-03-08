@@ -45,16 +45,16 @@ class ChakraPainter extends CustomPainter {
       final innerR = radius * 0.10;
       final outerR = radius * 0.96;
 
-      final innerPt = Offset(innerR * math.cos(angle), innerR * math.sin(angle));
-      final outerPt = Offset(outerR * math.cos(angle), outerR * math.sin(angle));
+      final innerPt =
+          Offset(innerR * math.cos(angle), innerR * math.sin(angle));
+      final outerPt =
+          Offset(outerR * math.cos(angle), outerR * math.sin(angle));
 
       // Spoke line
       canvas.drawLine(innerPt, outerPt, paint);
 
       // Small decorative dot at inner rim junction
-      final rimR = radius * 0.72;
-      final rimPt = Offset(rimR * math.cos(angle), rimR * math.sin(angle));
-      
+
       // Every 3rd spoke (major spokes) — slightly thicker
       if (i % 3 == 0) {
         final thickPaint = Paint()
@@ -99,7 +99,8 @@ class ChakraPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(ChakraPainter oldDelegate) =>
-      oldDelegate.rotationAngle != rotationAngle || oldDelegate.opacity != opacity;
+      oldDelegate.rotationAngle != rotationAngle ||
+      oldDelegate.opacity != opacity;
 }
 
 /// Animated rotating Ashoka Chakra widget.
@@ -108,6 +109,7 @@ class ChakraPainterWidget extends StatefulWidget {
   final double opacity;
   final Color color;
   final bool rotate;
+
   /// Seconds for one full rotation. Default 8 seconds (slow, majestic).
   final int rotationSeconds;
 

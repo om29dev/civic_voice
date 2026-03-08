@@ -1,13 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'core/constants/app_assets.dart';
-import 'core/constants/app_colors.dart';
+import 'core/services/aws_amplify_service.dart';
+
 import 'providers/auth_provider.dart';
 import 'providers/language_provider.dart';
 import 'providers/voice_provider.dart';
@@ -32,19 +29,23 @@ import 'app.dart';
 void main() {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
-    debugPrint('!!! [CVI_BOOT] Primary initialization start');
-    
-    await dotenv.load(fileName: AppAssets.envFile);
-    unawaited(CsvSchemeService.init());
-    await SharedPreferences.getInstance();
-    
-    await Supabase.initialize(
-      url:  dotenv.env['SUPABASE_URL']      ?? 'https://placeholder.supabase.co',
-      anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? 'placeholder-anon-key',
-      debug: false,
-    );
+    debugPrint('!!! [CVI_BOOT] Starting bootstrap sequence');
 
-    debugPrint('!!! [CVI_BOOT] Initialization complete, launching app');
+    final bootWatch = Stopwatch()..start();
+
+    // Start background tasks immediately without awaiting here
+    debugPrint('!!! [CVI_BOOT] Initializing background services...');
+    unawaited(CsvSchemeService.init());
+
+    // Critical initialization
+    debugPrint('!!! [CVI_BOOT] Initializing AWS Amplify...');
+    await AwsAmplifyService.initialize();
+
+    debugPrint('!!! [CVI_BOOT] Loading preferences...');
+    await SharedPreferences.getInstance();
+
+    debugPrint(
+        '!!! [CVI_BOOT] Bootstrap complete in ${bootWatch.elapsedMilliseconds}ms');
     runApp(
       MultiProvider(
         providers: [
@@ -64,7 +65,8 @@ void main() {
           ChangeNotifierProvider(create: (_) => NotificationProvider()),
           ChangeNotifierProvider(create: (_) => AnalyticsProvider()),
           ChangeNotifierProvider(create: (_) => AccessibilityProvider()),
-          ChangeNotifierProvider(create: (_) => DocumentVaultProvider()..loadDocuments()),
+          ChangeNotifierProvider(
+              create: (_) => DocumentVaultProvider()..loadDocuments()),
           ChangeNotifierProvider(create: (_) => AutoFormProvider()),
         ],
         child: const CVIApp(),

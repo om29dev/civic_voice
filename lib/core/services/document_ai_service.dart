@@ -2,13 +2,9 @@
 // DOCUMENT AI SERVICE — Gemini Vision API for document data extraction
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter_image_compress/flutter_image_compress.dart';
-
-import '../config/ai_config.dart';
+import 'aws_bedrock_service.dart';
 import '../../models/cvi_document_model.dart';
 
 class DocumentAIService {
@@ -35,116 +31,38 @@ class DocumentAIService {
     required String documentType,
   }) async {
     try {
-      // Step 1: Compress image to under 800KB
+      // Step 1: Compress image if too large (Nova Lite handles large images well, but SigV4 payload has limits)
       Uint8List compressed = imageBytes;
-      
-      if (imageBytes.length > 800000) {
+      if (imageBytes.length > 1500000) {
         final result = await FlutterImageCompress.compressWithList(
           imageBytes,
-          quality: 70,
-          minWidth: 1024,
-          minHeight: 1024,
+          quality: 85,
+          minWidth: 1500,
+          minHeight: 1500,
         );
-        if (result != null) compressed = result;
+        compressed = result;
       }
 
-      // Step 2: Compress more if still too large
-      if (compressed.length > 900000) {
-        final result = await FlutterImageCompress.compressWithList(
-          compressed,
-          quality: 50,
-          minWidth: 800,
-          minHeight: 800,
-        );
-        if (result != null) compressed = result;
-      }
+      // Step 2: Build prompts
+      final systemPrompt = _buildSystemPrompt();
+      final userPrompt = _buildUserPrompt(documentType);
 
-      // Step 3: Convert to base64 (No prefix, just raw base64)
-      final base64Image = base64Encode(compressed);
+      debugPrint(
+          'DocumentAI: Sending request to Bedrock (Amazon Nova Lite) for $documentType...');
 
-      // Step 4: Build extraction prompt
-      final prompt = _buildPrompt(documentType);
-
-      // Step 5: Call Gemini API (FREE, supports images)
-      final uri = Uri.parse(
-        '${AIConfig.geminiUrl}?key=${AIConfig.geminiApiKey}',
+      final parsed = await AWSBedrockService.extractWithVision(
+        systemPrompt: systemPrompt,
+        prompt: userPrompt,
+        imageBytes: compressed,
       );
 
-      debugPrint('DocumentAI: Sending request to Gemini for $documentType...');
-
-      final response = await http.post(
-        uri,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'contents': [
-            {
-              'parts': [
-                {
-                  'inline_data': {
-                    'mime_type': 'image/jpeg',
-                    'data': base64Image,
-                  },
-                },
-                {
-                  'text': prompt,
-                },
-              ],
-            },
-          ],
-          'generationConfig': {
-            'temperature': 0.1,
-            'maxOutputTokens': 1024,
-          },
-        }),
-      ).timeout(const Duration(seconds: 45));
-
-      // Step 6: Parse response
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        
-        // Extract text from Gemini response format
-        final text = data['candidates']?[0]['content']['parts']?[0]['text'] as String? ?? '';
-        
-        debugPrint('Gemini raw response: $text');
-
-        // Find JSON in the response
-        final jsonStart = text.indexOf('{');
-        final jsonEnd = text.lastIndexOf('}') + 1;
-        
-        if (jsonStart != -1 && jsonEnd > jsonStart) {
-          final jsonStr = text.substring(jsonStart, jsonEnd);
-          try {
-            final parsed = jsonDecode(jsonStr) as Map<String, dynamic>;
-            
-            // Robust confidence check
-            if (parsed['confidence'] == null && parsed['confidence_score'] != null) {
-              parsed['confidence'] = parsed['confidence_score'];
-            }
-            
-            debugPrint('Extraction success: $parsed');
-            return parsed;
-          } catch (e) {
-            debugPrint('DocumentAI: JSON parsing error: $e');
-            return {'error': 'Invalid JSON in AI response', 'confidence': 0.0};
-          }
-        }
-        
-        return {
-          'error': 'No JSON found in response',
-          'confidence': 0.0,
-        };
-
-      } else {
-        debugPrint('Gemini Error ${response.statusCode}');
-        debugPrint('Gemini Error body: ${response.body}');
-        return {
-          'error': 'Gemini error ${response.statusCode}',
-          'confidence': 0.0,
-        };
+      // Robust confidence check
+      if (parsed['confidence'] == null && parsed['confidence_score'] != null) {
+        parsed['confidence'] = parsed['confidence_score'];
       }
 
+      debugPrint('Extraction success: $parsed');
+      return parsed;
     } catch (e) {
       debugPrint('Extraction exception: $e');
       return {
@@ -155,118 +73,76 @@ class DocumentAIService {
   }
 
   // ────────────────────────────────────────────────────────────────────────────
-  // GEMINI PROMPTS
+  // EXTRACTION PROMPTS
   // ────────────────────────────────────────────────────────────────────────────
 
-  static String _buildPrompt(String documentType) {
-    const base = '''
-You are reading an Indian government document image.
-Extract all visible text fields from this document.
-Return ONLY a valid JSON object. No explanation.
-No markdown. No code blocks. Just raw JSON.
-If a field is not visible write null.
-Add a confidence field between 0.0 and 1.0.
-Mask sensitive numbers:
-  Aadhaar: show only last 4 as XXXX XXXX 1234
-  Bank account: show only last 4 as XXXXXXXX1234
+  static String _buildSystemPrompt() {
+    return '''
+You are a world-class Indian legal document OCR assistant.
+Extract data from images into strictly valid raw JSON.
+RULES:
+1. Return ONLY strictly valid raw JSON. No markdown, no preambles, no explanation.
+2. If a field is missing, return null.
+3. Dates: Use DD/MM/YYYY format.
+4. Confidence: Add a "confidence" field (0.0 to 1.0) based on OCR readability.
 ''';
+  }
+
+  static String _buildUserPrompt(String documentType) {
+    const base = 'Examine this image. It is an Indian Government document. '
+        'Extract all visible fields and populate the following JSON structure. '
+        'IMPORTANT: Do not return the dots (...) - replace them with the actual extracted text or null. '
+        'Mask Aadhaar and Bank accounts so only last 4 digits are visible. '
+        'Analyze carefully and ensure the "confidence" is accurate.';
 
     switch (documentType) {
       case 'aadhaar':
-        return '$base\nReturn this JSON:\n'
-          '{"full_name":"name in English",'
-          '"full_name_hindi":"name in Hindi if visible",'
-          '"date_of_birth":"DD/MM/YYYY",'
-          '"gender":"Male or Female",'
-          '"aadhaar_number":"XXXX XXXX 1234",'
-          '"address_line1":"house and street",'
-          '"address_line2":"area or locality",'
-          '"village":"village name or null",'
-          '"district":"district name",'
-          '"state":"state name",'
-          '"pincode":"6 digit pincode",'
-          '"confidence":0.95}';
+        return '$base\n'
+            '{"full_name":"...", "full_name_hindi":"...", "date_of_birth":"...", "gender":"...", "aadhaar_number":"...", "address_line1":"...", "district":"...", "state":"...", "pincode":"...", "confidence":...}';
 
       case 'pan':
-        return '$base\nReturn this JSON:\n'
-          '{"full_name":"name as on PAN",'
-          '"father_name":"father name",'
-          '"date_of_birth":"DD/MM/YYYY",'
-          '"pan_number":"ABCDE1234F",'
-          '"confidence":0.95}';
+        return '$base\n'
+            '{"full_name":"...", "father_name":"...", "date_of_birth":"...", "pan_number":"...", "confidence":...}';
 
       case 'passport':
-        return '$base\nReturn this JSON:\n'
-          '{"full_name":"full name",'
-          '"passport_number":"A1234567",'
-          '"date_of_birth":"DD/MM/YYYY",'
-          '"date_of_expiry":"DD/MM/YYYY",'
-          '"place_of_birth":"city",'
-          '"father_name":"father name",'
-          '"mother_name":"mother name",'
-          '"spouse_name":"spouse name or null",'
-          '"address_line1":"address",'
-          '"pincode":"pincode",'
-          '"confidence":0.95}';
+        return '$base\n'
+            '{"full_name":"...", "passport_number":"...", "date_of_birth":"...", "date_of_expiry":"...", "place_of_birth":"...", "father_name":"...", "mother_name":"...", "spouse_name":"...", "address_line1":"...", "pincode":"...", "confidence":...}';
 
       case 'voter_id':
       case 'voterID':
-        return '$base\nReturn this JSON:\n'
-          '{"full_name":"name",'
-          '"father_name":"father or husband name",'
-          '"date_of_birth":"DD/MM/YYYY",'
-          '"gender":"Male or Alternative",'
-          '"voter_id_number":"EPIC number",'
-          '"district":"district",'
-          '"state":"state",'
-          '"confidence":0.95}';
+        return '$base\n'
+            '{"full_name":"...", "father_name":"...", "date_of_birth":"...", "gender":"...", "voter_id_number":"...", "district":"...", "state":"...", "confidence":...}';
 
       case 'driving_license':
       case 'drivingLicense':
-        return '$base\nReturn this JSON:\n'
-          '{"full_name":"name",'
-          '"date_of_birth":"DD/MM/YYYY",'
-          '"driving_license_number":"DL number",'
-          '"blood_group":"blood group or null",'
-          '"address_line1":"address",'
-          '"state":"state",'
-          '"date_of_expiry":"DD/MM/YYYY",'
-          '"confidence":0.95}';
+        return '$base\n'
+            '{"full_name":"...", "date_of_birth":"...", "driving_license_number":"...", "blood_group":"...", "address_line1":"...", "state":"...", "date_of_expiry":"...", "confidence":...}';
 
       case 'bank_passbook':
       case 'bankPassbook':
-        return '$base\nReturn this JSON:\n'
-          '{"full_name":"account holder name",'
-          '"account_number":"XXXXXXXX1234",'
-          '"bank_name":"bank name",'
-          '"branch_name":"branch name",'
-          '"ifsc_code":"IFSC code",'
-          '"confidence":0.95}';
+        return '$base\n'
+            '{"full_name":"...", "account_number":"...", "bank_name":"...", "branch_name":"...", "ifsc_code":"...", "confidence":...}';
 
       case 'income_certificate':
       case 'incomeCertificate':
-        return '$base\nReturn this JSON:\n'
-          '{"full_name":"name",'
-          '"father_name":"father name",'
-          '"annual_income":"amount in numbers",'
-          '"district":"district",'
-          '"state":"state",'
-          '"certificate_number":"number",'
-          '"confidence":0.95}';
+        return '$base\n'
+            '{"full_name":"...", "father_name":"...", "annual_income":"...", "district":"...", "state":"...", "certificate_number":"...", "confidence":...}';
 
       case 'ration_card':
       case 'rationCard':
-        return '$base\nReturn this JSON:\n'
-          '{"full_name":"head of family name",'
-          '"ration_card_number":"number",'
-          '"address_line1":"address",'
-          '"district":"district",'
-          '"state":"state",'
-          '"confidence":0.95}';
+        return '$base\n'
+            '{"full_name":"...", "ration_card_number":"...", "address_line1":"...", "district":"...", "state":"...", "confidence":...}';
+
+      case 'detect':
+      case 'automatic':
+        return 'Analyze this document carefully. First, identify what type of Indian Government document it is (aadhaar, pan, passport, voterID, drivingLicense, bankPassbook, incomeCertificate, rationCard).\n'
+            'Then, extract all visible fields into a JSON structure.\n'
+            'IMPORTANT: Include a "document_type" field with the identified type and a "confidence" field.\n'
+            'Example for PAN: {"document_type": "pan", "full_name": "...", "pan_number": "...", "confidence": 0.95}\n'
+            'Return ONLY the JSON.';
 
       default:
-        return '$base\nExtract all visible fields '
-          'and return as JSON with confidence score.';
+        return 'Extract all visible fields from this document into a JSON structure with a confidence score. If possible, identify the document type and include it as "document_type".';
     }
   }
 
@@ -313,9 +189,12 @@ Mask sensitive numbers:
     data.aadhaarNumber = pick('aadhaar_number') ?? pick('aadhaarNumber');
     data.panNumber = pick('pan_number') ?? pick('panNumber');
     data.passportNumber = pick('passport_number') ?? pick('passportNumber');
-    data.voterIdNumber = pick('voter_id_number') ?? pick('voterIdNumber') ?? pick('voter_id_number');
-    data.drivingLicenseNumber =
-        pick('driving_license_number') ?? pick('drivingLicenseNumber') ?? pick('driving_license_number');
+    data.voterIdNumber = pick('voter_id_number') ??
+        pick('voterIdNumber') ??
+        pick('voter_id_number');
+    data.drivingLicenseNumber = pick('driving_license_number') ??
+        pick('drivingLicenseNumber') ??
+        pick('driving_license_number');
     data.addressLine1 = pick('address_line1') ?? pick('addressLine1');
     data.addressLine2 = pick('address_line2') ?? pick('addressLine2');
     data.district = pick('district');

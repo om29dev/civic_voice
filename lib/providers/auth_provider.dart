@@ -1,26 +1,32 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 
 import '../models/user_model.dart';
+import '../core/services/aws_amplify_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   static const _sessionKey = 'cvi_user_session';
-
-  final SupabaseClient _client = Supabase.instance.client;
 
   UserModel? _currentUser;
   bool _isLoading = true;
   bool _isGuest = false;
   String? _error;
+  // Cached once at startup so the GoRouter redirect stays synchronous.
+  bool _seenOnboard = false;
 
-  UserModel? get currentUser    => _currentUser;
-  bool get isLoading            => _isLoading;
-  bool get isGuest              => _isGuest;
-  String? get error             => _error;
-  bool get isAuthenticated      => _currentUser != null;
-  bool get isRealUser           => isAuthenticated && !_isGuest;
+  UserModel? get currentUser => _currentUser;
+  bool get isLoading => _isLoading;
+  bool get isGuest => _isGuest;
+  String? get error => _error;
+  bool get isAuthenticated => _currentUser != null;
+  bool get isRealUser => isAuthenticated && !_isGuest;
+
+  /// Whether the user has completed the onboarding flow.
+  /// Read synchronously by the GoRouter redirect to avoid async races.
+  bool get seenOnboard => _seenOnboard;
 
   AuthProvider() {
     _init();
@@ -29,52 +35,72 @@ class AuthProvider extends ChangeNotifier {
   // ─── Init ──────────────────────────────────────────────────────────────────
 
   Future<void> _init() async {
-    _isLoading = true;
-    notifyListeners();
-
+    // No notifyListeners() here — we notify once at the end when everything is ready.
     try {
-      final session = _client.auth.currentSession;
-      if (session != null) {
-        _currentUser = await _fetchUserModel(session.user);
+      debugPrint('[AuthProvider] _init: Checking Amplify initialization...');
+      if (!AwsAmplifyService.isInitialized) {
+        await AwsAmplifyService.initialize();
+      }
+
+      debugPrint('[AuthProvider] _init: Restoring session...');
+      // Cache the onboarding flag synchronously for the router redirect.
+      final prefs = await SharedPreferences.getInstance();
+      _seenOnboard = prefs.getBool('cvi_onboarded') ?? false;
+
+      final session = await Amplify.Auth.fetchAuthSession();
+      if (session.isSignedIn) {
+        debugPrint(
+            '[AuthProvider] _init: User is signed in, fetching details...');
+        final user = await Amplify.Auth.getCurrentUser();
+        final attributes = await Amplify.Auth.fetchUserAttributes();
+        _currentUser = await _fetchUserModel(user, attributes);
       } else {
+        debugPrint(
+            '[AuthProvider] _init: Not signed in, trying guest restore...');
         await _tryRestoreGuestSession();
       }
     } catch (e) {
+      debugPrint('[AuthProvider] _init Error: $e');
       _error = e.toString();
     } finally {
+      debugPrint('[AuthProvider] _init Finished. Loading = false');
       _isLoading = false;
-      notifyListeners();
+      notifyListeners(); // Single notification once the full initial state is known.
     }
-
-    // Listen for Supabase auth changes
-    _client.auth.onAuthStateChange.listen((data) async {
-      final event = data.event;
-      final session = data.session;
-
-      if (event == AuthChangeEvent.signedIn && session != null) {
-        _currentUser = await _fetchUserModel(session.user);
-        _isGuest = false;
-      } else if (event == AuthChangeEvent.signedOut) {
-        _currentUser = null;
-        _isGuest = false;
-      }
-      notifyListeners();
-    });
   }
 
   // ─── Helpers ───────────────────────────────────────────────────────────────
 
-  Future<UserModel> _fetchUserModel(User supabaseUser) async {
+  Future<UserModel> _fetchUserModel(
+      AuthUser authUser, List<AuthUserAttribute> attributes) async {
     final prefs = await SharedPreferences.getInstance();
-    final name  = prefs.getString('cvi_name_${supabaseUser.id}') ?? 'User';
-    final lang  = prefs.getString('cvi_lang_${supabaseUser.id}') ?? 'en';
+
+    String name = 'User';
+    String email = '';
+    String phone = '';
+
+    for (var attr in attributes) {
+      if (attr.userAttributeKey == AuthUserAttributeKey.name) {
+        name = attr.value;
+      }
+      if (attr.userAttributeKey == AuthUserAttributeKey.email) {
+        email = attr.value;
+      }
+      if (attr.userAttributeKey == AuthUserAttributeKey.phoneNumber) {
+        phone = attr.value;
+      }
+    }
+
+    final lang = prefs.getString('cvi_lang_${authUser.userId}') ?? 'en';
+
     return UserModel(
-      id: supabaseUser.id,
-      name: name,
-      email: supabaseUser.email,
-      mobile: supabaseUser.phone,
+      id: authUser.userId,
+      name: name.isEmpty ? 'User' : name,
+      email: email,
+      mobile: phone,
       language: lang,
-      createdAt: DateTime.tryParse(supabaseUser.createdAt) ?? DateTime.now(),
+      createdAt: DateTime
+          .now(), // Cognito doesn't expose createdAt directly in basic attrs
       lastLoginAt: DateTime.now(),
     );
   }
@@ -100,24 +126,65 @@ class AuthProvider extends ChangeNotifier {
 
   // ─── Public Methods ────────────────────────────────────────────────────────
 
-  /// Sign in with email and password via Supabase.
+  /// Sign in with email and password via Amplify Cognito.
   Future<bool> loginWithEmail(String email, String password) async {
     _clearError();
     _isLoading = true;
     notifyListeners();
+
     try {
-      final response = await _client.auth.signInWithPassword(
-        email: email.trim(),
+      debugPrint(
+          '[AuthProvider] loginWithEmail: Checking existing session for $email...');
+
+      // Proactively check for an existing session to avoid "User already signed in" error
+      final session = await Amplify.Auth.fetchAuthSession();
+      if (session.isSignedIn) {
+        debugPrint(
+            '[AuthProvider] loginWithEmail: Existing session found, performing global sign-out first...');
+        await Amplify.Auth.signOut(
+            options: const SignOutOptions(globalSignOut: true));
+      }
+
+      debugPrint(
+          '[AuthProvider] loginWithEmail: Starting signIn for $email...');
+      final result = await Amplify.Auth.signIn(
+        username: email.trim(),
         password: password,
       );
-      if (response.session != null) {
-        _currentUser = await _fetchUserModel(response.user!);
+
+      if (result.isSignedIn) {
+        final user = await Amplify.Auth.getCurrentUser();
+        final attributes = await Amplify.Auth.fetchUserAttributes();
+        _currentUser = await _fetchUserModel(user, attributes);
         _isGuest = false;
         return true;
+      } else if (result.nextStep.signInStep == AuthSignInStep.confirmSignUp) {
+        _error = 'Please confirm your email address before logging in.';
+        return false;
       }
+
       _error = 'Login failed. Please check your credentials.';
       return false;
     } on AuthException catch (e) {
+      debugPrint('[AuthProvider] loginWithEmail: AuthException: ${e.message}');
+
+      // If we still get a "user is already signed in" error despite the proactive check,
+      // try to clear it once and retry.
+      if (e.message.contains('signed in')) {
+        debugPrint(
+            '[AuthProvider] loginWithEmail: Detected active session in exception. Retrying after global signOut...');
+        try {
+          await Amplify.Auth.signOut(
+              options: const SignOutOptions(globalSignOut: true));
+          // Perform one retry
+          return await loginWithEmail(email, password);
+        } catch (retryError) {
+          _error =
+              'Unable to sign in because another user is active on this device.';
+          return false;
+        }
+      }
+
       _error = e.message;
       return false;
     } catch (e) {
@@ -133,15 +200,14 @@ class AuthProvider extends ChangeNotifier {
     await loginWithEmail(email, password);
   }
 
-  /// Mock Google Sign-In (wire up google_sign_in later).
+  /// Mock Google Sign-In (wire up Cognito Hosted UI later).
   Future<bool> loginWithGoogle() async {
     _clearError();
     _isLoading = true;
-    notifyListeners();
     try {
-      // TODO: Replace with real Google OAuth when configured in Supabase dashboard.
       await Future.delayed(const Duration(seconds: 1));
-      _error = 'Google Sign-In is not yet configured. Please use email or guest login.';
+      _error =
+          'Google Sign-In is not yet configured on this Cognito User Pool. Please use email or guest login.';
       return false;
     } finally {
       _isLoading = false;
@@ -149,15 +215,36 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// Mock OTP-based sign-in (wire up Supabase phone auth later).
+  /// OTP-based sign-in via Amplify Custom Auth
   Future<bool> sendOTP(String mobile) async {
     _clearError();
     _isLoading = true;
     notifyListeners();
+
     try {
-      await _client.auth.signInWithOtp(phone: mobile.trim());
+      debugPrint('[AuthProvider] sendOTP: Checking existing session...');
+      final session = await Amplify.Auth.fetchAuthSession();
+      if (session.isSignedIn) {
+        debugPrint(
+            '[AuthProvider] sendOTP: Existing session found, performing global sign-out first...');
+        await Amplify.Auth.signOut(
+            options: const SignOutOptions(globalSignOut: true));
+      }
+
+      // In a real Cognito setup, this requires Custom Auth Challenge triggers.
+      // For this migration, we trigger a standard signIn which sends an SMS MFA if configured.
+      await Amplify.Auth.signIn(username: mobile.trim());
       return true;
     } on AuthException catch (e) {
+      if (e.message.contains('signed in')) {
+        debugPrint(
+            '[AuthProvider] sendOTP: Detected active session in exception. Retrying after global signOut...');
+        try {
+          await Amplify.Auth.signOut(
+              options: const SignOutOptions(globalSignOut: true));
+          return await sendOTP(mobile);
+        } catch (_) {}
+      }
       _error = e.message;
       return false;
     } catch (e) {
@@ -172,15 +259,13 @@ class AuthProvider extends ChangeNotifier {
   Future<bool> verifyOTP(String mobile, String otp) async {
     _clearError();
     _isLoading = true;
-    notifyListeners();
     try {
-      final response = await _client.auth.verifyOTP(
-        phone: mobile.trim(),
-        token: otp.trim(),
-        type: OtpType.sms,
-      );
-      if (response.session != null) {
-        _currentUser = await _fetchUserModel(response.user!);
+      final result =
+          await Amplify.Auth.confirmSignIn(confirmationValue: otp.trim());
+      if (result.isSignedIn) {
+        final user = await Amplify.Auth.getCurrentUser();
+        final attributes = await Amplify.Auth.fetchUserAttributes();
+        _currentUser = await _fetchUserModel(user, attributes);
         _isGuest = false;
         return true;
       }
@@ -198,7 +283,7 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// Register a new user with Supabase.
+  /// Register a new user with Amplify Cognito.
   Future<bool> signup(
     String name,
     String email,
@@ -208,35 +293,31 @@ class AuthProvider extends ChangeNotifier {
   }) async {
     _clearError();
     _isLoading = true;
-    notifyListeners();
     try {
-      final response = await _client.auth.signUp(
-        email: email.trim(),
+      final userAttributes = {
+        AuthUserAttributeKey.name: name,
+        AuthUserAttributeKey.email: email.trim(),
+      };
+
+      if (phone != null && phone.isNotEmpty) {
+        userAttributes[AuthUserAttributeKey.phoneNumber] = '+91${phone.trim()}';
+      }
+
+      final result = await Amplify.Auth.signUp(
+        username: email.trim(),
         password: password,
-        data: {
-          'name': name,
-          'mobile': phone ?? '',
-          'language': language ?? 'en'
-        },
+        options: SignUpOptions(userAttributes: userAttributes),
       );
-      if (response.session != null) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('cvi_name_${response.user!.id}', name);
-        await prefs.setString('cvi_lang_${response.user!.id}', language ?? 'en');
-        _currentUser = UserModel(
-          id: response.user!.id,
-          name: name,
-          email: email,
-          mobile: phone ?? '',
-          language: language ?? 'en',
-          createdAt: DateTime.now(),
-        );
-        _isGuest = false;
+
+      if (result.isSignUpComplete) {
+        // Auto sign-in if possible, but usually requires confirmation
         return true;
-      } else if (response.user != null) {
-        _error = 'Please check your email to verify your account before logging in.';
+      } else if (result.nextStep.signUpStep == AuthSignUpStep.confirmSignUp) {
+        // Return a specific custom error string to inform the UI to open the OTP dialog
+        _error = 'CONFIRM_SIGNUP_REQUIRED';
         return false;
       }
+
       _error = 'Registration failed. Please try again.';
       return false;
     } on AuthException catch (e) {
@@ -257,19 +338,44 @@ class AuthProvider extends ChangeNotifier {
     final guest = UserModel.guest();
     _currentUser = guest;
     _isGuest = true;
-
+    // Set state fully before persisting; notify once at the end.
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('$_sessionKey/guest_id', guest.id);
     await prefs.setString('$_sessionKey/lang', guest.language);
+    notifyListeners(); // Single notification — state fully settled.
+  }
 
-    notifyListeners();
+  /// Confirm a new user registration with the OTP sent to their email/phone
+  Future<bool> confirmSignUp(String email, String code) async {
+    _clearError();
+    _isLoading = true;
+    try {
+      final result = await Amplify.Auth.confirmSignUp(
+        username: email.trim(),
+        confirmationCode: code.trim(),
+      );
+      if (result.isSignUpComplete) {
+        return true;
+      }
+      _error = 'Verification failed. Please try again.';
+      return false;
+    } on AuthException catch (e) {
+      _error = e.message;
+      return false;
+    } catch (e) {
+      _error = 'An unexpected error occurred during verification.';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   /// Sign out and clear stored session.
   Future<void> logout() async {
     try {
       if (!_isGuest) {
-        await _client.auth.signOut();
+        await Amplify.Auth.signOut();
       }
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('$_sessionKey/guest_id');
@@ -277,7 +383,6 @@ class AuthProvider extends ChangeNotifier {
       _currentUser = null;
       _isGuest = false;
     } catch (_) {
-      // Always clear local state even if network call fails
       _currentUser = null;
       _isGuest = false;
     } finally {
@@ -287,7 +392,9 @@ class AuthProvider extends ChangeNotifier {
 
   /// Persist and apply a new language for the current user.
   Future<void> updateLanguage(String langCode) async {
-    if (_currentUser == null) return;
+    if (_currentUser == null) {
+      return;
+    }
     _currentUser = _currentUser!.copyWith(language: langCode);
     final prefs = await SharedPreferences.getInstance();
     if (_isGuest) {
@@ -298,13 +405,21 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Sends a password reset email via Supabase.
+  /// Sends a password reset email via Amplify.
   Future<void> resetPassword(String email) async {
     try {
-      await _client.auth.resetPasswordForEmail(email.trim());
+      await Amplify.Auth.resetPassword(username: email.trim());
     } catch (_) {
       // Silently fail — success message is always shown for security
     }
+  }
+
+  /// Call this when the onboarding flow completes to keep the in-memory
+  /// [seenOnboard] cache in sync with the SharedPreferences value.
+  void markOnboarded() {
+    _seenOnboard = true;
+    // No notifyListeners() needed \u2014 this doesn't affect routing directly;
+    // the caller (FirstLaunchScreen) drives navigation itself via context.go.
   }
 
   // ─── Legacy API Stubs ───────────────────────────────────────────────────────

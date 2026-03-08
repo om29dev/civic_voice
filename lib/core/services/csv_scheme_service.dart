@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:csv/csv.dart';
+import 'dart:convert';
 import '../../models/scheme_model.dart';
 
 class CsvSchemeService {
@@ -8,36 +9,47 @@ class CsvSchemeService {
 
   static Future<void> init() async {
     if (_allSchemes.isNotEmpty) return;
-    
+
     try {
-      final rawData = await rootBundle.loadString('assets/data/updated_data.csv');
-      
-      // Use compute to parse in background isolate to avoid blocking main thread
-      _allSchemes = await compute(_parseCsvInBackground, rawData);
-      
-      debugPrint('CsvSchemeService: Loaded ${_allSchemes.length} schemes from background isolate');
+      debugPrint('CsvSchemeService: Starting background load...');
+      // Use rootBundle.load to get raw bytes (fast, non-blocking)
+      // Decoding 13MB of String on main thread often causes ANR
+      final byteData = await rootBundle.load('assets/data/updated_data.csv');
+
+      // Move both decoding (utf8) and parsing (csv) to isolate
+      _allSchemes =
+          await compute(_parseCsvFromBytes, byteData.buffer.asUint8List());
+
+      debugPrint(
+          'CsvSchemeService: Loaded ${_allSchemes.length} schemes from background isolate');
     } catch (e) {
       debugPrint('CsvSchemeService: Init failed: $e');
     }
   }
 
+  // Decodes raw bytes and parses CSV in one isolate pass
+  static List<GovernmentScheme> _parseCsvFromBytes(Uint8List bytes) {
+    final rawString = utf8.decode(bytes);
+    return _parseCsvInBackground(rawString);
+  }
+
   // Top-level or static helper for isolate
   static List<GovernmentScheme> _parseCsvInBackground(String rawData) {
-    List<List<dynamic>> rows = const CsvToListConverter().convert(rawData);
+    List<List<dynamic>> rows = CsvDecoder().convert(rawData);
     if (rows.length <= 1) return [];
-    
+
     List<GovernmentScheme> result = [];
     for (var i = 1; i < rows.length; i++) {
       final row = rows[i];
       if (row.length < 5) continue;
-      
+
       final name = row[0].toString();
       final slug = row[1].toString();
       final details = row[2].toString();
       final benefits = row[3].toString();
       final eligibility = row[4].toString();
       final category = row.length > 8 ? row[8].toString() : 'Other';
-      
+
       result.add(GovernmentScheme(
         id: slug,
         category: _mapCategoryStatic(category),
@@ -70,9 +82,11 @@ class CsvSchemeService {
   static List<EligibilityRule> _parseEligibilityStatic(String text) {
     List<EligibilityRule> rules = [];
     final lowerText = text.toLowerCase();
-    
+
     // 1. AGE RANGE
-    final ageRangeMatch = RegExp(r'age (?:group of|between|from)?\s?(\d+)\s?[-to]+\s?(\d+)').firstMatch(lowerText);
+    final ageRangeMatch =
+        RegExp(r'age (?:group of|between|from)?\s?(\d+)\s?[-to]+\s?(\d+)')
+            .firstMatch(lowerText);
     if (ageRangeMatch != null) {
       rules.add(EligibilityRule(
         question: {'en': 'Minimum Age'},
@@ -89,20 +103,26 @@ class CsvSchemeService {
         explanation: {'en': 'Age must not exceed ${ageRangeMatch.group(2)}'},
       ));
     } else {
-      final ageMinMatch = RegExp(r'(?:age should be|minimum age of|age of|at least)\s?(\d+)').firstMatch(lowerText);
+      final ageMinMatch =
+          RegExp(r'(?:age should be|minimum age of|age of|at least)\s?(\d+)')
+              .firstMatch(lowerText);
       if (ageMinMatch != null) {
         rules.add(EligibilityRule(
           question: {'en': 'Minimum Age'},
           parameter: 'age',
           operator: '>=',
           value: int.parse(ageMinMatch.group(1)!),
-          explanation: {'en': 'Minimum age required is ${ageMinMatch.group(1)}'},
+          explanation: {
+            'en': 'Minimum age required is ${ageMinMatch.group(1)}'
+          },
         ));
       }
     }
 
     // 2. INCOME
-    final incomeMatch = RegExp(r'(?:income|salary|assistance)\s?(?:should not exceed|must be less than|below|up to|maximum of|limit of)?\s?(?:₹|rs\.?|inr)?\s?([\d,]+)').firstMatch(lowerText);
+    final incomeMatch = RegExp(
+            r'(?:income|salary|assistance)\s?(?:should not exceed|must be less than|below|up to|maximum of|limit of)?\s?(?:₹|rs\.?|inr)?\s?([\d,]+)')
+        .firstMatch(lowerText);
     if (incomeMatch != null) {
       final cleanVal = incomeMatch.group(1)!.replaceAll(',', '');
       final incomeVal = double.tryParse(cleanVal);
@@ -112,7 +132,9 @@ class CsvSchemeService {
           parameter: 'income',
           operator: '<=',
           value: incomeVal,
-          explanation: {'en': 'Annual income must be below ₹${incomeVal.toStringAsFixed(0)}'},
+          explanation: {
+            'en': 'Annual income must be below ₹${incomeVal.toStringAsFixed(0)}'
+          },
         ));
       }
     }
@@ -128,8 +150,8 @@ class CsvSchemeService {
       // If we couldn't parse any specific rules, we might want to show it or hide it.
       // User said "100% accurate", so if we don't know the rules, it's safer to hide or show as "Potential"?
       // Let's hide for "100% accuracy" as it means strict matching.
-      if (scheme.eligibilityRules.isEmpty) return false; 
-      
+      if (scheme.eligibilityRules.isEmpty) return false;
+
       for (var rule in scheme.eligibilityRules) {
         if (rule.parameter == 'age') {
           final val = rule.value as int;

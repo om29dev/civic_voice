@@ -30,7 +30,7 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   void initState() {
     super.initState();
-    
+
     _logoController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2000),
@@ -75,32 +75,35 @@ class _LoginScreenState extends State<LoginScreen>
       );
       return;
     }
-    
+
     setState(() => _isLoading = true);
-    
+
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     await authProvider.login(
       _emailController.text.trim(),
       _passwordController.text,
     );
-    
+
     if (mounted) {
       setState(() => _isLoading = false);
-      
+
       if (authProvider.error == null) {
         if (!mounted) return;
-        
-        // Fetch profile data from Supabase to populate UserProvider
+
+        // Fetch profile data from AWS Amplify to populate UserProvider
         final userProvider = Provider.of<UserProvider>(context, listen: false);
         if (authProvider.userId != null) {
           await userProvider.fetchUserProfile(authProvider.userId!);
         }
-        
+
+        if (!mounted) return;
         Navigator.pushReplacementNamed(context, '/dashboard');
       } else {
         final lang = Provider.of<LanguageProvider>(context, listen: false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(authProvider.errorMessage ?? lang.translate('login_failed'))),
+          SnackBar(
+              content: Text(
+                  authProvider.errorMessage ?? lang.translate('login_failed'))),
         );
       }
     }
@@ -124,7 +127,8 @@ class _LoginScreenState extends State<LoginScreen>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           lang.translate('forgot_password'),
-          style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700),
+          style: GoogleFonts.poppins(
+              color: Colors.white, fontWeight: FontWeight.w700),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -141,7 +145,8 @@ class _LoginScreenState extends State<LoginScreen>
               decoration: InputDecoration(
                 hintText: 'your@email.com',
                 hintStyle: GoogleFonts.inter(color: Colors.white38),
-                prefixIcon: const Icon(Icons.email_outlined, color: AppTheme.electricBlue),
+                prefixIcon: const Icon(Icons.email_outlined,
+                    color: AppTheme.electricBlue),
                 enabledBorder: OutlineInputBorder(
                   borderSide: const BorderSide(color: AppTheme.glassBorder),
                   borderRadius: BorderRadius.circular(12),
@@ -159,17 +164,20 @@ class _LoginScreenState extends State<LoginScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel', style: GoogleFonts.inter(color: Colors.white54)),
+            child:
+                Text('Cancel', style: GoogleFonts.inter(color: Colors.white54)),
           ),
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              final authProvider = Provider.of<AuthProvider>(context, listen: false);
+              final authProvider =
+                  Provider.of<AuthProvider>(context, listen: false);
               await authProvider.resetPassword(emailCtrl.text.trim());
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Reset link sent to ${emailCtrl.text.trim()}'),
+                    content:
+                        Text('Reset link sent to ${emailCtrl.text.trim()}'),
                     backgroundColor: AppTheme.electricBlue,
                     behavior: SnackBarBehavior.floating,
                   ),
@@ -178,9 +186,13 @@ class _LoginScreenState extends State<LoginScreen>
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.electricBlue,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
-            child: Text('Send Reset Link', style: GoogleFonts.inter(color: AppTheme.deepSpaceBlue, fontWeight: FontWeight.w600)),
+            child: Text('Send Reset Link',
+                style: GoogleFonts.inter(
+                    color: AppTheme.deepSpaceBlue,
+                    fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -247,7 +259,8 @@ class _LoginScreenState extends State<LoginScreen>
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.electricBlue.withValues(alpha: 0.6 * _glowAnimation.value),
+                  color: AppTheme.electricBlue
+                      .withValues(alpha: 0.6 * _glowAnimation.value),
                   blurRadius: 60,
                   spreadRadius: 20,
                 ),
@@ -274,7 +287,8 @@ class _LoginScreenState extends State<LoginScreen>
         children: [
           // Title
           ShaderMask(
-            shaderCallback: (bounds) => AppTheme.accentGradient.createShader(bounds),
+            shaderCallback: (bounds) =>
+                AppTheme.accentGradient.createShader(bounds),
             child: Text(
               lang.translate('welcome_back'),
               textAlign: TextAlign.center,
@@ -285,9 +299,9 @@ class _LoginScreenState extends State<LoginScreen>
               ),
             ),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           Text(
             lang.translate('login_subtitle'),
             textAlign: TextAlign.center,
@@ -296,9 +310,9 @@ class _LoginScreenState extends State<LoginScreen>
               color: AppTheme.pureWhite.withValues(alpha: 0.7),
             ),
           ),
-          
+
           const SizedBox(height: 32),
-          
+
           // Email Input
           _buildInputField(
             controller: _emailController,
@@ -306,9 +320,9 @@ class _LoginScreenState extends State<LoginScreen>
             icon: Icons.person_outline,
             keyboardType: TextInputType.emailAddress,
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Password Input
           _buildInputField(
             controller: _passwordController,
@@ -320,12 +334,13 @@ class _LoginScreenState extends State<LoginScreen>
                 _obscurePassword ? Icons.visibility_off : Icons.visibility,
                 color: AppTheme.electricBlue,
               ),
-              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+              onPressed: () =>
+                  setState(() => _obscurePassword = !_obscurePassword),
             ),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Forgot Password
           Align(
             alignment: Alignment.centerRight,
@@ -340,22 +355,24 @@ class _LoginScreenState extends State<LoginScreen>
               ),
             ),
           ),
-          
+
           const SizedBox(height: 8),
-          
+
           // Login Button
           _buildGlowingButton(
             onPressed: _handleLogin,
             isLoading: _isLoading,
             text: lang.translate('login'),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Divider
           Row(
             children: [
-              Expanded(child: Divider(color: AppTheme.pureWhite.withValues(alpha: 0.2))),
+              Expanded(
+                  child: Divider(
+                      color: AppTheme.pureWhite.withValues(alpha: 0.2))),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
@@ -366,12 +383,14 @@ class _LoginScreenState extends State<LoginScreen>
                   ),
                 ),
               ),
-              Expanded(child: Divider(color: AppTheme.pureWhite.withValues(alpha: 0.2))),
+              Expanded(
+                  child: Divider(
+                      color: AppTheme.pureWhite.withValues(alpha: 0.2))),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Social Login Buttons
           Row(
             children: [
@@ -382,10 +401,12 @@ class _LoginScreenState extends State<LoginScreen>
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: const Text('Google Sign-In requires device Google account setup. Use email/password or OTP instead.'),
+                        content: const Text(
+                            'Google Sign-In requires device Google account setup. Use email/password or OTP instead.'),
                         backgroundColor: AppTheme.electricBlue,
                         behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
                         duration: const Duration(seconds: 4),
                       ),
                     );
@@ -551,7 +572,7 @@ class _LoginScreenState extends State<LoginScreen>
 
   Widget _buildLanguageSelector() {
     final langProvider = Provider.of<LanguageProvider>(context);
-    
+
     final languages = [
       {'name': 'English', 'flag': '🇬🇧', 'lang': 'en'},
       {'name': 'हिंदी', 'flag': '🇮🇳', 'lang': 'hi'},
@@ -594,13 +615,13 @@ class _LoginScreenState extends State<LoginScreen>
     required bool isLoading,
     required String text,
   }) {
-      final lang = Provider.of<LanguageProvider>(context);
-      return _GlowingButton(
-        onPressed: onPressed,
-        isLoading: isLoading,
-        child: Text(
-          isLoading ? lang.translate('logging_in') : text,
-          style: GoogleFonts.poppins(
+    final lang = Provider.of<LanguageProvider>(context);
+    return _GlowingButton(
+      onPressed: onPressed,
+      isLoading: isLoading,
+      child: Text(
+        isLoading ? lang.translate('logging_in') : text,
+        style: GoogleFonts.poppins(
           fontSize: 16,
           fontWeight: FontWeight.w600,
           color: AppTheme.deepSpaceBlue,
@@ -659,7 +680,8 @@ class _GlowingButtonState extends State<_GlowingButton>
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.electricBlue.withValues(alpha: 0.5 * _glowAnimation.value),
+                color: AppTheme.electricBlue
+                    .withValues(alpha: 0.5 * _glowAnimation.value),
                 blurRadius: 30,
                 spreadRadius: 5,
               ),
@@ -684,7 +706,8 @@ class _GlowingButtonState extends State<_GlowingButton>
                       width: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation(AppTheme.deepSpaceBlue),
+                        valueColor:
+                            AlwaysStoppedAnimation(AppTheme.deepSpaceBlue),
                       ),
                     )
                   : widget.child,

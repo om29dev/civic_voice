@@ -2,11 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_colors.dart';
-import '../../core/router/app_router.dart';
 import '../../core/utils/helpers.dart';
 import '../../models/user_model.dart';
 import '../../providers/auth_provider.dart';
@@ -35,7 +33,9 @@ class _AuthScreenState extends State<AuthScreen>
   void initState() {
     super.initState();
     _tabCtrl = TabController(length: 2, vsync: this);
-    _tabCtrl.addListener(() => setState(() {}));
+    _tabCtrl.addListener(() {
+      if (mounted) setState(() {});
+    });
   }
 
   @override
@@ -46,8 +46,6 @@ class _AuthScreenState extends State<AuthScreen>
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
-
     return Scaffold(
       backgroundColor: AppColors.background,
       body: ParticleBackground(
@@ -68,8 +66,7 @@ class _AuthScreenState extends State<AuthScreen>
                   color: Color(0x14FFFFFF),
                   borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
                   border: Border(
-                    top: BorderSide(
-                        color: Color(0x1A00F5FF), width: 1),
+                    top: BorderSide(color: Color(0x1A00F5FF), width: 1),
                   ),
                 ),
                 child: Column(
@@ -136,11 +133,10 @@ class _AuthHeader extends StatelessWidget {
             ),
             child: const Icon(Icons.record_voice_over_rounded,
                 color: AppColors.accent, size: 28),
-          )
-              .animate()
-              .fadeIn(duration: 500.ms)
-              .scale(begin: const Offset(0.8, 0.8), duration: 600.ms,
-                  curve: Curves.elasticOut),
+          ).animate().fadeIn(duration: 500.ms).scale(
+              begin: const Offset(0.8, 0.8),
+              duration: 600.ms,
+              curve: Curves.elasticOut),
           const SizedBox(height: 12),
           const Text(
             'CIVIC VOICE',
@@ -234,17 +230,15 @@ class _LoginTab extends StatefulWidget {
 }
 
 class _LoginTabState extends State<_LoginTab> {
-  final _formKey     = GlobalKey<FormState>();
-  final _emailCtrl   = TextEditingController();
-  final _passCtrl    = TextEditingController();
-  bool _passVisible  = false;
-  bool _showOTP      = false;
-  bool _otpSent      = false;
-  String _mobile     = '';
+  final _formKey = GlobalKey<FormState>();
+  final _emailCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
+  bool _passVisible = false;
+  bool _showOTP = false;
+  bool _otpSent = false;
   final List<TextEditingController> _otpCtrls =
       List.generate(6, (_) => TextEditingController());
-  final List<FocusNode> _otpFocusNodes =
-      List.generate(6, (_) => FocusNode());
+  final List<FocusNode> _otpFocusNodes = List.generate(6, (_) => FocusNode());
   final _mobileCtrl = TextEditingController();
 
   @override
@@ -266,16 +260,23 @@ class _LoginTabState extends State<_LoginTab> {
       _shake();
       return;
     }
-    final auth    = context.read<AuthProvider>();
-    final success = await auth.loginWithEmail(
-        _emailCtrl.text.trim(), _passCtrl.text);
+    final auth = context.read<AuthProvider>();
+    final userProvider = context.read<UserProvider>(); // Cache before await
+
+    final success =
+        await auth.loginWithEmail(_emailCtrl.text.trim(), _passCtrl.text);
+
+    if (success && auth.userId != null) {
+      userProvider.fetchUserProfile(auth.userId!);
+    }
+
     if (!mounted) return;
-    if (success) {
-      if (auth.userId != null) {
-        context.read<UserProvider>().fetchUserProfile(auth.userId!);
-      }
-      context.go(Routes.dashboard);
-    } else if (auth.error != null) {
+
+    // Do NOT call context.go() here — AuthProvider.notifyListeners() already
+    // triggers the GoRouter redirect which navigates away automatically.
+    // Calling context.go() on top causes a double-navigation that crashes
+    // with '_elements.contains(element) is not true'.
+    if (!success && auth.error != null) {
       _showError(auth.error!);
     }
   }
@@ -290,7 +291,8 @@ class _LoginTabState extends State<_LoginTab> {
           content: Text(auth.error!),
           backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );
     }
@@ -302,8 +304,6 @@ class _LoginTabState extends State<_LoginTab> {
       _showError('Enter a valid 10-digit mobile number.');
       return;
     }
-    _mobile = mobile;
-    final auth = context.read<AuthProvider>();
     // Mock: always succeeds for now; replace with auth.sendOTP('+91$mobile')
     setState(() => _otpSent = true);
     ScaffoldMessenger.of(context).showSnackBar(
@@ -327,7 +327,7 @@ class _LoginTabState extends State<_LoginTab> {
     }
     // Mock: Any 6-digit OTP creates/logs in as guest for demo
     await context.read<AuthProvider>().continueAsGuest();
-    if (mounted) context.go(Routes.dashboard);
+    // Navigation handled automatically by GoRouter redirect via notifyListeners()
   }
 
   void _shake() {
@@ -508,7 +508,7 @@ class _LoginTabState extends State<_LoginTab> {
             _GuestSection(
               onGuest: () async {
                 await context.read<AuthProvider>().continueAsGuest();
-                if (mounted) context.go(Routes.dashboard);
+                // Navigation handled automatically by GoRouter redirect via notifyListeners()
               },
               isLoading: auth.isLoading,
             ),
@@ -776,17 +776,16 @@ class _RegisterTab extends StatefulWidget {
 }
 
 class _RegisterTabState extends State<_RegisterTab> {
-  final _formKey           = GlobalKey<FormState>();
-  final _nameCtrl          = TextEditingController();
-  final _emailCtrl         = TextEditingController();
-  final _mobileCtrl        = TextEditingController();
-  final _passCtrl          = TextEditingController();
-  final _confirmPassCtrl   = TextEditingController();
-  bool _passVisible        = false;
-  bool _confirmVisible     = false;
-  String _selectedLang     = 'en';
+  final _formKey = GlobalKey<FormState>();
+  final _nameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _mobileCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
+  final _confirmPassCtrl = TextEditingController();
+  bool _passVisible = false;
+  bool _confirmVisible = false;
+  String _selectedLang = 'en';
   IndianState? _selectedState;
-  final _shakeKey          = GlobalKey();
 
   @override
   void initState() {
@@ -816,7 +815,9 @@ class _RegisterTabState extends State<_RegisterTab> {
       // Shake the form
       return;
     }
-    final auth    = context.read<AuthProvider>();
+    final auth = context.read<AuthProvider>();
+    final userProvider = context.read<UserProvider>(); // Cache before await
+
     final success = await auth.signup(
       _nameCtrl.text.trim(),
       _emailCtrl.text.trim(),
@@ -824,30 +825,156 @@ class _RegisterTabState extends State<_RegisterTab> {
       phone: _mobileCtrl.text.trim(),
       language: _selectedLang,
     );
-    if (!mounted) return;
-    if (success) {
-      final userProvider = context.read<UserProvider>();
-      if (auth.userId != null) {
-        userProvider.login(
-          name: _nameCtrl.text.trim(),
-          email: _emailCtrl.text.trim(),
-          phone: _mobileCtrl.text.trim(),
-        );
-        // Also try fetching if there's a DB trigger that creates the profile
-        userProvider.fetchUserProfile(auth.userId!);
-      }
-      context.go(Routes.dashboard);
-    } else if (auth.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(auth.error!),
-          backgroundColor: AppColors.error,
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
+
+    if (success && auth.userId != null) {
+      userProvider.login(
+        name: _nameCtrl.text.trim(),
+        email: _emailCtrl.text.trim(),
+        phone: _mobileCtrl.text.trim(),
       );
+      // Also try fetching if there's a DB trigger that creates the profile
+      userProvider.fetchUserProfile(auth.userId!);
     }
+
+    if (!mounted) return;
+
+    if (success) {
+      // Navigation handled automatically by GoRouter redirect via notifyListeners()
+      // Do NOT call context.go() — causes double-navigation crash.
+    } else {
+      if (auth.error == 'CONFIRM_SIGNUP_REQUIRED') {
+        _showOTPVerificationDialog(
+            _emailCtrl.text.trim(), _passCtrl.text, auth, userProvider);
+      } else if (auth.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(auth.error!),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
+    }
+  }
+
+  void _showOTPVerificationDialog(String email, String password,
+      AuthProvider auth, UserProvider userProvider) {
+    final otpCtrl = TextEditingController();
+    bool isVerifying = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            backgroundColor: AppColors.backgroundLight,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Text('Verify Email',
+                style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontFamily: 'Rajdhani',
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'We sent a verification code to your email. Please enter it below:',
+                  style:
+                      TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                ),
+                const SizedBox(height: 16),
+                _NeonTextField(
+                  controller: otpCtrl,
+                  label: 'Verification Code',
+                  icon: Icons.password_rounded,
+                  keyboardType: TextInputType.number,
+                ),
+                if (isVerifying) ...[
+                  const SizedBox(height: 16),
+                  const CircularProgressIndicator(color: AppColors.accent),
+                ]
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed:
+                    isVerifying ? null : () => Navigator.pop(dialogContext),
+                child: const Text('Cancel',
+                    style: TextStyle(color: AppColors.textSecondary)),
+              ),
+              TextButton(
+                onPressed: isVerifying
+                    ? null
+                    : () async {
+                        final code = otpCtrl.text.trim();
+                        if (code.isEmpty) return;
+
+                        setDialogState(() => isVerifying = true);
+
+                        final success = await auth.confirmSignUp(email, code);
+
+                        if (!mounted) return;
+
+                        if (success) {
+                          // Dismiss dialog safely BEFORE triggering any router redirects
+                          if (dialogContext.mounted) {
+                            Navigator.pop(dialogContext);
+                          }
+
+                          // Auto login
+                          final loginSuccess =
+                              await auth.loginWithEmail(email, password);
+
+                          if (loginSuccess && auth.userId != null) {
+                            userProvider.fetchUserProfile(auth.userId!);
+                          }
+
+                          if (!mounted) return;
+
+                          if (loginSuccess) {
+                            // Navigation handled automatically by GoRouter redirect via notifyListeners()
+                            // Do NOT call context.go() — causes double-navigation crash.
+                          } else {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Verified! Please log in.'),
+                                  backgroundColor: AppColors.success,
+                                ),
+                              );
+                              // Switch to login tab
+                              // ignore: use_build_context_synchronously
+                              context
+                                  .findAncestorStateOfType<_AuthScreenState>()
+                                  ?.setState(() {});
+                            }
+                          }
+                        } else {
+                          setDialogState(() => isVerifying = false);
+                          if (dialogContext.mounted) {
+                            ScaffoldMessenger.of(dialogContext).showSnackBar(
+                              SnackBar(
+                                content:
+                                    Text(auth.error ?? 'Verification failed'),
+                                backgroundColor: AppColors.error,
+                              ),
+                            );
+                          }
+                        }
+                      },
+                child: const Text('Verify & Login',
+                    style: TextStyle(color: AppColors.accent)),
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 
   @override
@@ -867,9 +994,8 @@ class _RegisterTabState extends State<_RegisterTab> {
               label: 'Full Name',
               icon: Icons.person_outline_rounded,
               textCapitalization: TextCapitalization.words,
-              validator: (v) => (v == null || v.trim().isEmpty)
-                  ? 'Name is required'
-                  : null,
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Name is required' : null,
             ),
             const SizedBox(height: 14),
 
@@ -920,8 +1046,7 @@ class _RegisterTabState extends State<_RegisterTab> {
                   color: AppColors.textSecondary,
                   size: 20,
                 ),
-                onPressed: () =>
-                    setState(() => _passVisible = !_passVisible),
+                onPressed: () => setState(() => _passVisible = !_passVisible),
               ),
               validator: (v) {
                 if (v == null || v.isEmpty) return 'Password is required';
@@ -1014,8 +1139,7 @@ class _LangChipSelector extends StatelessWidget {
     ('ta', '🇮🇳', 'TA'),
   ];
 
-  const _LangChipSelector(
-      {required this.selected, required this.onChanged});
+  const _LangChipSelector({required this.selected, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -1164,17 +1288,21 @@ class _NeonTextFieldState extends State<_NeonTextField>
       duration: const Duration(milliseconds: 250),
     );
     _glowAnim = CurvedAnimation(parent: _glowCtrl, curve: Curves.easeOut);
-    _focusNode.addListener(() {
-      if (_focusNode.hasFocus) {
-        _glowCtrl.forward();
-      } else {
-        _glowCtrl.reverse();
-      }
-    });
+    _focusNode.addListener(_handleFocusChange);
+  }
+
+  void _handleFocusChange() {
+    if (!mounted) return;
+    if (_focusNode.hasFocus) {
+      _glowCtrl.forward();
+    } else {
+      _glowCtrl.reverse();
+    }
   }
 
   @override
   void dispose() {
+    _focusNode.removeListener(_handleFocusChange);
     _glowCtrl.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -1206,9 +1334,7 @@ class _NeonTextFieldState extends State<_NeonTextField>
         inputFormatters: widget.inputFormatters,
         textCapitalization: widget.textCapitalization,
         style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 15,
-            fontFamily: 'Rajdhani'),
+            color: AppColors.textPrimary, fontSize: 15, fontFamily: 'Rajdhani'),
         validator: widget.validator,
         autovalidateMode: AutovalidateMode.onUserInteraction,
         decoration: InputDecoration(
@@ -1235,21 +1361,17 @@ class _NeonTextFieldState extends State<_NeonTextField>
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide:
-                const BorderSide(color: AppColors.accent, width: 1.5),
+            borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide:
-                const BorderSide(color: AppColors.error, width: 1.5),
+            borderSide: const BorderSide(color: AppColors.error, width: 1.5),
           ),
           focusedErrorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide:
-                const BorderSide(color: AppColors.error, width: 1.5),
+            borderSide: const BorderSide(color: AppColors.error, width: 1.5),
           ),
-          errorStyle: const TextStyle(
-              color: AppColors.error, fontSize: 11),
+          errorStyle: const TextStyle(color: AppColors.error, fontSize: 11),
         ),
       ),
     );

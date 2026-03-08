@@ -63,7 +63,8 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.family_restroom, size: 64, color: AppTheme.pureWhite.withValues(alpha: 0.3)),
+          Icon(Icons.family_restroom,
+              size: 64, color: AppTheme.pureWhite.withValues(alpha: 0.3)),
           const SizedBox(height: 16),
           Text(
             lang.translate('no_family_members'),
@@ -85,7 +86,8 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
     );
   }
 
-  Widget _buildMemberCard(BuildContext context, UserProvider provider, FamilyMember member, LanguageProvider lang) {
+  Widget _buildMemberCard(BuildContext context, UserProvider provider,
+      FamilyMember member, LanguageProvider lang) {
     return Dismissible(
       key: Key(member.id),
       onDismissed: (_) => provider.removeFamilyMember(member.id),
@@ -155,7 +157,8 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
     );
   }
 
-  void _showAddMemberDialog(BuildContext context, UserProvider provider, LanguageProvider lang) {
+  void _showAddMemberDialog(
+      BuildContext context, UserProvider provider, LanguageProvider lang) {
     final nameController = TextEditingController();
     final ageController = TextEditingController();
     String relation = 'spouse';
@@ -166,7 +169,8 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
           backgroundColor: AppTheme.deepSpaceBlue,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Text(
             lang.translate('add_member'),
             style: GoogleFonts.poppins(color: AppTheme.pureWhite),
@@ -177,10 +181,11 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
               children: [
                 _buildTextField(nameController, lang.translate('full_name')),
                 const SizedBox(height: 12),
-                _buildTextField(ageController, lang.translate('age'), isNumber: true),
+                _buildTextField(ageController, lang.translate('age'),
+                    isNumber: true),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: relation,
+                  initialValue: relation,
                   dropdownColor: AppTheme.deepSpaceBlue,
                   style: GoogleFonts.inter(color: AppTheme.pureWhite),
                   decoration: InputDecoration(
@@ -189,15 +194,17 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
                     fillColor: AppTheme.glassBackground,
                   ),
                   items: ['spouse', 'child', 'father', 'mother', 'sibling']
-                      .map((r) => DropdownMenuItem(value: r, child: Text(lang.translate(r))))
+                      .map((r) => DropdownMenuItem(
+                          value: r, child: Text(lang.translate(r))))
                       .toList(),
                   onChanged: (val) => setState(() => relation = val!),
                 ),
                 const SizedBox(height: 12),
                 SwitchListTile(
-                  title: Text('${lang.translate('dependent')}?', style: GoogleFonts.inter(color: AppTheme.pureWhite)),
+                  title: Text('${lang.translate('dependent')}?',
+                      style: GoogleFonts.inter(color: AppTheme.pureWhite)),
                   value: isDependent,
-                  activeColor: AppTheme.electricBlue,
+                  activeThumbColor: AppTheme.electricBlue,
                   onChanged: (val) => setState(() => isDependent = val),
                 ),
               ],
@@ -210,7 +217,8 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
             ),
             ElevatedButton(
               onPressed: () {
-                if (nameController.text.isNotEmpty && ageController.text.isNotEmpty) {
+                if (nameController.text.isNotEmpty &&
+                    ageController.text.isNotEmpty) {
                   provider.addFamilyMember(FamilyMember(
                     id: DateTime.now().toIso8601String(),
                     name: nameController.text,
@@ -222,7 +230,8 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
                   Navigator.pop(context);
                 }
               },
-              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.electricBlue),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.electricBlue),
               child: Text(lang.translate('add')),
             ),
           ],
@@ -231,7 +240,8 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, {bool isNumber = false}) {
+  Widget _buildTextField(TextEditingController controller, String label,
+      {bool isNumber = false}) {
     return TextField(
       controller: controller,
       keyboardType: isNumber ? TextInputType.number : TextInputType.text,

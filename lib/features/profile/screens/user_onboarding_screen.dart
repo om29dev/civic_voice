@@ -16,7 +16,7 @@ class UserOnboardingScreen extends StatefulWidget {
 
 class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+
   int _age = 18;
   double _income = 0;
   String _occupation = 'student';
@@ -58,7 +58,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                     const SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     Text(
                       lang.translate('tell_us_about_yourself'),
                       style: GoogleFonts.poppins(
@@ -96,7 +96,8 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                             max: 100,
                             divisions: 100,
                             activeColor: AppTheme.electricBlue,
-                            inactiveColor: AppTheme.electricBlue.withValues(alpha: 0.2),
+                            inactiveColor:
+                                AppTheme.electricBlue.withValues(alpha: 0.2),
                             onChanged: (value) {
                               setState(() => _age = value.toInt());
                             },
@@ -125,7 +126,8 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                             max: 2000000,
                             divisions: 200,
                             activeColor: AppTheme.neonCyan,
-                            inactiveColor: AppTheme.neonCyan.withValues(alpha: 0.2),
+                            inactiveColor:
+                                AppTheme.neonCyan.withValues(alpha: 0.2),
                             onChanged: (value) {
                               setState(() => _income = value);
                             },
@@ -145,18 +147,23 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                     // Occupation Dropdown
                     _buildStepTitle(lang.translate('what_is_your_occupation')),
                     GlassCard(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
                           value: _occupation,
                           isExpanded: true,
                           dropdownColor: AppTheme.deepSpaceBlue,
-                          icon: const Icon(Icons.arrow_drop_down, color: AppTheme.electricBlue),
-                          style: GoogleFonts.inter(color: AppTheme.pureWhite, fontSize: 16),
+                          icon: const Icon(Icons.arrow_drop_down,
+                              color: AppTheme.electricBlue),
+                          style: GoogleFonts.inter(
+                              color: AppTheme.pureWhite, fontSize: 16),
                           onChanged: (value) {
-                            if (value != null) setState(() => _occupation = value);
+                            if (value != null) {
+                              setState(() => _occupation = value);
+                            }
                           },
-                           items: _occupations.map((String value) {
+                          items: _occupations.map((String value) {
                             return DropdownMenuItem<String>(
                               value: value,
                               child: Text(lang.translate(value)),
@@ -179,12 +186,15 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                               margin: const EdgeInsets.symmetric(horizontal: 4),
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               decoration: BoxDecoration(
-                                color: isSelected 
-                                    ? AppTheme.electricBlue.withValues(alpha: 0.3) 
+                                color: isSelected
+                                    ? AppTheme.electricBlue
+                                        .withValues(alpha: 0.3)
                                     : AppTheme.glassBackground,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: isSelected ? AppTheme.electricBlue : AppTheme.glassBorder,
+                                  color: isSelected
+                                      ? AppTheme.electricBlue
+                                      : AppTheme.glassBorder,
                                 ),
                               ),
                               child: Center(
@@ -192,8 +202,13 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                                   lang.translate(loc),
                                   style: GoogleFonts.inter(
                                     fontSize: 14,
-                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                    color: isSelected ? AppTheme.pureWhite : AppTheme.pureWhite.withValues(alpha: 0.6),
+                                    fontWeight: isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                    color: isSelected
+                                        ? AppTheme.pureWhite
+                                        : AppTheme.pureWhite
+                                            .withValues(alpha: 0.6),
                                   ),
                                 ),
                               ),
@@ -226,7 +241,8 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                                   lang.translate('farmer_scheme_note'),
                                   style: GoogleFonts.inter(
                                     fontSize: 12,
-                                    color: AppTheme.pureWhite.withValues(alpha: 0.5),
+                                    color: AppTheme.pureWhite
+                                        .withValues(alpha: 0.5),
                                   ),
                                 ),
                               ],
@@ -234,8 +250,9 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                           ),
                           Switch(
                             value: _ownsLand,
-                            onChanged: (value) => setState(() => _ownsLand = value),
-                            activeColor: AppTheme.neonCyan,
+                            onChanged: (value) =>
+                                setState(() => _ownsLand = value),
+                            activeThumbColor: AppTheme.neonCyan,
                           ),
                         ],
                       ),
@@ -264,9 +281,10 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                             borderRadius: BorderRadius.circular(16),
                           ),
                           elevation: 8,
-                          shadowColor: AppTheme.electricBlue.withValues(alpha: 0.5),
+                          shadowColor:
+                              AppTheme.electricBlue.withValues(alpha: 0.5),
                         ),
-                         child: Text(
+                        child: Text(
                           lang.translate('save_profile'),
                           style: GoogleFonts.poppins(
                             fontSize: 18,

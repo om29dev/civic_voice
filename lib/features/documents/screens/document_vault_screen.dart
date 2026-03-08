@@ -1,8 +1,5 @@
-// ═══════════════════════════════════════════════════════════════════════════════
-// DOCUMENT VAULT SCREEN — Supabase-backed upload + AI extraction UI
-// ═══════════════════════════════════════════════════════════════════════════════
+// DOCUMENT VAULT SCREEN — AWS-backed upload + AI extraction UI
 
-import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -12,17 +9,44 @@ import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../../providers/document_vault_provider.dart';
+import '../../../core/services/document_vault_service.dart';
 
 /// The 8 document slot definitions for the vault grid.
-const _docSlots = [
-  _DocSlot('aadhaar', 'Aadhaar Card', 'आधार कार्ड', '🪪', Color(0xFF2E7D32)),
-  _DocSlot('pan', 'PAN Card', 'पैन कार्ड', '💳', Color(0xFF1565C0)),
-  _DocSlot('passport', 'Passport', 'पासपोर्ट', '📘', Color(0xFF6A1B9A)),
-  _DocSlot('voterID', 'Voter ID', 'मतदाता पहचान', '🗳️', Color(0xFFE65100)),
-  _DocSlot('drivingLicense', 'Driving License', 'वाहन परवाना', '🚗', Color(0xFF00838F)),
-  _DocSlot('bankPassbook', 'Bank Passbook', 'बैंक पासबुक', '🏦', Color(0xFF4527A0)),
-  _DocSlot('incomeCertificate', 'Income Certificate', 'आय प्रमाण पत्र', '📄', Color(0xFF558B2F)),
-  _DocSlot('photo', 'Passport Photo', 'पासपोर्ट फोटो', '📷', Color(0xFFC62828)),
+const _docCategories = [
+  (
+    'Identity Documents',
+    'पहचान पत्र',
+    '🪪',
+    [
+      _DocSlot(
+          'aadhaar', 'Aadhaar Card', 'आधार कार्ड', '🪪', Color(0xFF2E7D32)),
+      _DocSlot('pan', 'PAN Card', 'पैन कार्ड', '💳', Color(0xFF1565C0)),
+      _DocSlot('passport', 'Passport', 'पासपोर्ट', '📘', Color(0xFF6A1B9A)),
+      _DocSlot('voterID', 'Voter ID', 'मतदाता पहचान', '🗳️', Color(0xFFE65100)),
+    ]
+  ),
+  (
+    'Legal & Financial',
+    'कानूनी और वित्तीय',
+    '🏦',
+    [
+      _DocSlot('drivingLicense', 'Driving License', 'वाहन परवाना', '🚗',
+          Color(0xFF00838F)),
+      _DocSlot('bankPassbook', 'Bank Passbook', 'बैंक पासबुक', '🏦',
+          Color(0xFF4527A0)),
+      _DocSlot('incomeCertificate', 'Income Certificate', 'आय प्रमाण पत्र',
+          '📄', Color(0xFF558B2F)),
+    ]
+  ),
+  (
+    'Personal',
+    'व्यक्तिगत',
+    '📷',
+    [
+      _DocSlot(
+          'photo', 'Passport Photo', 'पासपोर्ट फोटो', '📷', Color(0xFFC62828)),
+    ]
+  ),
 ];
 
 class _DocSlot {
@@ -31,7 +55,8 @@ class _DocSlot {
   final String labelHindi;
   final String emoji;
   final Color color;
-  const _DocSlot(this.type, this.label, this.labelHindi, this.emoji, this.color);
+  const _DocSlot(
+      this.type, this.label, this.labelHindi, this.emoji, this.color);
 }
 
 class DocumentVaultScreen extends StatefulWidget {
@@ -41,10 +66,12 @@ class DocumentVaultScreen extends StatefulWidget {
 }
 
 class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
   @override
   void initState() {
     super.initState();
-    // Load documents from Supabase on screen open
+    // Load documents from AWS Amplify on screen open
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<DocumentVaultProvider>().loadDocuments();
     });
@@ -72,8 +99,10 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
                     const SizedBox(height: 16),
                   ],
                   _buildPrivacyBanner(),
+                  const SizedBox(height: 16),
+                  _buildSearchBar(),
                   const SizedBox(height: 20),
-                  ..._buildDocumentList(vault),
+                  ..._buildGroupedDocumentList(vault),
                   const SizedBox(height: 100),
                 ]),
               ),
@@ -181,9 +210,7 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
               minHeight: 10,
               backgroundColor: const Color(0xFF2A1F10),
               valueColor: AlwaysStoppedAnimation<Color>(
-                pct >= 0.75
-                    ? const Color(0xFF2E7D32)
-                    : const Color(0xFFFF6B1A),
+                pct >= 0.75 ? const Color(0xFF2E7D32) : const Color(0xFFFF6B1A),
               ),
             ),
           ),
@@ -214,7 +241,8 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF0A1A0A),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF1B5E20).withValues(alpha: 0.3)),
+        border:
+            Border.all(color: const Color(0xFF1B5E20).withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -232,6 +260,110 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
     ).animate().fadeIn(duration: 500.ms, delay: 200.ms);
   }
 
+  // ─── Search Bar ───────────────────────────────────────────────────────────
+
+  Widget _buildSearchBar() {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1814),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF2A1F10)),
+      ),
+      child: TextField(
+        controller: _searchController,
+        style: GoogleFonts.outfit(color: Colors.white),
+        onChanged: (val) => setState(() => _searchQuery = val.toLowerCase()),
+        decoration: InputDecoration(
+          hintText: 'Search your vault...',
+          hintStyle: GoogleFonts.outfit(color: Colors.white38),
+          prefixIcon:
+              const Icon(Icons.search_rounded, color: Color(0xFFD4930A)),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 15),
+        ),
+      ),
+    ).animate().fadeIn(duration: 400.ms, delay: 200.ms);
+  }
+
+  // ─── Grouped Document List ────────────────────────────────────────────────
+
+  List<Widget> _buildGroupedDocumentList(DocumentVaultProvider vault) {
+    return _docCategories.map((category) {
+      final (title, titleHindi, emoji, slots) = category;
+
+      // Filter slots based on search
+      final filteredSlots = slots.where((slot) {
+        if (_searchQuery.isEmpty) return true;
+        return slot.label.toLowerCase().contains(_searchQuery) ||
+            slot.labelHindi.contains(_searchQuery);
+      }).toList();
+
+      if (filteredSlots.isEmpty) return const SizedBox.shrink();
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 16, bottom: 12),
+            child: Row(
+              children: [
+                Text(emoji, style: const TextStyle(fontSize: 18)),
+                const SizedBox(width: 8),
+                Text(
+                  title.toUpperCase(),
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFD4930A),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  titleHindi,
+                  style: GoogleFonts.notoSansDevanagari(
+                    color: Colors.white24,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ...filteredSlots.map((slot) {
+            final doc = vault.getDocument(slot.type);
+            final isUploaded = doc != null;
+            final isVerified = doc?['is_verified'] == true;
+            final confidence =
+                (doc?['confidence_score'] as num?)?.toDouble() ?? 0.0;
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _DocumentSlotCard(
+                slot: slot,
+                isUploaded: isUploaded,
+                isVerified: isVerified,
+                confidence: confidence,
+                doc: doc,
+                isExtracting: vault.isExtracting,
+                onTap: () {
+                  if (isUploaded) {
+                    _showExtractedDataPreview(vault, slot);
+                  } else {
+                    _showUploadSheet(slot);
+                  }
+                },
+                onDelete: isUploaded
+                    ? () => _confirmDelete(
+                        vault, doc['id'].toString(), doc['file_path'] as String)
+                    : null,
+              ),
+            );
+          }),
+        ],
+      );
+    }).toList();
+  }
+
   // ─── Extraction Status ────────────────────────────────────────────────────
 
   Widget _buildExtractionStatus(DocumentVaultProvider vault) {
@@ -239,9 +371,7 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: isSuccess
-            ? const Color(0xFF0A1A0A)
-            : const Color(0xFF1A1208),
+        color: isSuccess ? const Color(0xFF0A1A0A) : const Color(0xFF1A1208),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isSuccess
@@ -263,9 +393,8 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
           else
             Icon(
               isSuccess ? Icons.check_circle : Icons.warning_amber_rounded,
-              color: isSuccess
-                  ? const Color(0xFF4CAF50)
-                  : const Color(0xFFFF6B1A),
+              color:
+                  isSuccess ? const Color(0xFF4CAF50) : const Color(0xFFFF6B1A),
               size: 20,
             ),
           const SizedBox(width: 12),
@@ -288,42 +417,6 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
         ],
       ),
     ).animate().fadeIn(duration: 300.ms).slideY(begin: -0.05);
-  }
-
-  // ─── Document List ────────────────────────────────────────────────────────
-
-  List<Widget> _buildDocumentList(DocumentVaultProvider vault) {
-    return _docSlots.asMap().entries.map((entry) {
-      final idx = entry.key;
-      final slot = entry.value;
-      final doc = vault.getDocument(slot.type);
-      final isUploaded = doc != null;
-      final isVerified = doc?['is_verified'] == true;
-      final confidence = (doc?['confidence_score'] as num?)?.toDouble() ?? 0.0;
-
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: _DocumentSlotCard(
-          slot: slot,
-          isUploaded: isUploaded,
-          isVerified: isVerified,
-          confidence: confidence,
-          doc: doc,
-          isExtracting: vault.isExtracting,
-          onTap: () {
-            if (isUploaded) {
-              _showExtractedDataPreview(vault, slot);
-            } else {
-              _showUploadSheet(slot);
-            }
-          },
-          onDelete: isUploaded
-              ? () => _confirmDelete(
-                  vault, doc['id'].toString(), doc['file_path'] as String)
-              : null,
-        ),
-      ).animate().fadeIn(duration: 400.ms, delay: Duration(milliseconds: 50 * idx)).slideX(begin: 0.05);
-    }).toList();
   }
 
   // ─── Upload Bottom Sheet ──────────────────────────────────────────────────
@@ -525,6 +618,9 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
                 ],
               ),
               const SizedBox(height: 20),
+              // Smart Insight Section
+              _buildSmartInsight(slot, data),
+              const SizedBox(height: 24),
               ...fieldsToShow.map((field) {
                 final value = data[field['key']]?.toString();
                 final hasValue =
@@ -574,7 +670,97 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
                   ),
                 );
               }),
+              const SizedBox(height: 24),
+              // View Document Button
+              ElevatedButton.icon(
+                onPressed: () {
+                  final doc = vault.getDocument(slot.type);
+                  if (doc != null && doc['file_path'] != null) {
+                    _showDocumentViewer(doc['file_path'] as String, slot.label);
+                  }
+                },
+                icon: const Icon(Icons.remove_red_eye_rounded, size: 20),
+                label: Text(
+                  'View Original Document',
+                  style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFD4930A),
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ─── Document Viewer (Full Screen) ────────────────────────────────────────
+
+  void _showDocumentViewer(String storageKey, String title) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (_) => Scaffold(
+        backgroundColor: Colors.black.withOpacity(0.9),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.close_rounded, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Text(
+            title,
+            style: GoogleFonts.outfit(color: Colors.white, fontSize: 16),
+          ),
+        ),
+        body: Center(
+          child: FutureBuilder<String?>(
+            future: DocumentVaultService.getDocumentSignedUrl(storageKey),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const CircularProgressIndicator(
+                    color: Color(0xFFD4930A));
+              }
+              if (snapshot.hasError || snapshot.data == null) {
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline_rounded,
+                        color: Colors.redAccent, size: 48),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Failed to load document',
+                      style: GoogleFonts.outfit(color: Colors.white70),
+                    ),
+                  ],
+                );
+              }
+
+              return InteractiveViewer(
+                panEnabled: true,
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: Image.network(
+                  snapshot.data!,
+                  fit: BoxFit.contain,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return const Center(
+                      child:
+                          CircularProgressIndicator(color: Color(0xFFD4930A)),
+                    );
+                  },
+                ),
+              );
+            },
           ),
         ),
       ),
@@ -628,6 +814,59 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
     }
   }
 
+  Widget _buildSmartInsight(_DocSlot slot, Map<String, dynamic> data) {
+    String insight = '';
+    final name = data['full_name'] ?? 'Citizen';
+    final type = slot.type;
+
+    if (type == 'aadhaar') {
+      insight =
+          'AI Insight: $name, this Aadhaar is verified. It can be used for most government subsidies and address verification.';
+    } else if (type == 'pan') {
+      insight =
+          'AI Insight: This PAN card is ready for tax filing or opening a bank account. Make sure it is linked with Aadhaar.';
+    } else if (type == 'bankPassbook') {
+      insight =
+          'AI Insight: Account linked at ${data['bank_name'] ?? 'your bank'}. Use this for Direct Benefit Transfer (DBT) schemes.';
+    } else {
+      insight =
+          'AI Insight: Document processed. The data extracted can assist you in auto-filling many civic forms.';
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFFD4930A).withValues(alpha: 0.1),
+            const Color(0xFFFF6B1A).withValues(alpha: 0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border:
+            Border.all(color: const Color(0xFFD4930A).withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.auto_awesome, color: Color(0xFFD4930A), size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              insight,
+              style: GoogleFonts.outfit(
+                color: const Color(0xFFE0D0B0),
+                fontSize: 13,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ─── Delete Confirmation ──────────────────────────────────────────────────
 
   void _confirmDelete(
@@ -648,13 +887,23 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child:
-                Text('Cancel', style: GoogleFonts.outfit(color: Colors.white54)),
+            child: Text('Cancel',
+                style: GoogleFonts.outfit(color: Colors.white54)),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              vault.removeDocument(docId, filePath);
+              final success = await vault.removeDocument(docId, filePath);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(success
+                        ? 'Document deleted successfully'
+                        : 'Failed to delete document'),
+                    backgroundColor: success ? Colors.green : Colors.red,
+                  ),
+                );
+              }
             },
             child: Text('Delete',
                 style: GoogleFonts.outfit(color: const Color(0xFFC62828))),
@@ -748,7 +997,7 @@ class _DocumentSlotCard extends StatelessWidget {
                   if (isVerified) ...[
                     const SizedBox(height: 4),
                     Text(
-                      '${(confidence * 100).round()}% confidence',
+                      '${(confidence * 100).toInt()}% confidence',
                       style: GoogleFonts.outfit(
                         color: const Color(0xFFD4930A),
                         fontSize: 11,

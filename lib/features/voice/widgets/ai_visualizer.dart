@@ -97,20 +97,19 @@ class _AIVisualizerState extends State<AIVisualizer>
   void didUpdateWidget(AIVisualizer old) {
     super.didUpdateWidget(old);
     // Adjust pulse speed per state
-    final listening   = widget.voiceState == VoiceState.listening;
-    final processing  = widget.voiceState == VoiceState.processing;
+    final listening = widget.voiceState == VoiceState.listening;
+    final processing = widget.voiceState == VoiceState.processing;
 
     _orbPulse.duration = Duration(milliseconds: listening ? 500 : 2000);
     if (!_orbPulse.isAnimating) _orbPulse.repeat(reverse: true);
 
     // Spin rings faster during processing
-    final baseSpeed = processing ? 0.34 : 1.0; // multiplier handled in painter
-    _ring1.duration = Duration(
-        milliseconds: (processing ? 6700 : 20000).toInt());
-    _ring2.duration = Duration(
-        milliseconds: (processing ? 8300 : 25000).toInt());
-    _ring3.duration = Duration(
-        milliseconds: (processing ? 11700 : 35000).toInt());
+    _ring1.duration =
+        Duration(milliseconds: (processing ? 6700 : 20000).toInt());
+    _ring2.duration =
+        Duration(milliseconds: (processing ? 8300 : 25000).toInt());
+    _ring3.duration =
+        Duration(milliseconds: (processing ? 11700 : 35000).toInt());
   }
 
   @override
@@ -128,7 +127,11 @@ class _AIVisualizerState extends State<AIVisualizer>
     return RepaintBoundary(
       child: AnimatedBuilder(
         animation: Listenable.merge([
-          _ring1, _ring2, _ring3, _orbPulse, _dotOrbit,
+          _ring1,
+          _ring2,
+          _ring3,
+          _orbPulse,
+          _dotOrbit,
         ]),
         builder: (_, __) {
           return CustomPaint(
@@ -157,7 +160,7 @@ class _VisualizerPainter extends CustomPainter {
   final double ring1Angle;
   final double ring2Angle;
   final double ring3Angle;
-  final double orbPulse;           // 0.0 → 1.0
+  final double orbPulse; // 0.0 → 1.0
   final double dotOrbitAngle;
   final List<double> barHeights;
   final double wavePhase;
@@ -175,9 +178,9 @@ class _VisualizerPainter extends CustomPainter {
     required this.wavePhase,
   });
 
-  bool get _isListening   => voiceState == VoiceState.listening;
-  bool get _isProcessing  => voiceState == VoiceState.processing;
-  bool get _isSpeaking    => voiceState == VoiceState.speaking;
+  bool get _isListening => voiceState == VoiceState.listening;
+  bool get _isProcessing => voiceState == VoiceState.processing;
+  bool get _isSpeaking => voiceState == VoiceState.speaking;
 
   // Scale factor: rings grow 20% when listening
   double get _scale => _isListening ? 1.2 : 1.0;
@@ -194,9 +197,8 @@ class _VisualizerPainter extends CustomPainter {
       : _isListening
           ? AppColors.accent
           : AppColors.accent.withValues(alpha: 0.8);
-  Color get _ring2Color => _isProcessing
-      ? _amber.withValues(alpha: 0.75)
-      : AppColors.primary;
+  Color get _ring2Color =>
+      _isProcessing ? _amber.withValues(alpha: 0.75) : AppColors.primary;
   Color get _ring3Color => _isProcessing
       ? _amber.withValues(alpha: 0.4)
       : Colors.white.withValues(alpha: 0.3);
@@ -247,8 +249,7 @@ class _VisualizerPainter extends CustomPainter {
           orbColor.withValues(alpha: opacity * 0.2),
         ],
         stops: const [0.0, 0.5, 1.0],
-      ).createShader(
-          Rect.fromCircle(center: center, radius: _orbR));
+      ).createShader(Rect.fromCircle(center: center, radius: _orbR));
     canvas.drawCircle(center, _orbR, fillPaint);
 
     // Listening: waveform bars inside orb
@@ -269,14 +270,14 @@ class _VisualizerPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     const barCount = 8;
-    const spacing  = 10.0;
-    const totalW   = (barCount - 1) * spacing;
-    final startX   = center.dx - totalW / 2;
-    final maxH     = _orbR * 0.7;
+    const spacing = 10.0;
+    const totalW = (barCount - 1) * spacing;
+    final startX = center.dx - totalW / 2;
+    final maxH = _orbR * 0.7;
 
     for (int i = 0; i < barCount; i++) {
-      final x   = startX + i * spacing;
-      final h   = maxH * barHeights[i];
+      final x = startX + i * spacing;
+      final h = maxH * barHeights[i];
       canvas.drawLine(
         Offset(x, center.dy + h / 2),
         Offset(x, center.dy - h / 2),
@@ -286,7 +287,7 @@ class _VisualizerPainter extends CustomPainter {
   }
 
   void _drawSpeakingWave(Canvas canvas, Offset center) {
-    final path  = Path();
+    final path = Path();
     final paint = Paint()
       ..color = AppColors.background.withValues(alpha: 0.5)
       ..strokeWidth = 2
@@ -334,8 +335,8 @@ class _VisualizerPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     final dashAngle = (2 * pi) / dashCount;
-    final gapAngle  = dashAngle * 0.4;
-    final arcAngle  = dashAngle - gapAngle;
+    final gapAngle = dashAngle * 0.4;
+    final arcAngle = dashAngle - gapAngle;
 
     canvas.save();
     canvas.translate(center.dx, center.dy);
@@ -364,8 +365,8 @@ class _VisualizerPainter extends CustomPainter {
     canvas.rotate(rotation);
     for (int i = 0; i < dotCount; i++) {
       final angle = (i / dotCount) * 2 * pi;
-      final dx    = radius * cos(angle);
-      final dy    = radius * sin(angle);
+      final dx = radius * cos(angle);
+      final dy = radius * sin(angle);
       canvas.drawCircle(Offset(dx, dy), width, paint);
     }
     canvas.restore();
@@ -390,15 +391,16 @@ class _VisualizerPainter extends CustomPainter {
 
   void _drawOrbitingDots(Canvas canvas, Offset center) {
     final dotPaint = Paint()..color = _amber.withValues(alpha: 0.9);
-    const count  = 4;
-    const dotR   = 4.0;
+    const count = 4;
+    const dotR = 4.0;
     const orbitR = 95.0;
 
     for (int i = 0; i < count; i++) {
       final angle = dotOrbitAngle + (i / count) * 2 * pi;
-      final dx    = center.dx + orbitR * cos(angle);
-      final dy    = center.dy + orbitR * sin(angle);
-      canvas.drawCircle(Offset(dx, dy), dotR * (0.7 + 0.3 * sin(angle)), dotPaint);
+      final dx = center.dx + orbitR * cos(angle);
+      final dy = center.dy + orbitR * sin(angle);
+      canvas.drawCircle(
+          Offset(dx, dy), dotR * (0.7 + 0.3 * sin(angle)), dotPaint);
     }
   }
 

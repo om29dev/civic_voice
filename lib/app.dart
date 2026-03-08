@@ -6,9 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 import 'providers/language_provider.dart';
-import 'providers/auth_provider.dart';
 import 'providers/accessibility_provider.dart';
-import 'widgets/loading_overlay.dart';
 
 /// Root application widget. Holds the router and theme.
 class CVIApp extends StatefulWidget {
@@ -63,20 +61,13 @@ class _CVIAppState extends State<CVIApp> {
       // Override default font with Rajdhani and add Loading Overlay
       builder: (context, child) {
         final theme = Theme.of(context);
-        final isAuthLoading = context.watch<AuthProvider>().isLoading;
         final access = context.watch<AccessibilityProvider>();
 
         Widget content = Theme(
           data: theme.copyWith(
             textTheme: GoogleFonts.rajdhaniTextTheme(theme.textTheme),
           ),
-          child: Stack(
-            children: [
-              child ?? const SizedBox.shrink(),
-              if (isAuthLoading)
-                const Positioned.fill(child: LoadingOverlay()),
-            ],
-          ),
+          child: child ?? const SizedBox.shrink(),
         );
 
         if (access.colorFilter != null) {

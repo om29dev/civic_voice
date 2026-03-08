@@ -1,8 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// DOCUMENT VAULT PROVIDER — Supabase-backed state management
+// DOCUMENT VAULT PROVIDER — AWS Amplify-backed state management
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 
 import '../core/services/document_vault_service.dart';
@@ -40,8 +39,7 @@ class DocumentVaultProvider extends ChangeNotifier {
     'incomeCertificate',
   ];
 
-  int get coreUploaded =>
-      coreDocumentTypes.where((t) => hasDocument(t)).length;
+  int get coreUploaded => coreDocumentTypes.where((t) => hasDocument(t)).length;
 
   double get completionPercent =>
       coreDocumentTypes.isEmpty ? 0.0 : coreUploaded / coreDocumentTypes.length;
@@ -90,7 +88,7 @@ class DocumentVaultProvider extends ChangeNotifier {
     return val.toString();
   }
 
-  // ─── Load documents from Supabase on startup ──────────────────────────────
+  // ─── Load documents from AWS Amplify on startup ──────────────────────────
 
   Future<void> loadDocuments() async {
     _isLoading = true;
@@ -107,7 +105,7 @@ class DocumentVaultProvider extends ChangeNotifier {
     }
   }
 
-  // ─── Upload document → Supabase Storage → AI Extraction → Merge ───────────
+  // ─── Upload document → AWS S3 → AI Extraction → Merge ────────────────────
 
   Future<void> addDocument({
     required Uint8List imageBytes,
@@ -126,15 +124,17 @@ class DocumentVaultProvider extends ChangeNotifier {
 
       if (result['success'] == true) {
         final confidence = (result['confidence'] as num?)?.toDouble() ?? 0.0;
-        
+
         if (confidence > 0.6) {
           _extractionStatus = '✓ Document data extracted successfully!';
         } else {
-          _extractionStatus = '⚠️ Low confidence extraction. Please ensure image is clear and try again.';
-          debugPrint('DocumentVault: Low confidence ($confidence). AI Map: ${result['extractedData']}');
+          _extractionStatus =
+              '⚠️ Low confidence extraction. Please ensure image is clear and try again.';
+          debugPrint(
+              'DocumentVault: Low confidence ($confidence). AI Map: ${result['extractedData']}');
         }
 
-        // Reload documents and extracted data from Supabase
+        // RELOAD data even if low confidence so user can see what WAS found
         _documents = await DocumentVaultService.getUserDocuments();
         _extractedData = await DocumentVaultService.getUserExtractedData();
       } else {
@@ -143,7 +143,8 @@ class DocumentVaultProvider extends ChangeNotifier {
         debugPrint('DocumentVault: Upload failed - $error');
       }
     } catch (e) {
-      _extractionStatus = 'Error: ${e.toString().length > 80 ? e.toString().substring(0, 80) : e.toString()}';
+      _extractionStatus =
+          'Error: ${e.toString().length > 80 ? e.toString().substring(0, 80) : e.toString()}';
       debugPrint('DocumentVault: Upload error: $e');
     } finally {
       _isExtracting = false;
@@ -153,12 +154,17 @@ class DocumentVaultProvider extends ChangeNotifier {
 
   // ─── Delete document ──────────────────────────────────────────────────────
 
-  Future<void> removeDocument(String documentId, String filePath) async {
-    final success =
+  Future<bool> removeDocument(String documentId, String filePath) async {
+    final result =
         await DocumentVaultService.deleteDocument(documentId, filePath);
-    if (success) {
+    if (result['success'] == true) {
       _documents.removeWhere((d) => d['id'] == documentId);
       notifyListeners();
+      return true;
+    } else {
+      _extractionStatus = 'Delete failed: ${result['error']}';
+      notifyListeners();
+      return false;
     }
   }
 

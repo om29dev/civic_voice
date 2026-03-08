@@ -7,32 +7,34 @@ import '../data/csv_schemes_loader.dart';
 
 /// Manages government service data, selection, progress, and recent views.
 class ServicesProvider extends ChangeNotifier {
-  static const _recentKey     = 'cvi_recent_services';
-  static const _progressKey   = 'cvi_step_progress';
+  static const _recentKey = 'cvi_recent_services';
+  static const _progressKey = 'cvi_step_progress';
   static const _queryCountKey = 'cvi_query_count';
 
-  List<ServiceModel> _allServices      = [];
+  List<ServiceModel> _allServices = [];
   List<ServiceModel> _filteredServices = [];
   ServiceModel? _selectedService;
-  List<String> _recentlyViewed         = [];
-  final Map<String, List<bool>> _stepProgress = {};   // serviceId -> [stepDone...]
-  int _totalQueryCount                 = 0;
-  bool _isLoading                      = false;
+  List<String> _recentlyViewed = [];
+  final Map<String, List<bool>> _stepProgress =
+      {}; // serviceId -> [stepDone...]
+  int _totalQueryCount = 0;
+  bool _isLoading = false;
   String? _error;
-  String _selectedCategory             = 'All';
-  String _searchQuery                  = '';
+  String _selectedCategory = 'All';
+  String _searchQuery = '';
 
   // ─── Getters ─────────────────────────────────────────────────────────────
 
-  List<ServiceModel> get allServices    => List.unmodifiable(_allServices);
-  List<ServiceModel> get filteredServices => List.unmodifiable(_filteredServices);
-  ServiceModel? get selectedService     => _selectedService;
-  List<String> get recentlyViewed       => List.unmodifiable(_recentlyViewed);
-  int get totalQueryCount               => _totalQueryCount;
-  bool get isLoading                    => _isLoading;
-  String? get error                     => _error;
-  String get selectedCategory           => _selectedCategory;
-  String get searchQuery                => _searchQuery;
+  List<ServiceModel> get allServices => List.unmodifiable(_allServices);
+  List<ServiceModel> get filteredServices =>
+      List.unmodifiable(_filteredServices);
+  ServiceModel? get selectedService => _selectedService;
+  List<String> get recentlyViewed => List.unmodifiable(_recentlyViewed);
+  int get totalQueryCount => _totalQueryCount;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
+  String get selectedCategory => _selectedCategory;
+  String get searchQuery => _searchQuery;
 
   List<ServiceModel> get recentServices => _recentlyViewed
       .map((id) => _allServices.where((s) => s.id == id).firstOrNull)
@@ -51,21 +53,21 @@ class ServicesProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Simulate async fetch (swap for Supabase call later)
+      // Simulate async fetch (swap for AWS Amplify call later)
       await Future.delayed(const Duration(milliseconds: 300));
-      
+
       // Load static curated mocks
       final mocks = MockServicesData.all;
-      
+
       // Load dynamic from CSV
       final csvData = await CsvSchemesLoader.load();
-      
+
       // Merge, giving priority to mocks if there are ID collisions
       final existingIds = mocks.map((m) => m.id).toSet();
       final filteredCsv = csvData.where((s) => !existingIds.contains(s.id));
-      
+
       _allServices = [...mocks, ...filteredCsv];
-      
+
       _applyFilters();
 
       await _restorePersistedData();
@@ -95,10 +97,12 @@ class ServicesProvider extends ChangeNotifier {
       for (final service in _allServices) {
         final raw = prefs.getString('$_progressKey/${service.id}');
         if (raw != null) {
-          _stepProgress[service.id] = raw.split(',').map((v) => v == '1').toList();
+          _stepProgress[service.id] = raw
+              .split(',')
+              .map((v) => v == '1')
+              .toList();
         } else {
-          _stepProgress[service.id] =
-              List.filled(service.steps.length, false);
+          _stepProgress[service.id] = List.filled(service.steps.length, false);
         }
       }
     } catch (_) {}
@@ -186,8 +190,7 @@ class ServicesProvider extends ChangeNotifier {
   List<bool> getProgress(String serviceId) {
     final service = _allServices.where((s) => s.id == serviceId).firstOrNull;
     if (service == null) return [];
-    return _stepProgress[serviceId] ??
-        List.filled(service.steps.length, false);
+    return _stepProgress[serviceId] ?? List.filled(service.steps.length, false);
   }
 
   /// Returns the number of completed steps for [serviceId].
@@ -239,7 +242,6 @@ class ServicesProvider extends ChangeNotifier {
     } catch (_) {}
   }
 
-
   List<ServiceModel> searchLocalized(String query, String langCode) {
     final q = query.toLowerCase().trim();
     if (q.isEmpty) return _allServices;
@@ -267,8 +269,7 @@ class ServicesProvider extends ChangeNotifier {
       'completedApplications': completedApps,
       'totalQueries': _totalQueryCount,
       'recentCount': _recentlyViewed.length,
-      'availableServices':
-          _allServices.where((s) => s.isAvailable).length,
+      'availableServices': _allServices.where((s) => s.isAvailable).length,
     };
   }
 

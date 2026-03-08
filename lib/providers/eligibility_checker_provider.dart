@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import '../models/eligibility_model.dart';
 // Future AWS Integration Point: Comprehend / Bedrock for intent parsing and matching eligible schemes via natural language responses.
 
 class EligibilityCheckerProvider with ChangeNotifier {
@@ -21,15 +20,22 @@ class EligibilityCheckerProvider with ChangeNotifier {
     // Simulate AI network delay / AWS integration point
     await Future.delayed(const Duration(seconds: 2));
 
-    _chatHistory.add('System: Analyzing... Based on your responses, I found potential matches.');
-    
+    _chatHistory.add(
+        'System: Analyzing... Based on your responses, I found potential matches.');
+
     // Simple placeholder logic for demo
-    if (input.toLowerCase().contains('farmer') || input.toLowerCase().contains('agriculture')) {
+    if (input.toLowerCase().contains('farmer') ||
+        input.toLowerCase().contains('agriculture')) {
       _matchedSchemes.clear();
-      _matchedSchemes.addAll(['PM Kisan Samman Nidhi', 'Kisan Credit Card', 'Soil Health Card Scheme']);
+      _matchedSchemes.addAll([
+        'PM Kisan Samman Nidhi',
+        'Kisan Credit Card',
+        'Soil Health Card Scheme'
+      ]);
     } else {
       _matchedSchemes.clear();
-      _matchedSchemes.addAll(['Ayushman Bharat', 'Pradhan Mantri Awas Yojana', 'Jan Dhan Yojana']);
+      _matchedSchemes.addAll(
+          ['Ayushman Bharat', 'Pradhan Mantri Awas Yojana', 'Jan Dhan Yojana']);
     }
 
     _isProcessing = false;

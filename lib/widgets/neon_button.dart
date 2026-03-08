@@ -83,22 +83,26 @@ class _NeonButtonState extends State<NeonButton>
 
   void _onTapUp(TapUpDetails _) {
     if (!_isPressed) return;
-    setState(() => _isPressed = false);
-    _scaleController.reverse();
+    if (mounted) {
+      setState(() => _isPressed = false);
+      _scaleController.reverse();
+    }
     widget.onTap?.call();
   }
 
   void _onTapCancel() {
     if (!_isPressed) return;
-    setState(() => _isPressed = false);
-    _scaleController.reverse();
+    if (mounted) {
+      setState(() => _isPressed = false);
+      _scaleController.reverse();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final disabled = widget.onTap == null && !widget.isLoading;
-    final gradColors = widget.gradientColors ??
-        [AppColors.primary, AppColors.accent];
+    final gradColors =
+        widget.gradientColors ?? [AppColors.primary, AppColors.accent];
 
     return ScaleTransition(
       scale: _scaleAnimation,
@@ -106,8 +110,7 @@ class _NeonButtonState extends State<NeonButton>
         onTapDown: _onTapDown,
         onTapUp: _onTapUp,
         onTapCancel: _onTapCancel,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
+        child: Container(
           width: widget.width ?? double.infinity,
           height: widget.height,
           decoration: BoxDecoration(
@@ -123,9 +126,7 @@ class _NeonButtonState extends State<NeonButton>
             // Outlined: transparent with cyan border
             border: widget.isOutlined
                 ? Border.all(
-                    color: disabled
-                        ? AppColors.border
-                        : AppColors.accent,
+                    color: disabled ? AppColors.border : AppColors.accent,
                     width: 1.5,
                   )
                 : null,
@@ -137,8 +138,8 @@ class _NeonButtonState extends State<NeonButton>
             boxShadow: (!widget.isOutlined && !disabled)
                 ? [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 
-                          _isPressed ? 0.50 : 0.35),
+                      color: AppColors.primary
+                          .withValues(alpha: _isPressed ? 0.50 : 0.35),
                       blurRadius: _isPressed ? 20 : 16,
                       spreadRadius: _isPressed ? 0 : -4,
                       offset: const Offset(0, 4),

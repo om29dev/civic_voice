@@ -2,11 +2,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:animate_do/animate_do.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:civic_voice_interface/core/constants/app_colors.dart';
-import 'package:civic_voice_interface/providers/auth_provider.dart';
 import 'package:civic_voice_interface/providers/language_provider.dart';
-import 'package:civic_voice_interface/core/constants/app_language.dart';
 import 'package:civic_voice_interface/core/theme/app_theme.dart';
 import 'package:civic_voice_interface/widgets/t_text.dart';
 
@@ -18,9 +15,7 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
-  final bool _isLogin = true;
   final _phoneController = TextEditingController();
-  final _otpController = TextEditingController();
   bool _isLoading = false;
 
   void _handlePhoneSubmit() async {
@@ -63,9 +58,9 @@ class _AuthScreenState extends State<AuthScreen> {
                     delay: const Duration(milliseconds: 500),
                     child: _buildAuthCard(),
                   ),
-                  
+
                   const SizedBox(height: 40),
-                  
+
                   // 5. Language Selector (Premium Animated Flags)
                   FadeInUp(
                     delay: const Duration(milliseconds: 800),
@@ -142,15 +137,12 @@ class _AuthScreenState extends State<AuthScreen> {
                 ),
               ),
               const SizedBox(height: 40),
-              
               _buildModernTextField(
                 controller: _phoneController,
                 hint: 'Phone Number',
                 icon: Icons.phone_iphone_rounded,
               ),
-              
               const SizedBox(height: 30),
-              
               SizedBox(
                 width: double.infinity,
                 height: 60,
@@ -166,10 +158,12 @@ class _AuthScreenState extends State<AuthScreen> {
                     shadowColor: AppColors.primary.withValues(alpha: 0.4),
                   ),
                   child: _isLoading
-                      ? const CircularProgressIndicator(color: AppColors.background)
+                      ? const CircularProgressIndicator(
+                          color: AppColors.background)
                       : const TText(
                           'GET OTP',
-                          style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 2),
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, letterSpacing: 2),
                         ),
                 ),
               ),
@@ -199,9 +193,11 @@ class _AuthScreenState extends State<AuthScreen> {
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: TextStyle(color: AppColors.white.withValues(alpha: 0.3)),
-          prefixIcon: Icon(icon, color: AppColors.primary.withValues(alpha: 0.7)),
+          prefixIcon:
+              Icon(icon, color: AppColors.primary.withValues(alpha: 0.7)),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         ),
       ),
     );
@@ -218,12 +214,14 @@ class _MeshGradient extends StatelessWidget {
         Positioned(
           top: -100,
           left: -100,
-          child: _BlurredBlob(color: AppColors.primary.withValues(alpha: 0.2), size: 400),
+          child: _BlurredBlob(
+              color: AppColors.primary.withValues(alpha: 0.2), size: 400),
         ),
         Positioned(
           bottom: -150,
           right: -100,
-          child: _BlurredBlob(color: AppTheme.gradientEnd.withValues(alpha: 0.2), size: 500),
+          child: _BlurredBlob(
+              color: AppTheme.gradientEnd.withValues(alpha: 0.2), size: 500),
         ),
       ],
     );
@@ -257,7 +255,8 @@ class _ParticleBackground extends StatefulWidget {
   State<_ParticleBackground> createState() => _ParticleBackgroundState();
 }
 
-class _ParticleBackgroundState extends State<_ParticleBackground> with SingleTickerProviderStateMixin {
+class _ParticleBackgroundState extends State<_ParticleBackground>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
@@ -315,10 +314,22 @@ class _PremiumLanguageSelector extends StatelessWidget {
     return Wrap(
       spacing: 15,
       children: [
-        _LangToggle(code: 'EN', name: 'English', isSelected: langProvider.currentLanguage == 'en'),
-        _LangToggle(code: 'HI', name: 'हिन्दी', isSelected: langProvider.currentLanguage == 'hi'),
-        _LangToggle(code: 'MR', name: 'मराठी', isSelected: langProvider.currentLanguage == 'mr'),
-        _LangToggle(code: 'TA', name: 'தமிழ்', isSelected: langProvider.currentLanguage == 'ta'),
+        _LangToggle(
+            code: 'EN',
+            name: 'English',
+            isSelected: langProvider.currentLanguage == 'en'),
+        _LangToggle(
+            code: 'HI',
+            name: 'हिन्दी',
+            isSelected: langProvider.currentLanguage == 'hi'),
+        _LangToggle(
+            code: 'MR',
+            name: 'मराठी',
+            isSelected: langProvider.currentLanguage == 'mr'),
+        _LangToggle(
+            code: 'TA',
+            name: 'தமிழ்',
+            isSelected: langProvider.currentLanguage == 'ta'),
       ],
     );
   }
@@ -328,20 +339,30 @@ class _LangToggle extends StatelessWidget {
   final String code;
   final String name;
   final bool isSelected;
-  const _LangToggle({required this.code, required this.name, required this.isSelected});
+  const _LangToggle(
+      {required this.code, required this.name, required this.isSelected});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        final langProvider = Provider.of<LanguageProvider>(context, listen: false);
+        final langProvider =
+            Provider.of<LanguageProvider>(context, listen: false);
         String newLang;
         switch (code) {
-            case 'HI': newLang = 'hi'; break;
-            case 'MR': newLang = 'mr'; break;
-            case 'TA': newLang = 'ta'; break;
-            case 'EN': 
-            default: newLang = 'en'; break;
+          case 'HI':
+            newLang = 'hi';
+            break;
+          case 'MR':
+            newLang = 'mr';
+            break;
+          case 'TA':
+            newLang = 'ta';
+            break;
+          case 'EN':
+          default:
+            newLang = 'en';
+            break;
         }
         langProvider.setLanguageByCode(newLang);
       },
@@ -349,10 +370,14 @@ class _LangToggle extends StatelessWidget {
         duration: const Duration(milliseconds: 300),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : AppColors.white.withValues(alpha: 0.05),
+          color: isSelected
+              ? AppColors.primary
+              : AppColors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppColors.accent : AppColors.white.withValues(alpha: 0.1),
+            color: isSelected
+                ? AppColors.accent
+                : AppColors.white.withValues(alpha: 0.1),
           ),
         ),
         child: Text(
