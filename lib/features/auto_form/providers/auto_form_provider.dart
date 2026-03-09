@@ -21,6 +21,8 @@ class AutoFormProvider extends ChangeNotifier {
   SmartFormTemplate? _template;
   Map<String, String?> _filledValues = {};
   Map<String, String> _dataSources = {}; // fieldId → source doc label
+  Map<String, dynamic> _rawProfileData =
+      {}; // Full profile capture for JS heuristics
   List<String> _emptyFieldIds = [];
   int _filledCount = 0;
   int _totalCount = 0;
@@ -158,6 +160,8 @@ class AutoFormProvider extends ChangeNotifier {
         profileData['annual_income'] = citizen.income.toStringAsFixed(0);
       }
     }
+
+    _rawProfileData = Map<String, dynamic>.from(profileData);
 
     // Map profile data to unfilled fields only
     for (final field in _template!.fields) {
@@ -505,10 +509,57 @@ class AutoFormProvider extends ChangeNotifier {
     if (_template == null) return {};
 
     final result = <String, String>{};
+
+    // 1. Inject raw profile data as a baseline fallback
+    _rawProfileData.forEach((key, value) {
+      if (value != null && value.toString().isNotEmpty) {
+        result[key] = value.toString();
+
+        // Auto-split names for better heuristics on web forms
+        if (key == 'full_name' || key == 'name') {
+          final parts = value.toString().trim().split(' ');
+          if (parts.isNotEmpty) {
+            result['firstname'] = parts.first;
+            result['fname'] = parts.first;
+            if (parts.length == 2) {
+              result['lastname'] = parts.last;
+              result['lname'] = parts.last;
+            } else if (parts.length > 2) {
+              result['middlename'] =
+                  parts.sublist(1, parts.length - 1).join(' ');
+              result['mname'] = result['middlename']!;
+              result['lastname'] = parts.last;
+              result['lname'] = parts.last;
+            }
+          }
+        }
+      }
+    });
+
+    // 2. Override with specific field values gathered from ID processing etc.
     for (final field in _template!.fields) {
       final val = _filledValues[field.id];
       if (val != null && val.isNotEmpty) {
         result[field.dataKey] = val;
+
+        // Auto-split names for better heuristics on web forms
+        if (field.dataKey == 'full_name' || field.dataKey == 'name') {
+          final parts = val.trim().split(' ');
+          if (parts.isNotEmpty) {
+            result['firstname'] = parts.first;
+            result['fname'] = parts.first;
+            if (parts.length == 2) {
+              result['lastname'] = parts.last;
+              result['lname'] = parts.last;
+            } else if (parts.length > 2) {
+              result['middlename'] =
+                  parts.sublist(1, parts.length - 1).join(' ');
+              result['mname'] = result['middlename']!;
+              result['lastname'] = parts.last;
+              result['lname'] = parts.last;
+            }
+          }
+        }
       }
     }
     return result;

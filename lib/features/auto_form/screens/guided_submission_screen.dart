@@ -2,6 +2,8 @@
 // GUIDED SUBMISSION SCREEN — WebView with step-by-step guided portal assistant
 // ═══════════════════════════════════════════════════════════════════════════════
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -48,7 +50,11 @@ class _GuidedSubmissionScreenState extends State<GuidedSubmissionScreen> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (_) => setState(() => _isLoading = true),
-          onPageFinished: (_) => setState(() => _isLoading = false),
+          onPageFinished: (_) {
+            setState(() => _isLoading = false);
+            // Inject Google Translate script when page finishes loading
+            _injectGoogleTranslate();
+          },
         ),
       )
       ..loadRequest(Uri.parse(widget.url));
@@ -62,56 +68,6 @@ class _GuidedSubmissionScreenState extends State<GuidedSubmissionScreen> {
         child: Column(
           children: [
             _buildTopBar(),
-            // DEMO MODE Banner
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.saffron.withValues(alpha: 0.15),
-                    AppColors.gold.withValues(alpha: 0.10),
-                  ],
-                ),
-                border: const Border(
-                  bottom: BorderSide(color: AppColors.surfaceBorder),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: AppColors.emeraldLight,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.emeraldLight.withValues(alpha: 0.5),
-                          blurRadius: 6,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                  )
-                      .animate(onPlay: (c) => c.repeat(reverse: true))
-                      .fade(begin: 0.5, end: 1.0, duration: 1000.ms),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      'DEMO MODE IS ACTIVE',
-                      style: GoogleFonts.poppins(
-                        color: AppColors.saffron,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 12,
-                        letterSpacing: 1.0,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
             if (_isPanelExpanded) _buildGuidedPanel(),
             if (_showDataPanel) _buildDataPanel(),
             // Loading indicator
@@ -129,6 +85,184 @@ class _GuidedSubmissionScreenState extends State<GuidedSubmissionScreen> {
         ),
       ),
     );
+  }
+
+  // ─── Injection & Auto-Fill Methods ─────────────────────────────────────────
+
+  void _injectGoogleTranslate() {
+    // Inject the Google Translate Element script and add a container for it if missing.
+    const script = '''
+      (function() {
+        if (document.getElementById('google_translate_element')) return; // Already exists
+        
+        // Create an invisible container for the Google Translate widget
+        var gtContainer = document.createElement('div');
+        gtContainer.id = 'google_translate_element';
+        
+        // Hide it visually but keep it "rendered" so Google script doesn't abort
+        // Positioning it explicitly at 0,0 but invisible guarantees it isn't skipped by Intersection Observers
+        gtContainer.style.position = 'fixed';
+        gtContainer.style.top = '0px';
+        gtContainer.style.left = '0px';
+        gtContainer.style.width = '1px';
+        gtContainer.style.height = '1px';
+        gtContainer.style.opacity = '0.00001';
+        gtContainer.style.pointerEvents = 'none';
+        gtContainer.style.zIndex = '-9999';
+
+        document.documentElement.appendChild(gtContainer);
+
+        // Define init function
+        window.googleTranslateElementInit = function() {
+          new google.translate.TranslateElement({
+            pageLanguage: 'en', 
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+          }, 'google_translate_element');
+        };
+
+        // Load translate script
+        var gtScript = document.createElement('script');
+        gtScript.type = 'text/javascript';
+        gtScript.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+        document.documentElement.appendChild(gtScript);
+      })();
+    ''';
+    _controller.runJavaScript(script);
+  }
+
+  void _translateWebPage(String langCode) {
+    // robust method to trigger translation, handling async loading of the combo box
+    // and ensuring the framework registers the change
+    final script = '''
+      function triggerTranslation() {
+        var selectElement = document.querySelector('.goog-te-combo');
+        if (selectElement) {
+           selectElement.value = '$langCode';
+           if (typeof document.createEvent === 'function') {
+               var evt = document.createEvent('HTMLEvents');
+               evt.initEvent('change', true, true);
+               selectElement.dispatchEvent(evt);
+           } else {
+               selectElement.dispatchEvent(new Event('change', { bubbles: true }));
+           }
+        } else {
+           // If the combo box hasn't loaded yet, try again in a bit
+           setTimeout(triggerTranslation, 500);
+        }
+      }
+      triggerTranslation();
+    ''';
+    _controller.runJavaScript(script);
+  }
+
+  Future<void> _autoFillForm() async {
+    // Check if form data is empty
+    if (widget.formData.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('No profile data available to auto-fill.')),
+      );
+      return;
+    }
+
+    // Convert map to JSON string securely
+    final jsonDataString = jsonEncode(widget.formData);
+
+    final jsPayload = '''
+      (function(dataJsonString) {
+        var userData = JSON.parse(dataJsonString);
+        var inputs = document.querySelectorAll('input, select, textarea');
+        var fillCount = 0;
+
+          // Heuristics to map user profile fields to HTML names/IDs
+        for (var i = 0; i < inputs.length; i++) {
+          var input = inputs[i];
+          // Skip hidden or non-editable fields
+          if (input.type === 'hidden' || input.type === 'submit' || input.type === 'button' || input.disabled) continue;
+
+          var identifier = (input.name + ' ' + input.id + ' ' + input.placeholder + ' ' + input.className).toLowerCase();
+          
+          var hasFilled = false;
+          var valToFill = "";
+
+          // Intelligent Heuristics 
+          if ((identifier.includes('firstname') || identifier.includes('fname') || identifier.includes('first name') || identifier.match(/\\bf_name\\b/)) && userData['firstname']) { 
+             valToFill = userData['firstname']; hasFilled = true; 
+          }
+          else if ((identifier.includes('lastname') || identifier.includes('lname') || identifier.includes('last name') || identifier.includes('surname') || identifier.match(/\\bl_name\\b/)) && userData['lastname']) { 
+             valToFill = userData['lastname']; hasFilled = true; 
+          }
+          else if ((identifier.includes('fullname') || identifier.includes('full name') || identifier.match(/\\bname\\b/)) && userData['full_name']) {
+             valToFill = userData['full_name']; hasFilled = true;
+          }
+          else if ((identifier.includes('phone') || identifier.includes('mobile') || identifier.includes('contact') || identifier.includes('tel') || identifier.includes('cell')) && userData['mobile_number']) { 
+             valToFill = userData['mobile_number']; hasFilled = true; 
+          }
+          else if ((identifier.includes('mail') || identifier.includes('email') || identifier.includes('e-mail')) && userData['email']) { 
+             valToFill = userData['email']; hasFilled = true; 
+          }
+          else if ((identifier.includes('aadhar') || identifier.includes('uidai') || identifier.includes('aadhaar')) && userData['aadhaar']) { 
+             valToFill = userData['aadhaar']; hasFilled = true; 
+          }
+          else if ((identifier.includes('pan') || identifier.includes('pancard') || identifier.includes('pan_no')) && userData['pan']) { 
+             valToFill = userData['pan']; hasFilled = true; 
+          }
+          else {
+             // Fallback matching
+             for (var key in userData) {
+                if (!userData[key] || userData[key].toString().trim() === '') continue;
+                
+                var searchKey = key.toLowerCase().replace(/_/g, '');
+                var altSearchKey = key.toLowerCase().replace(/_/g, ' ');
+                
+                if (searchKey.length > 2 && (identifier.includes(searchKey) || identifier.includes(altSearchKey))) {
+                   valToFill = userData[key];
+                   hasFilled = true;
+                   break;
+                }
+             }
+          }
+          
+          if (hasFilled && valToFill) {
+            input.value = valToFill;
+            // Dispatch events to trigger JS frameworks (React/Angular) 
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+            
+            // Visual feedback
+            input.style.backgroundColor = '#FEF3C7'; // Pale saffron highlight
+            input.style.border = '1px solid #F59E0B';
+            fillCount++;
+          }
+        }
+        return fillCount;
+      })('$jsonDataString');
+    ''';
+
+    try {
+      final result = await _controller.runJavaScriptReturningResult(jsPayload);
+      final int filledCount = int.tryParse(result.toString()) ?? 0;
+
+      if (mounted) {
+        if (filledCount > 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('✨ AI Auto-Filled $filledCount fields!'),
+              backgroundColor: AppColors.emeraldLight,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No matching fields found to auto-fill.'),
+              backgroundColor: AppColors.textMuted,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint("Auto-fill JS Error: \$e");
+    }
   }
 
   // ─── Top Bar ────────────────────────────────────────────────────────────────
@@ -169,6 +303,54 @@ class _GuidedSubmissionScreenState extends State<GuidedSubmissionScreen> {
                 ),
               ],
             ),
+          ),
+          // Language Translator
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.translate_rounded,
+                color: AppColors.saffron, size: 20),
+            tooltip: 'Translate Webpage',
+            color: AppColors.bgMid,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                  value: 'en',
+                  child: Text('English',
+                      style: TextStyle(color: AppColors.textPrimary))),
+              PopupMenuItem(
+                  value: 'hi',
+                  child: Text('Hindi',
+                      style: TextStyle(color: AppColors.textPrimary))),
+              PopupMenuItem(
+                  value: 'mr',
+                  child: Text('Marathi',
+                      style: TextStyle(color: AppColors.textPrimary))),
+              PopupMenuItem(
+                  value: 'ta',
+                  child: Text('Tamil',
+                      style: TextStyle(color: AppColors.textPrimary))),
+              PopupMenuItem(
+                  value: 'te',
+                  child: Text('Telugu',
+                      style: TextStyle(color: AppColors.textPrimary))),
+              PopupMenuItem(
+                  value: 'bn',
+                  child: Text('Bengali',
+                      style: TextStyle(color: AppColors.textPrimary))),
+              PopupMenuItem(
+                  value: 'gu',
+                  child: Text('Gujarati',
+                      style: TextStyle(color: AppColors.textPrimary))),
+              PopupMenuItem(
+                  value: 'kn',
+                  child: Text('Kannada',
+                      style: TextStyle(color: AppColors.textPrimary))),
+              PopupMenuItem(
+                  value: 'ml',
+                  child: Text('Malayalam',
+                      style: TextStyle(color: AppColors.textPrimary))),
+            ],
+            onSelected: _translateWebPage,
           ),
           // Toggle guide panel
           IconButton(
@@ -248,6 +430,18 @@ class _GuidedSubmissionScreenState extends State<GuidedSubmissionScreen> {
                 _StepButton(
                   label: '← Previous',
                   onTap: () => setState(() => _currentStep--),
+                ),
+              const SizedBox(width: 8),
+              if (widget.formData.isNotEmpty)
+                ActionChip(
+                  label: Text('✨ Auto-Fill',
+                      style: GoogleFonts.poppins(
+                          fontSize: 11, fontWeight: FontWeight.w600)),
+                  backgroundColor: AppColors.saffron.withValues(alpha: 0.2),
+                  side: BorderSide.none,
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: _autoFillForm,
                 ),
               const Spacer(),
               if (_currentStep < widget.submitSteps.length - 1)
