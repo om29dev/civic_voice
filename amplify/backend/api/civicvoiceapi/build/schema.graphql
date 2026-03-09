@@ -27,6 +27,35 @@ type UserDocument {
   owner: String
 }
 
+type CitizenProfile {
+  id: ID!
+  full_name: String!
+  mobile: String!
+  email: String!
+  state: String!
+  district: String
+  pincode: String
+  date_of_birth: String
+  gender: String
+  marital_status: String
+  occupation: String
+  annual_income_range: String
+  caste_category: String
+  age: Int
+  income: Float
+  is_kyc_verified: Boolean
+  linked_documents: [String]
+  applied_schemes: [String]
+  aadhaar_last_four: String
+  pan_masked: String
+  ration_card_number: String
+  is_disabled: Boolean
+  disability_type: String
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+  owner: String
+}
+
 input ModelStringInput {
   ne: String
   eq: String
@@ -202,6 +231,8 @@ type Query {
   listUsers(filter: ModelUserFilterInput, limit: Int, nextToken: String): ModelUserConnection
   getUserDocument(id: ID!): UserDocument
   listUserDocuments(filter: ModelUserDocumentFilterInput, limit: Int, nextToken: String): ModelUserDocumentConnection
+  getCitizenProfile(id: ID!): CitizenProfile
+  listCitizenProfiles(filter: ModelCitizenProfileFilterInput, limit: Int, nextToken: String): ModelCitizenProfileConnection
 }
 
 input ModelUserConditionInput {
@@ -249,6 +280,9 @@ type Mutation {
   createUserDocument(input: CreateUserDocumentInput!, condition: ModelUserDocumentConditionInput): UserDocument
   updateUserDocument(input: UpdateUserDocumentInput!, condition: ModelUserDocumentConditionInput): UserDocument
   deleteUserDocument(input: DeleteUserDocumentInput!, condition: ModelUserDocumentConditionInput): UserDocument
+  createCitizenProfile(input: CreateCitizenProfileInput!, condition: ModelCitizenProfileConditionInput): CitizenProfile
+  updateCitizenProfile(input: UpdateCitizenProfileInput!, condition: ModelCitizenProfileConditionInput): CitizenProfile
+  deleteCitizenProfile(input: DeleteCitizenProfileInput!, condition: ModelCitizenProfileConditionInput): CitizenProfile
 }
 
 input ModelSubscriptionUserFilterInput {
@@ -272,6 +306,9 @@ type Subscription {
   onCreateUserDocument(filter: ModelSubscriptionUserDocumentFilterInput, owner: String): UserDocument @aws_subscribe(mutations: ["createUserDocument"])
   onUpdateUserDocument(filter: ModelSubscriptionUserDocumentFilterInput, owner: String): UserDocument @aws_subscribe(mutations: ["updateUserDocument"])
   onDeleteUserDocument(filter: ModelSubscriptionUserDocumentFilterInput, owner: String): UserDocument @aws_subscribe(mutations: ["deleteUserDocument"])
+  onCreateCitizenProfile(filter: ModelSubscriptionCitizenProfileFilterInput, owner: String): CitizenProfile @aws_subscribe(mutations: ["createCitizenProfile"])
+  onUpdateCitizenProfile(filter: ModelSubscriptionCitizenProfileFilterInput, owner: String): CitizenProfile @aws_subscribe(mutations: ["updateCitizenProfile"])
+  onDeleteCitizenProfile(filter: ModelSubscriptionCitizenProfileFilterInput, owner: String): CitizenProfile @aws_subscribe(mutations: ["deleteCitizenProfile"])
 }
 
 type ModelUserDocumentConnection {
@@ -366,5 +403,160 @@ input ModelSubscriptionUserDocumentFilterInput {
   updatedAt: ModelSubscriptionStringInput
   and: [ModelSubscriptionUserDocumentFilterInput]
   or: [ModelSubscriptionUserDocumentFilterInput]
+  owner: ModelStringInput
+}
+
+type ModelCitizenProfileConnection {
+  items: [CitizenProfile]!
+  nextToken: String
+}
+
+input ModelCitizenProfileFilterInput {
+  id: ModelIDInput
+  full_name: ModelStringInput
+  mobile: ModelStringInput
+  email: ModelStringInput
+  state: ModelStringInput
+  district: ModelStringInput
+  pincode: ModelStringInput
+  date_of_birth: ModelStringInput
+  gender: ModelStringInput
+  marital_status: ModelStringInput
+  occupation: ModelStringInput
+  annual_income_range: ModelStringInput
+  caste_category: ModelStringInput
+  age: ModelIntInput
+  income: ModelFloatInput
+  is_kyc_verified: ModelBooleanInput
+  linked_documents: ModelStringInput
+  applied_schemes: ModelStringInput
+  aadhaar_last_four: ModelStringInput
+  pan_masked: ModelStringInput
+  ration_card_number: ModelStringInput
+  is_disabled: ModelBooleanInput
+  disability_type: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelCitizenProfileFilterInput]
+  or: [ModelCitizenProfileFilterInput]
+  not: ModelCitizenProfileFilterInput
+  owner: ModelStringInput
+}
+
+input ModelCitizenProfileConditionInput {
+  full_name: ModelStringInput
+  mobile: ModelStringInput
+  email: ModelStringInput
+  state: ModelStringInput
+  district: ModelStringInput
+  pincode: ModelStringInput
+  date_of_birth: ModelStringInput
+  gender: ModelStringInput
+  marital_status: ModelStringInput
+  occupation: ModelStringInput
+  annual_income_range: ModelStringInput
+  caste_category: ModelStringInput
+  age: ModelIntInput
+  income: ModelFloatInput
+  is_kyc_verified: ModelBooleanInput
+  linked_documents: ModelStringInput
+  applied_schemes: ModelStringInput
+  aadhaar_last_four: ModelStringInput
+  pan_masked: ModelStringInput
+  ration_card_number: ModelStringInput
+  is_disabled: ModelBooleanInput
+  disability_type: ModelStringInput
+  and: [ModelCitizenProfileConditionInput]
+  or: [ModelCitizenProfileConditionInput]
+  not: ModelCitizenProfileConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  owner: ModelStringInput
+}
+
+input CreateCitizenProfileInput {
+  id: ID
+  full_name: String!
+  mobile: String!
+  email: String!
+  state: String!
+  district: String
+  pincode: String
+  date_of_birth: String
+  gender: String
+  marital_status: String
+  occupation: String
+  annual_income_range: String
+  caste_category: String
+  age: Int
+  income: Float
+  is_kyc_verified: Boolean
+  linked_documents: [String]
+  applied_schemes: [String]
+  aadhaar_last_four: String
+  pan_masked: String
+  ration_card_number: String
+  is_disabled: Boolean
+  disability_type: String
+}
+
+input UpdateCitizenProfileInput {
+  id: ID!
+  full_name: String
+  mobile: String
+  email: String
+  state: String
+  district: String
+  pincode: String
+  date_of_birth: String
+  gender: String
+  marital_status: String
+  occupation: String
+  annual_income_range: String
+  caste_category: String
+  age: Int
+  income: Float
+  is_kyc_verified: Boolean
+  linked_documents: [String]
+  applied_schemes: [String]
+  aadhaar_last_four: String
+  pan_masked: String
+  ration_card_number: String
+  is_disabled: Boolean
+  disability_type: String
+}
+
+input DeleteCitizenProfileInput {
+  id: ID!
+}
+
+input ModelSubscriptionCitizenProfileFilterInput {
+  id: ModelSubscriptionIDInput
+  full_name: ModelSubscriptionStringInput
+  mobile: ModelSubscriptionStringInput
+  email: ModelSubscriptionStringInput
+  state: ModelSubscriptionStringInput
+  district: ModelSubscriptionStringInput
+  pincode: ModelSubscriptionStringInput
+  date_of_birth: ModelSubscriptionStringInput
+  gender: ModelSubscriptionStringInput
+  marital_status: ModelSubscriptionStringInput
+  occupation: ModelSubscriptionStringInput
+  annual_income_range: ModelSubscriptionStringInput
+  caste_category: ModelSubscriptionStringInput
+  age: ModelSubscriptionIntInput
+  income: ModelSubscriptionFloatInput
+  is_kyc_verified: ModelSubscriptionBooleanInput
+  linked_documents: ModelSubscriptionStringInput
+  applied_schemes: ModelSubscriptionStringInput
+  aadhaar_last_four: ModelSubscriptionStringInput
+  pan_masked: ModelSubscriptionStringInput
+  ration_card_number: ModelSubscriptionStringInput
+  is_disabled: ModelSubscriptionBooleanInput
+  disability_type: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionCitizenProfileFilterInput]
+  or: [ModelSubscriptionCitizenProfileFilterInput]
   owner: ModelStringInput
 }

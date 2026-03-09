@@ -12,6 +12,8 @@ import '../../../providers/auth_provider.dart';
 import '../../../providers/language_provider.dart';
 import '../../../providers/analytics_provider.dart';
 import '../../../widgets/particle_background.dart';
+import 'package:screenshot/screenshot.dart';
+import '../../voice/widgets/form_help_fab.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPLETE PROFILE SCREEN
@@ -36,6 +38,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
   bool _notifAppUpdates = true;
   bool _notifGovSchemes = true;
   bool _notifNewServices = false;
+  final ScreenshotController _screenshotController = ScreenshotController();
 
   @override
   bool get wantKeepAlive => true;
@@ -53,58 +56,65 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
           ),
           SafeArea(
             bottom: false,
-            child: CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                SliverAppBar(
-                  backgroundColor: AppColors.bgDeep.withValues(alpha: 0.9),
-                  elevation: 0,
-                  pinned: true,
-                  title: Text(
-                    lang.t('profile_title'),
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.saffron,
+            child: Screenshot(
+              controller: _screenshotController,
+              child: CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  SliverAppBar(
+                    backgroundColor: AppColors.bgDeep.withValues(alpha: 0.9),
+                    elevation: 0,
+                    pinned: true,
+                    title: Text(
+                      lang.t('profile_title'),
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.saffron,
+                      ),
+                    ),
+                    actions: [
+                      IconButton(
+                        icon: const Icon(Icons.settings_rounded,
+                            color: AppColors.textSecondary),
+                        onPressed: () => context.push(Routes.profile),
+                      ),
+                    ],
+                  ),
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate([
+                        _buildProfileHeader(),
+                        const SizedBox(height: 32),
+                        _buildSectionTitle(lang.t('profile_personal_info')),
+                        _buildPersonalInfo(lang),
+                        const SizedBox(height: 32),
+                        _buildSectionTitle(lang.t('profile_my_services')),
+                        _buildMyServices(),
+                        const SizedBox(height: 32),
+                        _buildSectionTitle(lang.t('profile_language')),
+                        _buildLanguageSettings(),
+                        const SizedBox(height: 32),
+                        _buildSectionTitle(lang.t('profile_notifications')),
+                        _buildNotifications(lang),
+                        const SizedBox(height: 32),
+                        _buildSectionTitle(lang.t('profile_about_support')),
+                        _buildSupportLinks(lang),
+                        const SizedBox(height: 48),
+                        _buildLogoutButton(lang),
+                      ]),
                     ),
                   ),
-                  actions: [
-                    IconButton(
-                      icon: const Icon(Icons.settings_rounded,
-                          color: AppColors.textSecondary),
-                      onPressed: () => context.push(Routes.profile),
-                    ),
-                  ],
-                ),
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      _buildProfileHeader(),
-                      const SizedBox(height: 32),
-                      _buildSectionTitle(lang.t('profile_personal_info')),
-                      _buildPersonalInfo(lang),
-                      const SizedBox(height: 32),
-                      _buildSectionTitle(lang.t('profile_my_services')),
-                      _buildMyServices(),
-                      const SizedBox(height: 32),
-                      _buildSectionTitle(lang.t('profile_language')),
-                      _buildLanguageSettings(),
-                      const SizedBox(height: 32),
-                      _buildSectionTitle(lang.t('profile_notifications')),
-                      _buildNotifications(lang),
-                      const SizedBox(height: 32),
-                      _buildSectionTitle(lang.t('profile_about_support')),
-                      _buildSupportLinks(lang),
-                      const SizedBox(height: 48),
-                      _buildLogoutButton(lang),
-                    ]),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
+      ),
+      floatingActionButton: FormHelpFab(
+        screenshotController: _screenshotController,
+        formContext: 'complete profile form',
       ),
     );
   }

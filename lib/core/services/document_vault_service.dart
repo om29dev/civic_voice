@@ -6,6 +6,8 @@ import 'dart:convert';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 import 'document_ai_service.dart';
 import '../../models/cvi_document_model.dart';
@@ -18,6 +20,7 @@ class DocumentVaultService {
   static Future<Map<String, dynamic>> uploadDocument({
     required Uint8List imageBytes,
     required String documentType,
+    String? customName,
   }) async {
     try {
       await Amplify.Auth.getCurrentUser();
@@ -25,7 +28,8 @@ class DocumentVaultService {
 
       // Step 1: Upload to S3
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final fileName = '${documentType}_$timestamp.jpg';
+      final actualName = customName ?? documentType;
+      final fileName = '${actualName.replaceAll(' ', '_')}_$timestamp.jpg';
       final storageKey = 'documents/$fileName';
 
       await Amplify.Storage.uploadData(
@@ -71,7 +75,7 @@ class DocumentVaultService {
       ''';
 
       final docInput = {
-        'name': fileName,
+        'name': customName ?? fileName,
         'category': documentType,
         'size': '${(imageBytes.length / 1024).toStringAsFixed(1)} KB',
         'uploadDate': DateTime.now().toUtc().toIso8601String(),
@@ -222,6 +226,50 @@ class DocumentVaultService {
     } catch (e) {
       debugPrint('DocumentVault: URL error: $e');
       return null;
+    }
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // DOWNLOAD DOCUMENT to the device's Downloads folder
+  // ────────────────────────────────────────────────────────────────────────────
+  static Future<Map<String, dynamic>> downloadDocument({
+    required String storageKey,
+    required String fileName,
+  }) async {
+    try {
+      Directory? downloadsDir;
+      if (Platform.isAndroid) {
+        downloadsDir = Directory('/storage/emulated/0/Download');
+        if (!await downloadsDir.exists()) {
+          downloadsDir = await getExternalStorageDirectory();
+        }
+      } else if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+        downloadsDir = await getDownloadsDirectory();
+      }
+
+      if (downloadsDir == null) {
+        return {
+          'success': false,
+          'error': 'Could not find downloads directory'
+        };
+      }
+
+      final localPath = '${downloadsDir.path}/$fileName';
+      final localFile = AWSFile.fromPath(localPath);
+
+      final operation = Amplify.Storage.downloadFile(
+        path: StoragePath.fromString('public/$storageKey'),
+        localFile: localFile,
+      );
+
+      final result = await operation.result;
+      return {
+        'success': true,
+        'path': result.localFile.path,
+      };
+    } catch (e) {
+      debugPrint('DocumentVault: Download error: $e');
+      return {'success': false, 'error': e.toString()};
     }
   }
 

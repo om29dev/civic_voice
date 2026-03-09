@@ -110,6 +110,7 @@ class DocumentVaultProvider extends ChangeNotifier {
   Future<void> addDocument({
     required Uint8List imageBytes,
     required String documentType,
+    String? customName,
     String? fileName, // keep for compatibility but optional now
   }) async {
     _isExtracting = true;
@@ -120,6 +121,7 @@ class DocumentVaultProvider extends ChangeNotifier {
       final result = await DocumentVaultService.uploadDocument(
         imageBytes: imageBytes,
         documentType: documentType,
+        customName: customName,
       );
 
       if (result['success'] == true) {

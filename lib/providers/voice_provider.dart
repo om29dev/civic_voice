@@ -10,8 +10,8 @@ enum VoiceState {
   listening,
   processing,
   speaking,
-  responding,   // alias for speaking (used by legacy screens)
-  error,        // error state (used by legacy screens)
+  responding, // alias for speaking (used by legacy screens)
+  error, // error state (used by legacy screens)
   permissionDenied,
   unavailable,
 }
@@ -31,19 +31,19 @@ class VoiceProvider extends ChangeNotifier {
   String? _errorMessage;
 
   // ─── Getters ───────────────────────────────────────────────────────────────
-  VoiceState get state          => _state;
-  String get transcribedText    => _transcribedText;
-  String get partialText        => _partialText;
-  bool get isTTSEnabled         => _isTTSEnabled;
-  double get speechRate         => _speechRate;
-  String get voiceGender        => _voiceGender;
-  double get soundLevel         => _soundLevel;
-  String? get errorMessage      => _errorMessage;
+  VoiceState get state => _state;
+  String get transcribedText => _transcribedText;
+  String get partialText => _partialText;
+  bool get isTTSEnabled => _isTTSEnabled;
+  double get speechRate => _speechRate;
+  String get voiceGender => _voiceGender;
+  double get soundLevel => _soundLevel;
+  String? get errorMessage => _errorMessage;
 
-  bool get isListening          => _state == VoiceState.listening;
-  bool get isSpeaking           => _state == VoiceState.speaking;
-  bool get isIdle               => _state == VoiceState.idle;
-  bool get isProcessing         => _state == VoiceState.processing;
+  bool get isListening => _state == VoiceState.listening;
+  bool get isSpeaking => _state == VoiceState.speaking;
+  bool get isIdle => _state == VoiceState.idle;
+  bool get isProcessing => _state == VoiceState.processing;
 
   VoiceProvider() {
     _initTTS();
@@ -135,7 +135,8 @@ class VoiceProvider extends ChangeNotifier {
 
   // ─── Listening ─────────────────────────────────────────────────────────────
 
-  Future<void> startListening({String? localeId, Function(String text)? onFinalResult}) async {
+  Future<void> startListening(
+      {String? localeId, Function(String text)? onFinalResult}) async {
     _errorMessage = null;
 
     final hasPermission = await requestMicPermission();
@@ -163,7 +164,8 @@ class VoiceProvider extends ChangeNotifier {
     try {
       await _stt.listen(
         onResult: (result) {
-          debugPrint('[VoiceProvider] STT result: final=${result.finalResult}, words="${result.recognizedWords}"');
+          debugPrint(
+              '[VoiceProvider] STT result: final=${result.finalResult}, words="${result.recognizedWords}"');
           if (result.finalResult) {
             _transcribedText = result.recognizedWords;
             _partialText = '';
@@ -177,8 +179,12 @@ class VoiceProvider extends ChangeNotifier {
           notifyListeners();
         },
         onSoundLevelChange: (level) {
-          _soundLevel = level;
-          notifyListeners();
+          // Throttle: only notify if level changed significantly
+          // Prevents dozens of full widget-tree rebuilds per second while listening
+          if ((level - _soundLevel).abs() > 2.0) {
+            _soundLevel = level;
+            notifyListeners();
+          }
         },
         localeId: localeId,
         listenFor: const Duration(seconds: 30),
@@ -201,7 +207,8 @@ class VoiceProvider extends ChangeNotifier {
   Future<void> stopListening() async {
     await _stt.stop();
     if (_state == VoiceState.listening) {
-      _transcribedText = _partialText.isNotEmpty ? _partialText : _transcribedText;
+      _transcribedText =
+          _partialText.isNotEmpty ? _partialText : _transcribedText;
       _partialText = '';
       _state = VoiceState.processing;
       notifyListeners();
@@ -218,14 +225,15 @@ class VoiceProvider extends ChangeNotifier {
   /// Strip markdown and special characters so TTS reads naturally.
   String _sanitizeForSpeech(String text) {
     return text
-        .replaceAll(RegExp(r'\*{1,3}'), '')       // bold/italic asterisks
-        .replaceAll(RegExp(r'#{1,6}\s*'), '')      // headers
-        .replaceAll(RegExp(r'`{1,3}'), '')         // code blocks
-        .replaceAll(RegExp(r'\[([^\]]+)\]\([^)]+\)'), r'$1') // links → text only
+        .replaceAll(RegExp(r'\*{1,3}'), '') // bold/italic asterisks
+        .replaceAll(RegExp(r'#{1,6}\s*'), '') // headers
+        .replaceAll(RegExp(r'`{1,3}'), '') // code blocks
+        .replaceAll(
+            RegExp(r'\[([^\]]+)\]\([^)]+\)'), r'$1') // links → text only
         .replaceAll(RegExp(r'^[-•]\s*', multiLine: true), '') // bullet points
         .replaceAll(RegExp(r'^\d+\.\s*', multiLine: true), '') // numbered lists
-        .replaceAll(RegExp(r'[_~]'), '')            // underscores/strikethrough
-        .replaceAll(RegExp(r'\n{2,}'), '\n')        // collapse extra newlines
+        .replaceAll(RegExp(r'[_~]'), '') // underscores/strikethrough
+        .replaceAll(RegExp(r'\n{2,}'), '\n') // collapse extra newlines
         .trim();
   }
 
@@ -304,7 +312,7 @@ class VoiceProvider extends ChangeNotifier {
       'hi' => 'hi-IN',
       'mr' => 'mr-IN',
       'ta' => 'ta-IN',
-      _    => 'en-IN',
+      _ => 'en-IN',
     };
     await _tts.setLanguage(locale);
   }
@@ -324,7 +332,15 @@ class VoiceProvider extends ChangeNotifier {
   }
 
   // ─── Legacy API Stubs ────────────────────────────────────────────────────
-  Future<void> stopSilently() async { await _stt.stop(); await _tts.stop(); }
-  Future<void> initVoice()    async { /* STT lazily initialized on startListening */ }
-  Future<void> setLocale(String bcp47) async { await _tts.setLanguage(bcp47); }
+  Future<void> stopSilently() async {
+    await _stt.stop();
+    await _tts.stop();
+  }
+
+  Future<void> initVoice() async {
+    /* STT lazily initialized on startListening */
+  }
+  Future<void> setLocale(String bcp47) async {
+    await _tts.setLanguage(bcp47);
+  }
 }

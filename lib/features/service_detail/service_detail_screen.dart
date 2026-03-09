@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/router/app_router.dart';
+import '../../models/cvi_document_model.dart';
 import '../../models/service_model.dart';
+import '../../providers/document_vault_provider.dart';
 import '../../providers/language_provider.dart';
 import '../../providers/services_provider.dart';
 import '../../widgets/glass_card.dart';
@@ -48,8 +51,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
   @override
   Widget build(BuildContext context) {
     final services = context.watch<ServicesProvider>();
-    final lang     = context.watch<LanguageProvider>().currentLanguage;
-    final service  = services.selectedService;
+    final lang = context.watch<LanguageProvider>().currentLanguage;
+    final service = services.selectedService;
 
     if (service == null) {
       return const Scaffold(
@@ -91,16 +94,16 @@ class _DetailSliverAppBar extends StatelessWidget {
   const _DetailSliverAppBar({required this.service, required this.lang});
 
   Color get _catColor => switch (service.category) {
-        ServiceCategory.identity   => AppColors.accent,
-        ServiceCategory.finance    => AppColors.financeService,
-        ServiceCategory.welfare    => AppColors.success,
-        ServiceCategory.transport  => AppColors.info,
-        ServiceCategory.property   => AppColors.govtServices,
-        ServiceCategory.health     => AppColors.healthService,
-        ServiceCategory.education  => AppColors.educationService,
-        ServiceCategory.business   => AppColors.legalService,
+        ServiceCategory.identity => AppColors.accent,
+        ServiceCategory.finance => AppColors.financeService,
+        ServiceCategory.welfare => AppColors.success,
+        ServiceCategory.transport => AppColors.info,
+        ServiceCategory.property => AppColors.govtServices,
+        ServiceCategory.health => AppColors.healthService,
+        ServiceCategory.education => AppColors.educationService,
+        ServiceCategory.business => AppColors.legalService,
         ServiceCategory.agriculture => AppColors.emerald,
-        ServiceCategory.employment  => AppColors.accentBlue,
+        ServiceCategory.employment => AppColors.accentBlue,
       };
 
   @override
@@ -135,9 +138,14 @@ class _DetailSliverAppBar extends StatelessWidget {
               side: const BorderSide(color: AppColors.saffron, width: 1),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               minimumSize: Size.zero,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
-            child: Text('Official Site', style: GoogleFonts.poppins(fontSize: 11, color: AppColors.saffron, fontWeight: FontWeight.w600)),
+            child: Text('Official Site',
+                style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    color: AppColors.saffron,
+                    fontWeight: FontWeight.w600)),
           ),
         ),
       ],
@@ -156,9 +164,15 @@ class _DetailSliverAppBar extends StatelessWidget {
               children: [
                 // Tricolor bar at very top
                 Row(children: [
-                  Expanded(child: Container(height: 3, color: const Color(0xFFFF6B1A))),
-                  Expanded(child: Container(height: 3, color: const Color(0xFFF5F5F5))),
-                  Expanded(child: Container(height: 3, color: const Color(0xFF138808))),
+                  Expanded(
+                      child:
+                          Container(height: 3, color: const Color(0xFFFF6B1A))),
+                  Expanded(
+                      child:
+                          Container(height: 3, color: const Color(0xFFF5F5F5))),
+                  Expanded(
+                      child:
+                          Container(height: 3, color: const Color(0xFF138808))),
                 ]),
                 const SizedBox(height: 44), // space for nav
                 // Icon box
@@ -168,15 +182,24 @@ class _DetailSliverAppBar extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: _catColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(22),
-                    border: Border.all(color: _catColor.withValues(alpha: 0.35), width: 1),
+                    border: Border.all(
+                        color: _catColor.withValues(alpha: 0.35), width: 1),
                     boxShadow: [
-                      BoxShadow(color: _catColor.withValues(alpha: 0.25), blurRadius: 20, spreadRadius: 2),
+                      BoxShadow(
+                          color: _catColor.withValues(alpha: 0.25),
+                          blurRadius: 20,
+                          spreadRadius: 2),
                     ],
                   ),
                   child: Center(
-                    child: Text(service.iconEmoji, style: const TextStyle(fontSize: 36)),
+                    child: Text(service.iconEmoji,
+                        style: const TextStyle(fontSize: 36)),
                   ),
-                ).animate().scale(begin: const Offset(0.8, 0.8), end: const Offset(1, 1), duration: 500.ms, curve: Curves.elasticOut),
+                ).animate().scale(
+                    begin: const Offset(0.8, 0.8),
+                    end: const Offset(1, 1),
+                    duration: 500.ms,
+                    curve: Curves.elasticOut),
                 const SizedBox(height: 10),
                 // Service name
                 Padding(
@@ -184,7 +207,8 @@ class _DetailSliverAppBar extends StatelessWidget {
                   child: Text(
                     service.localizedName(lang),
                     style: GoogleFonts.playfairDisplay(
-                      fontSize: 26, fontWeight: FontWeight.w700,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w700,
                       color: Colors.white,
                     ),
                     textAlign: TextAlign.center,
@@ -193,11 +217,13 @@ class _DetailSliverAppBar extends StatelessWidget {
                   ).animate().fadeIn(delay: 150.ms),
                 ),
                 // Hindi name
-                if (hindiName.isNotEmpty && hindiName != service.localizedName(lang))
+                if (hindiName.isNotEmpty &&
+                    hindiName != service.localizedName(lang))
                   Text(
                     hindiName,
                     style: GoogleFonts.notoSansDevanagari(
-                      fontSize: 14, color: AppColors.textMuted,
+                      fontSize: 14,
+                      color: AppColors.textMuted,
                     ),
                     textAlign: TextAlign.center,
                   ).animate().fadeIn(delay: 200.ms),
@@ -207,22 +233,31 @@ class _DetailSliverAppBar extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFF6B1A),
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: Text(service.category.label.toUpperCase(), style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white)),
+                      child: Text(service.category.label.toUpperCase(),
+                          style: GoogleFonts.poppins(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white)),
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: AppColors.emerald.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: AppColors.emerald.withValues(alpha: 0.4)),
+                        border: Border.all(
+                            color: AppColors.emerald.withValues(alpha: 0.4)),
                       ),
-                      child: Text('● Available', style: GoogleFonts.poppins(fontSize: 10, color: AppColors.emeraldLight)),
+                      child: Text('● Available',
+                          style: GoogleFonts.poppins(
+                              fontSize: 10, color: AppColors.emeraldLight)),
                     ),
                   ],
                 ).animate().fadeIn(delay: 250.ms),
@@ -284,7 +319,8 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => tabBar.preferredSize.height;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     return ClipRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -315,7 +351,8 @@ class _OverviewTab extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),
       children: [
         // What is this?
-        const _SectionTitle(title: 'What is this?', icon: Icons.info_outline_rounded),
+        const _SectionTitle(
+            title: 'What is this?', icon: Icons.info_outline_rounded),
         const SizedBox(height: 10),
         GlassCard(
           padding: const EdgeInsets.all(16),
@@ -348,7 +385,8 @@ class _OverviewTab extends StatelessWidget {
                   color: AppColors.accent.withValues(alpha: 0.06),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                      color: AppColors.accent.withValues(alpha: 0.35), width: 1),
+                      color: AppColors.accent.withValues(alpha: 0.35),
+                      width: 1),
                 ),
                 child: Text(c,
                     style: const TextStyle(
@@ -434,6 +472,7 @@ class _DocumentsTab extends StatefulWidget {
 class _DocumentsTabState extends State<_DocumentsTab> {
   // Local toggle state (not persisted — steps persistence is for steps)
   late final List<bool> _have;
+  final Map<int, bool> _uploading = {};
 
   @override
   void initState() {
@@ -441,9 +480,75 @@ class _DocumentsTabState extends State<_DocumentsTab> {
     _have = List.filled(widget.service.requiredDocuments.length, false);
   }
 
+  DocumentType _mapToDocumentType(String docName) {
+    final name = docName.toLowerCase();
+    if (name.contains('aadhaar')) return DocumentType.aadhaar;
+    if (name.contains('pan')) return DocumentType.pan;
+    if (name.contains('voter')) return DocumentType.voterID;
+    if (name.contains('license')) return DocumentType.drivingLicense;
+    if (name.contains('passport')) return DocumentType.passport;
+    if (name.contains('bank') || name.contains('passbook')) {
+      return DocumentType.bankPassbook;
+    }
+    if (name.contains('photo')) return DocumentType.photo;
+    if (name.contains('income')) return DocumentType.incomeCertificate;
+    if (name.contains('caste')) return DocumentType.casteCertificate;
+    if (name.contains('ration')) return DocumentType.rationCard;
+    if (name.contains('birth')) return DocumentType.birthCertificate;
+    if (name.contains('land')) return DocumentType.landRecord;
+    if (name.contains('marksheet')) return DocumentType.marksheet;
+    if (name.contains('signature')) return DocumentType.signature;
+    return DocumentType.other;
+  }
+
+  Future<void> _handleUpload(int index, DocumentItem doc) async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 70,
+    );
+
+    if (image == null) return;
+
+    setState(() => _uploading[index] = true);
+
+    try {
+      final bytes = await image.readAsBytes();
+      final docType = _mapToDocumentType(doc.name);
+
+      if (!mounted) return;
+      await context.read<DocumentVaultProvider>().addDocument(
+            imageBytes: bytes,
+            documentType: docType.name,
+            customName: doc.name,
+          );
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${doc.name} uploaded successfully!'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+      setState(() => _have[index] = true);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Upload failed: $e'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _uploading[index] = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final docs  = widget.service.requiredDocuments;
+    final docs = widget.service.requiredDocuments;
     final ready = _have.where((v) => v).length;
 
     return ListView(
@@ -453,7 +558,7 @@ class _DocumentsTabState extends State<_DocumentsTab> {
         _DocProgressBar(ready: ready, total: docs.length),
         const SizedBox(height: 16),
         ...docs.asMap().entries.map((e) {
-          final i   = e.key;
+          final i = e.key;
           final doc = e.value;
           return Padding(
             padding: const EdgeInsets.only(bottom: 10),
@@ -474,9 +579,15 @@ class _DocumentsTabState extends State<_DocumentsTab> {
                             Row(
                               children: [
                                 if (doc.isOptional)
-                                  const _Chip(label: 'Optional', color: AppColors.info, small: true),
+                                  const _Chip(
+                                      label: 'Optional',
+                                      color: AppColors.info,
+                                      small: true),
                                 if (!doc.isOptional)
-                                  const _Chip(label: 'Required', color: AppColors.accent, small: true),
+                                  const _Chip(
+                                      label: 'Required',
+                                      color: AppColors.accent,
+                                      small: true),
                               ],
                             ),
                             const SizedBox(height: 4),
@@ -496,8 +607,7 @@ class _DocumentsTabState extends State<_DocumentsTab> {
                       ),
                       Checkbox(
                         value: _have[i],
-                        onChanged: (v) =>
-                            setState(() => _have[i] = v ?? false),
+                        onChanged: (v) => setState(() => _have[i] = v ?? false),
                         activeColor: AppColors.accent,
                         checkColor: AppColors.background,
                         side: const BorderSide(
@@ -507,33 +617,99 @@ class _DocumentsTabState extends State<_DocumentsTab> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  const Divider(color: AppColors.border, thickness: 1, height: 1),
-                  const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: () => _showDocDetail(context, doc),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.info_outline_rounded,
-                            size: 14, color: AppColors.textDisabled),
-                        SizedBox(width: 4),
-                        Text('Tap for more details',
-                            style: TextStyle(
-                                color: AppColors.textDisabled,
-                                fontSize: 11,
-                                fontFamily: 'Rajdhani')),
-                      ],
-                    ),
+                  const SizedBox(height: 12),
+                  const Divider(
+                      color: AppColors.border, thickness: 1, height: 1),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GestureDetector(
+                        onTap: () => _showDocDetail(context, doc),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.info_outline_rounded,
+                                size: 14, color: AppColors.textDisabled),
+                            SizedBox(width: 4),
+                            Text('Details',
+                                style: TextStyle(
+                                    color: AppColors.textDisabled,
+                                    fontSize: 11,
+                                    fontFamily: 'Rajdhani')),
+                          ],
+                        ),
+                      ),
+                      Consumer<DocumentVaultProvider>(
+                        builder: (context, vault, child) {
+                          final docType = _mapToDocumentType(doc.name);
+                          final exists = vault.hasDocument(docType.name);
+                          final isUploading = _uploading[i] ?? false;
+
+                          if (exists || _have[i]) {
+                            return const Row(
+                              children: [
+                                Icon(Icons.check_circle_rounded,
+                                    color: AppColors.success, size: 14),
+                                SizedBox(width: 4),
+                                Text('In Vault',
+                                    style: TextStyle(
+                                        color: AppColors.success,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        fontFamily: 'Rajdhani')),
+                              ],
+                            );
+                          }
+
+                          return InkWell(
+                            onTap: isUploading
+                                ? null
+                                : () => _handleUpload(i, doc),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: isUploading
+                                    ? AppColors.border
+                                    : AppColors.accent.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(
+                                  color: isUploading
+                                      ? AppColors.border
+                                      : AppColors.accent.withValues(alpha: 0.3),
+                                ),
+                              ),
+                              child: isUploading
+                                  ? const SizedBox(
+                                      width: 12,
+                                      height: 12,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: AppColors.accent),
+                                    )
+                                  : const Row(
+                                      children: [
+                                        Icon(Icons.upload_rounded,
+                                            size: 12, color: AppColors.accent),
+                                        SizedBox(width: 4),
+                                        Text('Upload to Vault',
+                                            style: TextStyle(
+                                                color: AppColors.accent,
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w800,
+                                                fontFamily: 'Rajdhani')),
+                                      ],
+                                    ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),
-            )
-                .animate()
-                .fadeIn(delay: Duration(milliseconds: 60 * i))
-                .slideY(
-                    begin: 0.06,
-                    end: 0,
-                    delay: Duration(milliseconds: 60 * i)),
+            ).animate().fadeIn(delay: Duration(milliseconds: 60 * i)).slideY(
+                begin: 0.06, end: 0, delay: Duration(milliseconds: 60 * i)),
           );
         }),
       ],
@@ -575,8 +751,7 @@ class _DocumentsTabState extends State<_DocumentsTab> {
                     ? 'This document is optional'
                     : 'This document is required',
                 style: TextStyle(
-                    color:
-                        doc.isOptional ? AppColors.info : AppColors.success,
+                    color: doc.isOptional ? AppColors.info : AppColors.success,
                     fontSize: 13,
                     fontFamily: 'Rajdhani',
                     fontWeight: FontWeight.w600),
@@ -625,8 +800,7 @@ class _DocProgressBar extends StatelessWidget {
             child: LinearProgressIndicator(
               value: pct,
               backgroundColor: AppColors.border,
-              valueColor:
-                  const AlwaysStoppedAnimation<Color>(AppColors.accent),
+              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accent),
               minHeight: 6,
             ),
           ),
@@ -652,11 +826,11 @@ class _StepsTab extends StatefulWidget {
 class _StepsTabState extends State<_StepsTab> {
   @override
   Widget build(BuildContext context) {
-    final sp       = context.watch<ServicesProvider>();
+    final sp = context.watch<ServicesProvider>();
     final progress = sp.getProgress(widget.service.id);
-    final steps    = widget.service.steps;
+    final steps = widget.service.steps;
     final completed = progress.where((v) => v).length;
-    final current  = progress.indexWhere((v) => !v);
+    final current = progress.indexWhere((v) => !v);
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
@@ -691,7 +865,7 @@ class _StepsTabState extends State<_StepsTab> {
 
         // Steps
         ...steps.asMap().entries.map((e) {
-          final i    = e.key;
+          final i = e.key;
           final step = e.value;
           final done = i < progress.length && progress[i];
           final isCurrent = i == current;
@@ -762,8 +936,8 @@ class _StepsTabState extends State<_StepsTab> {
                 // Content
                 Expanded(
                   child: Padding(
-                    padding: EdgeInsets.only(
-                        bottom: i < steps.length - 1 ? 20 : 0),
+                    padding:
+                        EdgeInsets.only(bottom: i < steps.length - 1 ? 20 : 0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -792,11 +966,9 @@ class _StepsTabState extends State<_StepsTab> {
                                   .markStepComplete(widget.service.id, i);
                               if (step.actionUrl != null) {
                                 final uri = Uri.tryParse(step.actionUrl!);
-                                if (uri != null &&
-                                    await canLaunchUrl(uri)) {
+                                if (uri != null && await canLaunchUrl(uri)) {
                                   await launchUrl(uri,
-                                      mode: LaunchMode
-                                          .externalApplication);
+                                      mode: LaunchMode.externalApplication);
                                 }
                               }
                             },
@@ -820,11 +992,8 @@ class _StepsTabState extends State<_StepsTab> {
                 ),
               ],
             ),
-          )
-              .animate()
-              .fadeIn(delay: Duration(milliseconds: 60 * i))
-              .slideX(begin: 0.04, end: 0,
-                  delay: Duration(milliseconds: 60 * i));
+          ).animate().fadeIn(delay: Duration(milliseconds: 60 * i)).slideX(
+              begin: 0.04, end: 0, delay: Duration(milliseconds: 60 * i));
         }),
       ],
     );
@@ -847,7 +1016,7 @@ class _TimelineTab extends StatelessWidget {
   ];
 
   Color _phaseColor(int days) {
-    if (days <= 7)  return AppColors.success;
+    if (days <= 7) return AppColors.success;
     if (days <= 30) return const Color(0xFFFFB300);
     return AppColors.error;
   }
@@ -928,12 +1097,10 @@ class _TimelineTab extends StatelessWidget {
                                   fontFamily: 'SpaceMono',
                                   fontSize: 18)),
                         ),
-                      )
-                          .animate()
-                          .scale(
-                              delay: Duration(milliseconds: 100 * i),
-                              duration: 400.ms,
-                              curve: Curves.elasticOut),
+                      ).animate().scale(
+                          delay: Duration(milliseconds: 100 * i),
+                          duration: 400.ms,
+                          curve: Curves.elasticOut),
                       const SizedBox(height: 8),
                       Text(label,
                           style: const TextStyle(
@@ -976,8 +1143,10 @@ class _TimelineTab extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary)),
               SizedBox(height: 10),
-              _LegendItem(color: AppColors.success, label: 'Fast — Under 7 days'),
-              _LegendItem(color: Color(0xFFFFB300), label: 'Medium — 7 to 30 days'),
+              _LegendItem(
+                  color: AppColors.success, label: 'Fast — Under 7 days'),
+              _LegendItem(
+                  color: Color(0xFFFFB300), label: 'Medium — 7 to 30 days'),
               _LegendItem(color: AppColors.error, label: 'Slow — Over 30 days'),
             ],
           ),
@@ -1042,8 +1211,7 @@ class _LinksTab extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Row(children: [
-                Icon(Icons.language_rounded,
-                    color: AppColors.accent, size: 22),
+                Icon(Icons.language_rounded, color: AppColors.accent, size: 22),
                 SizedBox(width: 10),
                 Text('Official Portal',
                     style: TextStyle(
@@ -1130,8 +1298,7 @@ class _LinksTab extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Row(children: [
-                Icon(Icons.mic_rounded,
-                    color: AppColors.primary, size: 22),
+                Icon(Icons.mic_rounded, color: AppColors.primary, size: 22),
                 SizedBox(width: 10),
                 Text('Ask CVI for Help',
                     style: TextStyle(
@@ -1239,8 +1406,7 @@ class _Chip extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
-        border:
-            Border.all(color: color.withValues(alpha: 0.4), width: 1),
+        border: Border.all(color: color.withValues(alpha: 0.4), width: 1),
       ),
       child: Text(label,
           style: TextStyle(

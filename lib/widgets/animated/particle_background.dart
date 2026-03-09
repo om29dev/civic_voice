@@ -7,15 +7,16 @@ class ParticleBackground extends StatefulWidget {
   final Color particleColor;
   final double minSpeed;
   final double maxSpeed;
+  // connectParticles disabled by default — O(n²) loop causes ANR
   final bool connectParticles;
 
   const ParticleBackground({
     super.key,
-    this.numberOfParticles = 50,
+    this.numberOfParticles = 30,
     this.particleColor = AppTheme.electricBlue,
     this.minSpeed = 0.5,
     this.maxSpeed = 2.0,
-    this.connectParticles = true,
+    this.connectParticles = false,
   });
 
   @override
@@ -41,19 +42,16 @@ class _ParticleBackgroundState extends State<ParticleBackground>
       (index) => Particle(
         x: random.nextDouble(),
         y: random.nextDouble(),
-        vx: (random.nextDouble() - 0.5) * (widget.maxSpeed - widget.minSpeed) + widget.minSpeed,
-        vy: (random.nextDouble() - 0.5) * (widget.maxSpeed - widget.minSpeed) + widget.minSpeed,
+        vx: (random.nextDouble() - 0.5) * (widget.maxSpeed - widget.minSpeed) +
+            widget.minSpeed,
+        vy: (random.nextDouble() - 0.5) * (widget.maxSpeed - widget.minSpeed) +
+            widget.minSpeed,
         size: random.nextDouble() * 3 + 1,
       ),
     );
-
-    _controller.addListener(() {
-      setState(() {
-        for (var particle in particles) {
-          particle.update();
-        }
-      });
-    });
+    // NOTE: Removed _controller.addListener(setState) — was calling setState
+    // 60x/sec causing full widget-tree rebuilds on every frame (main ANR cause).
+    // AnimatedBuilder in build() handles repaints efficiently without setState.
   }
 
   @override
@@ -65,13 +63,21 @@ class _ParticleBackgroundState extends State<ParticleBackground>
   @override
   Widget build(BuildContext context) {
     return RepaintBoundary(
-      child: CustomPaint(
-        painter: ParticlePainter(
-          particles: particles,
-          particleColor: widget.particleColor,
-          connectParticles: widget.connectParticles,
-        ),
-        child: Container(),
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          for (var particle in particles) {
+            particle.update();
+          }
+          return CustomPaint(
+            painter: ParticlePainter(
+              particles: List.of(particles),
+              particleColor: widget.particleColor,
+              connectParticles: widget.connectParticles,
+            ),
+            child: Container(),
+          );
+        },
       ),
     );
   }
@@ -121,22 +127,20 @@ class ParticlePainter extends CustomPainter {
       ..color = particleColor.withValues(alpha: 0.6)
       ..style = PaintingStyle.fill;
 
-    final linePaint = Paint()
-      ..color = particleColor.withValues(alpha: 0.1)
-      ..strokeWidth = 1
-      ..style = PaintingStyle.stroke;
-
-    // Draw connections
+    // connectParticles disabled by default — O(n²) loop caused ANR
+    // Each frame: n*(n-1)/2 = 435 sqrt() calls at 30 particles → main thread stall
     if (connectParticles) {
+      final linePaint = Paint()
+        ..color = particleColor.withValues(alpha: 0.1)
+        ..strokeWidth = 1
+        ..style = PaintingStyle.stroke;
       for (int i = 0; i < particles.length; i++) {
         for (int j = i + 1; j < particles.length; j++) {
           final p1 = particles[i];
           final p2 = particles[j];
-
           final dx = (p1.x - p2.x) * size.width;
           final dy = (p1.y - p2.y) * size.height;
           final distance = sqrt(dx * dx + dy * dy);
-
           if (distance < 150) {
             final opacity = (1 - distance / 150) * 0.3;
             linePaint.color = particleColor.withValues(alpha: opacity);
@@ -150,17 +154,9 @@ class ParticlePainter extends CustomPainter {
       }
     }
 
-    // Draw particles
+    // Draw particles — no blur (MaskFilter.blur is GPU-expensive)
     for (var particle in particles) {
       final center = Offset(particle.x * size.width, particle.y * size.height);
-      
-      // Glow effect
-      final glowPaint = Paint()
-        ..color = particleColor.withValues(alpha: 0.3)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
-      canvas.drawCircle(center, particle.size * 2, glowPaint);
-      
-      // Particle
       canvas.drawCircle(center, particle.size, paint);
     }
   }
@@ -184,7 +180,8 @@ class AnimatedGradientBackground extends StatefulWidget {
   });
 
   @override
-  State<AnimatedGradientBackground> createState() => _AnimatedGradientBackgroundState();
+  State<AnimatedGradientBackground> createState() =>
+      _AnimatedGradientBackgroundState();
 }
 
 class _AnimatedGradientBackgroundState extends State<AnimatedGradientBackground>

@@ -30,24 +30,13 @@ class _VoiceWaveformState extends State<VoiceWaveform>
   void initState() {
     super.initState();
     barHeights = List.generate(widget.numberOfBars, (_) => 0.1);
-    
+
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 100),
-    )..addListener(() {
-      if (widget.isListening) {
-        setState(() {
-          barHeights = List.generate(
-            widget.numberOfBars,
-            (_) => random.nextDouble() * 0.8 + 0.2,
-          );
-        });
-      } else {
-        setState(() {
-          barHeights = List.generate(widget.numberOfBars, (_) => 0.1);
-        });
-      }
-    });
+    );
+    // NOTE: Removed addListener(setState) — was calling setState 10x/sec
+    // causing full widget-tree rebuilds. AnimatedBuilder handles this efficiently.
 
     if (widget.isListening) {
       _controller.repeat();
@@ -62,9 +51,7 @@ class _VoiceWaveformState extends State<VoiceWaveform>
         _controller.repeat();
       } else {
         _controller.stop();
-        setState(() {
-          barHeights = List.generate(widget.numberOfBars, (_) => 0.1);
-        });
+        barHeights = List.generate(widget.numberOfBars, (_) => 0.1);
       }
     }
   }
@@ -77,13 +64,24 @@ class _VoiceWaveformState extends State<VoiceWaveform>
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size(widget.size, widget.size),
-      painter: WaveformPainter(
-        barHeights: barHeights,
-        color: widget.color,
-        isListening: widget.isListening,
-      ),
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        if (widget.isListening) {
+          barHeights = List.generate(
+            widget.numberOfBars,
+            (_) => Random().nextDouble() * 0.8 + 0.2,
+          );
+        }
+        return CustomPaint(
+          size: Size(widget.size, widget.size),
+          painter: WaveformPainter(
+            barHeights: List.of(barHeights),
+            color: widget.color,
+            isListening: widget.isListening,
+          ),
+        );
+      },
     );
   }
 }
@@ -137,14 +135,12 @@ class WaveformPainter extends CustomPainter {
         paint,
       );
 
-      // Glow effect when listening
+      // Glow effect when listening — no MaskFilter.blur (GPU-expensive)
       if (isListening) {
         final glowPaint = Paint()
-          ..color = color.withValues(alpha: 0.3)
+          ..color = color.withValues(alpha: 0.25)
           ..strokeWidth = barWidth * 1.5
-          ..strokeCap = StrokeCap.round
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
-
+          ..strokeCap = StrokeCap.round;
         canvas.drawLine(
           Offset(startX, startY),
           Offset(endX, endY),
@@ -196,7 +192,7 @@ class _CircularWaveformState extends State<CircularWaveform>
   @override
   void initState() {
     super.initState();
-    
+
     _waveController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
@@ -304,7 +300,8 @@ class CircularWavePainter extends CustomPainter {
             color.withValues(alpha: 0.4),
             Colors.transparent,
           ],
-        ).createShader(Rect.fromCircle(center: center, radius: maxRadius * 0.4));
+        ).createShader(
+            Rect.fromCircle(center: center, radius: maxRadius * 0.4));
 
       canvas.drawCircle(center, maxRadius * 0.4, glowPaint);
     }

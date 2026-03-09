@@ -10,6 +10,8 @@ import '../../features/services/screens/offline_guidance_screen.dart';
 import '../../features/profile/screens/citizen_profile_dashboard.dart';
 import '../../features/recommendations/screens/recommendations_screen.dart';
 import '../../features/services/screens/eligibility_checker_screen.dart';
+import '../../features/settings/screens/settings_screen.dart';
+import '../../features/profile/screens/edit_profile_screen.dart';
 
 import '../../providers/language_provider.dart';
 import '../../providers/auth_provider.dart';
@@ -64,6 +66,9 @@ abstract class Routes {
   static const smartForm = '/smart-form/:serviceId';
   static const formReview = '/form-review';
   static const guidedSubmit = '/guided-submit';
+  // ── New routes ──────────────────────────────────────────────────────────
+  static const settings = '/settings';
+  static const profileEdit = '/profile-edit';
 
   static String serviceDetailPath(String id) => '/service/$id';
   static String eligibilityPath(String id) => '/service/$id/eligibility';
@@ -351,6 +356,22 @@ class AppRouter {
           name: 'citizenProfile',
           pageBuilder: (context, state) =>
               _buildPage(state, const CitizenProfileDashboard()),
+        ),
+
+        // ── Settings ──────────────────────────────────────────────────────
+        GoRoute(
+          path: Routes.settings,
+          name: 'settings',
+          pageBuilder: (context, state) =>
+              _buildPage(state, const SettingsScreen()),
+        ),
+
+        // ── Edit Profile ───────────────────────────────────────────────────
+        GoRoute(
+          path: Routes.profileEdit,
+          name: 'profileEdit',
+          pageBuilder: (context, state) =>
+              _buildPage(state, const EditProfileScreen()),
         ),
 
         // ── Smart AI Form (new auto_form module) ────────────────────────────

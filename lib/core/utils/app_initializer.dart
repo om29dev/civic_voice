@@ -13,11 +13,11 @@ class AppInitializer {
 
   static late SharedPreferences _prefs;
 
-  static bool _firstLaunch  = false;
-  static bool _hasSession   = false;
+  static bool _firstLaunch = false;
+  static bool _hasSession = false;
 
   static bool get isFirstLaunch => _firstLaunch;
-  static bool get hasSession    => _hasSession;
+  static bool get hasSession => _hasSession;
 
   /// Run all startup tasks. Providers are passed so we can pre-configure them.
   static Future<void> initialize({
@@ -41,10 +41,7 @@ class AppInitializer {
     // ── 4. Sync TTS with saved language ───────────────────────────────────
     await voiceProvider?.setLanguage(savedLang);
 
-    // ── 5. Pre-load all service mock data ─────────────────────────────────
-    //    ServicesProvider already loads on construction —
-    //    call loadServices() again to ensure data is fresh.
-    await servicesProvider?.loadServices();
+    // ServicesProvider loads on construction — no need to call loadServices() again.
   }
 
   /// Mark onboarding as complete.
@@ -64,6 +61,6 @@ class AppInitializer {
   static Future<void> clearAllData() async {
     await _prefs.clear();
     _firstLaunch = true;
-    _hasSession  = false;
+    _hasSession = false;
   }
 }

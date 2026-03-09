@@ -3,50 +3,63 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:math' as math;
 
 import '../../core/constants/app_colors.dart';
 import '../../core/router/app_router.dart';
-import '../../models/user_model.dart';
+import '../../models/citizen_profile_model.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/accessibility_provider.dart';
-import '../../providers/language_provider.dart';
-import '../../providers/services_provider.dart';
-import '../../providers/voice_provider.dart';
+import '../../providers/citizen_profile_provider.dart';
 import '../../widgets/indian_card.dart';
 import '../../widgets/cvi_button.dart';
-import '../../widgets/bilingual_label.dart';
 import '../../widgets/decorative/jali_pattern.dart';
 
 // ═════════════════════════════════════════════════════════════════════════════
-// PROFILE SCREEN
+// PROFILE SCREEN  — Cloud-synced citizen identity card
 // ═════════════════════════════════════════════════════════════════════════════
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Trigger a cloud fetch on first load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = context.read<CitizenProfileProvider>();
+      if (provider.profile == null && !provider.isLoading) {
+        provider.fetchProfile();
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final profileProvider = context.watch<CitizenProfileProvider>();
     final auth = context.watch<AuthProvider>();
-    final user = auth.currentUser;
+    final profile = profileProvider.profile;
+    final isLoading = profileProvider.isLoading;
+    final isGuest = auth.isGuest;
 
     return Scaffold(
       backgroundColor: AppColors.bgDeep,
       body: Stack(
         children: [
-          // Background Jali
-          const Positioned.fill(
-            child: JaliPattern(opacity: 0.03),
-          ),
-
+          const Positioned.fill(child: JaliPattern(opacity: 0.03)),
           CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
-              // Premium App Bar
+              // ── App Bar ──────────────────────────────────────────────────
               SliverAppBar(
                 backgroundColor: AppColors.bgDeep.withValues(alpha: 0.9),
                 elevation: 0,
                 pinned: true,
-                centerTitle: false,
+                centerTitle: true,
                 title: Text(
                   'My Profile',
                   style: GoogleFonts.playfairDisplay(
@@ -57,99 +70,95 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 actions: [
                   IconButton(
-                    icon: const Icon(Icons.logout_rounded,
-                        color: AppColors.semanticError, size: 24),
-                    onPressed: () => _confirmLogout(context, auth),
-                    tooltip: 'Sign Out',
+                    icon: const Icon(Icons.settings_outlined,
+                        color: AppColors.textSecondary, size: 24),
+                    tooltip: 'Settings',
+                    onPressed: () => context.push(Routes.settings),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 4),
                 ],
               ),
 
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                    // Header Card
-                    _ProfileHeader(user: user),
-                    const SizedBox(height: 32),
+              if (isLoading && profile == null)
+                const SliverFillRemaining(
+                  child: Center(
+                    child: CircularProgressIndicator(color: AppColors.saffron),
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      // ── Hero Header ─────────────────────────────────────
+                      _ProfileHero(
+                        profile: profile,
+                        isGuest: isGuest,
+                        onEditTap: () => context.push(Routes.profileEdit),
+                      ),
+                      const SizedBox(height: 20),
 
-                    // Applications
-                    const _MySectionHeader(
-                        'My Applications', 'मेरे आवेदन', Icons.apps_rounded),
-                    const SizedBox(height: 16),
-                    _ApplicationsSection(),
-                    const SizedBox(height: 32),
+                      // ── Completion Banner ────────────────────────────────
+                      if (profile != null && profile.isProfileIncomplete)
+                        _CompletionBanner(
+                          percent: profile.profileCompletionPercent,
+                          onTap: () => context.push(Routes.profileEdit),
+                        ),
+                      if (profile != null && profile.isProfileIncomplete)
+                        const SizedBox(height: 20),
 
-                    // Language & Region
-                    const _MySectionHeader('Language & Region',
-                        'भाषा और क्षेत्र', Icons.language_rounded),
-                    const SizedBox(height: 16),
-                    _LanguageSection(),
-                    const SizedBox(height: 32),
+                      // ── Quick Actions ────────────────────────────────────
+                      _QuickActions(),
+                      const SizedBox(height: 28),
 
-                    // Voice Settings
-                    const _MySectionHeader(
-                        'Voice Settings', 'आवाज़ सेटिंग', Icons.mic_rounded),
-                    const SizedBox(height: 16),
-                    _VoiceSettingsSection(),
-                    const SizedBox(height: 32),
+                      // ── Personal Details ─────────────────────────────────
+                      if (profile != null) ...[
+                        _CardSectionHeader(
+                            'Personal Details', Icons.person_outline_rounded),
+                        const SizedBox(height: 12),
+                        _PersonalCard(profile: profile),
+                        const SizedBox(height: 20),
 
-                    // Privacy & Security
-                    const _MySectionHeader('Privacy & Security',
-                        'गोपनीयता और सुरक्षा', Icons.security_rounded),
-                    const SizedBox(height: 16),
-                    _PrivacySection(),
-                    const SizedBox(height: 32),
+                        // ── Location ───────────────────────────────────────
+                        _CardSectionHeader(
+                            'Location', Icons.location_on_outlined),
+                        const SizedBox(height: 12),
+                        _LocationCard(profile: profile),
+                        const SizedBox(height: 20),
 
-                    // About CVI
-                    const _MySectionHeader('About CVI', 'सीवीआई के बारे में',
-                        Icons.info_outline_rounded),
-                    const SizedBox(height: 16),
-                    _AboutSection(),
-                    const SizedBox(height: 32),
-                  ]),
+                        // ── Financial & Social ─────────────────────────────
+                        _CardSectionHeader(
+                            'Financial & Social', Icons.currency_rupee_rounded),
+                        const SizedBox(height: 12),
+                        _FinancialCard(profile: profile),
+                        const SizedBox(height: 20),
+
+                        // ── Document IDs ───────────────────────────────────
+                        _CardSectionHeader(
+                            'Government Documents', Icons.credit_card_rounded),
+                        const SizedBox(height: 12),
+                        _DocumentsCard(profile: profile),
+                        const SizedBox(height: 20),
+
+                        // ── Disability (conditional) ───────────────────────
+                        if (profile.isDisabled) ...[
+                          _CardSectionHeader(
+                              'Disability Info', Icons.accessible_rounded),
+                          const SizedBox(height: 12),
+                          _DisabilityCard(profile: profile),
+                          const SizedBox(height: 20),
+                        ],
+                      ],
+
+                      // ── Guest CTA ────────────────────────────────────────
+                      if (isGuest) ...[
+                        _GuestCta(),
+                        const SizedBox(height: 20),
+                      ],
+                    ]),
+                  ),
                 ),
-              ),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _confirmLogout(BuildContext context, AuthProvider auth) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: AppColors.bgMid,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: const BorderSide(color: AppColors.surfaceBorder),
-        ),
-        title: Text('Sign Out',
-            style: GoogleFonts.playfairDisplay(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary)),
-        content: Text('Are you sure you want to sign out?',
-            style: GoogleFonts.inter(
-                color: AppColors.textSecondary, fontSize: 14)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel',
-                style: GoogleFonts.inter(color: AppColors.textSecondary)),
-          ),
-          CviButton(
-            text: 'Sign Out',
-            variant: CviButtonVariant.primary,
-            width: 120,
-            onPressed: () async {
-              final nav = Navigator.of(context);
-              await auth.logout();
-              if (nav.mounted) nav.pop();
-            },
           ),
         ],
       ),
@@ -158,33 +167,57 @@ class ProfileScreen extends StatelessWidget {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// HEADER
+// HERO HEADER
 // ═════════════════════════════════════════════════════════════════════════════
 
-class _ProfileHeader extends StatelessWidget {
-  final UserModel? user;
-  const _ProfileHeader({required this.user});
+class _ProfileHero extends StatelessWidget {
+  final CitizenProfileModel? profile;
+  final bool isGuest;
+  final VoidCallback onEditTap;
+
+  const _ProfileHero({
+    required this.profile,
+    required this.isGuest,
+    required this.onEditTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final initials = user?.initials ?? 'G';
-    final name = user?.name ?? 'Guest User';
-    final email = user?.email;
-    final mobile = user?.mobile;
-    final joined = user?.createdAt;
-    final isGuest = user?.isGuest ?? true;
+    final name = profile?.fullName ?? 'Guest User';
+    final email = profile?.email ?? '';
+    final mobile = profile?.mobile ?? '';
+    final pct = profile?.profileCompletionPercent ?? 0;
+    final initials = name.trim().isNotEmpty
+        ? name
+            .trim()
+            .split(' ')
+            .where((p) => p.isNotEmpty)
+            .take(2)
+            .map((p) => p[0].toUpperCase())
+            .join()
+        : 'G';
 
     return IndianCard(
       isPremium: true,
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
+          // Avatar + completion ring
           Stack(
+            alignment: Alignment.center,
             children: [
-              // Avatar with gold ring
+              // Completion ring
+              SizedBox(
+                width: 100,
+                height: 100,
+                child: CustomPaint(
+                  painter: _RingPainter(percent: pct / 100),
+                ),
+              ),
+              // Avatar
               Container(
-                width: 76,
-                height: 76,
+                width: 80,
+                height: 80,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: const LinearGradient(
@@ -195,38 +228,39 @@ class _ProfileHeader extends StatelessWidget {
                   border: Border.all(color: const Color(0xFFD4930A), width: 2),
                   boxShadow: const [
                     BoxShadow(
-                      color: Color(0x66FF6B1A),
-                      blurRadius: 20,
-                      spreadRadius: 2,
-                    ),
+                        color: Color(0x66FF6B1A),
+                        blurRadius: 20,
+                        spreadRadius: 2),
                   ],
                 ),
                 child: Center(
                   child: Text(
                     initials,
                     style: GoogleFonts.playfairDisplay(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
-              // Edit overlay
+              // Edit badge
               if (!isGuest)
                 Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.bgDeep,
-                      border: Border.all(color: AppColors.gold, width: 1.5),
+                  right: 8,
+                  bottom: 8,
+                  child: GestureDetector(
+                    onTap: onEditTap,
+                    child: Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.bgDeep,
+                        border: Border.all(color: AppColors.gold, width: 1.5),
+                      ),
+                      child: const Icon(Icons.edit_rounded,
+                          color: AppColors.gold, size: 14),
                     ),
-                    child: const Icon(Icons.edit_rounded,
-                        color: AppColors.gold, size: 16),
                   ),
                 ),
             ],
@@ -235,59 +269,59 @@ class _ProfileHeader extends StatelessWidget {
               end: const Offset(1, 1),
               duration: 600.ms,
               curve: Curves.elasticOut),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
+
+          // Name
           Text(name,
+              textAlign: TextAlign.center,
               style: GoogleFonts.playfairDisplay(
-                  fontSize: 26,
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary)),
-          if (email != null || mobile != null) ...[
-            const SizedBox(height: 8),
-            if (mobile != null)
-              Text('+91 $mobile',
-                  style: GoogleFonts.inter(
-                      color: AppColors.textSecondary, fontSize: 14)),
-            if (email != null)
-              Text(email,
-                  style: GoogleFonts.inter(
-                      color: AppColors.textSecondary, fontSize: 14)),
-          ],
-          if (joined != null) ...[
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.surfaceBorder),
-              ),
-              child: Text(
-                'Member since ${_fmtDate(joined)}',
-                style: GoogleFonts.spaceMono(
-                    color: AppColors.textMuted, fontSize: 11),
-              ),
+          const SizedBox(height: 6),
+
+          // Contact chips
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8,
+            runSpacing: 6,
+            children: [
+              if (mobile.isNotEmpty) _contactChip(Icons.phone, mobile),
+              if (email.isNotEmpty) _contactChip(Icons.email, email),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Completion bar text
+          if (!isGuest)
+            Text(
+              '$pct% profile complete',
+              style: GoogleFonts.spaceMono(
+                  color: pct >= 70 ? AppColors.emerald : AppColors.saffron,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold),
             ),
-          ],
-          if (!isGuest) ...[
-            const SizedBox(height: 20),
-            const Divider(color: AppColors.surfaceBorder, height: 1),
-            const SizedBox(height: 16),
-            // Verification badges
+
+          // Verified badges
+          if (!isGuest && profile != null) ...[
+            const SizedBox(height: 12),
             Wrap(
-              spacing: 12,
-              runSpacing: 8,
+              spacing: 8,
+              runSpacing: 6,
               alignment: WrapAlignment.center,
               children: [
-                if (mobile != null)
-                  const _VerifiedBadge(label: 'Mobile Verified'),
-                if (email != null)
-                  const _VerifiedBadge(label: 'Email Verified'),
-                const _VerifiedBadge(label: 'Aadhaar Linked', isGold: true),
+                if (mobile.isNotEmpty)
+                  _badge('Mobile Verified', AppColors.emerald),
+                if (email.isNotEmpty)
+                  _badge('Email Verified', AppColors.emerald),
+                if (profile!.isKycVerified)
+                  _badge('KYC Verified', AppColors.gold),
               ],
             ),
           ],
+
           if (isGuest) ...[
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             CviButton(
               text: 'Create Account',
               variant: CviButtonVariant.gold,
@@ -299,48 +333,40 @@ class _ProfileHeader extends StatelessWidget {
     ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.06, end: 0);
   }
 
-  static String _fmtDate(DateTime d) => '${_months[d.month - 1]} ${d.year}';
-
-  static const _months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec'
-  ];
-}
-
-class _VerifiedBadge extends StatelessWidget {
-  final String label;
-  final bool isGold;
-  const _VerifiedBadge({required this.label, this.isGold = false});
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isGold ? AppColors.gold : AppColors.emerald;
-
+  Widget _contactChip(IconData icon, String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
+        border: Border.all(color: AppColors.surfaceBorder),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-              isGold ? Icons.verified_user_rounded : Icons.check_circle_rounded,
-              color: color,
-              size: 14),
-          const SizedBox(width: 6),
+          Icon(icon, size: 13, color: AppColors.textMuted),
+          const SizedBox(width: 5),
+          Text(label,
+              style: GoogleFonts.inter(
+                  color: AppColors.textSecondary, fontSize: 12)),
+        ],
+      ),
+    );
+  }
+
+  Widget _badge(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.check_circle_rounded, color: color, size: 13),
+          const SizedBox(width: 5),
           Text(label,
               style: GoogleFonts.inter(
                   color: color, fontSize: 12, fontWeight: FontWeight.w600)),
@@ -350,919 +376,184 @@ class _VerifiedBadge extends StatelessWidget {
   }
 }
 
+// ─── Ring Painter ─────────────────────────────────────────────────────────────
+
+class _RingPainter extends CustomPainter {
+  final double percent;
+  const _RingPainter({required this.percent});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 4;
+    final stroke = 4.0;
+
+    final bgPaint = Paint()
+      ..color = AppColors.surfaceBorder
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = stroke;
+
+    final fgPaint = Paint()
+      ..color = percent >= 0.7 ? AppColors.emerald : AppColors.saffron
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = stroke
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawCircle(center, radius, bgPaint);
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -math.pi / 2,
+      2 * math.pi * percent,
+      false,
+      fgPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_RingPainter old) => old.percent != percent;
+}
+
 // ═════════════════════════════════════════════════════════════════════════════
-// APPLICATIONS SECTION
+// COMPLETION BANNER
 // ═════════════════════════════════════════════════════════════════════════════
 
-class _ApplicationsSection extends StatelessWidget {
+class _CompletionBanner extends StatelessWidget {
+  final int percent;
+  final VoidCallback onTap;
+  const _CompletionBanner({required this.percent, required this.onTap});
+
   @override
   Widget build(BuildContext context) {
-    final sp = context.watch<ServicesProvider>();
-    final services = sp.allServices;
-
-    // Only show services with any progress
-    final active = services.where((s) {
-      final prog = sp.getProgress(s.id);
-      return prog.any((v) => v);
-    }).toList();
-
-    if (active.isEmpty) {
-      return IndianCard(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: AppColors.surface,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.folder_open_rounded,
-                  color: AppColors.textMuted, size: 36),
+    return IndianCard(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppColors.saffron.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
             ),
-            const SizedBox(height: 16),
-            Text('No applications started',
-                style: GoogleFonts.playfairDisplay(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18)),
-            const SizedBox(height: 8),
-            Text('Explore services to begin your application process.',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                    color: AppColors.textSecondary, fontSize: 13)),
-            const SizedBox(height: 20),
-            CviButton(
-              text: 'Browse Services',
-              variant: CviButtonVariant.secondary,
-              width: 160,
-              onPressed: () => context.go(Routes.services),
-            )
-          ],
-        ),
-      );
-    }
-
-    return Column(
-      children: active.map((s) {
-        final progress = sp.getProgress(s.id);
-        final done = progress.where((v) => v).length;
-        final total = progress.length;
-        final pct = total > 0 ? done / total : 0.0;
-        final complete = pct == 1.0;
-
-        final (statusLabel, statusColor) = complete
-            ? ('Approved', AppColors.emerald)
-            : done > 0
-                ? ('Processing', AppColors.saffron)
-                : ('Submitted', AppColors.accentBlue);
-
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: IndianCard(
-            onTap: () {
-              sp.selectService(s.id);
-              context.go(Routes.serviceDetailPath(s.id));
-            },
-            padding: const EdgeInsets.all(16),
+            child: const Icon(Icons.info_outline_rounded,
+                color: AppColors.saffron, size: 22),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: statusColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(s.iconEmoji,
-                          style: const TextStyle(fontSize: 24)),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(s.localizedName('en'),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.poppins(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary)),
-                          const SizedBox(height: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: statusColor.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(
-                                  color: statusColor.withValues(alpha: 0.3),
-                                  width: 1),
-                            ),
-                            child: Text(statusLabel.toUpperCase(),
-                                style: GoogleFonts.spaceMono(
-                                    color: statusColor,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.5)),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(Icons.arrow_forward_ios_rounded,
-                        color: AppColors.textMuted, size: 16),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: pct,
-                          backgroundColor: AppColors.bgDeep,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(statusColor),
-                          minHeight: 6,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text('$done/$total steps',
-                        style: GoogleFonts.spaceMono(
-                            color: AppColors.textSecondary, fontSize: 12)),
-                  ],
-                ),
-              ],
-            ),
-          ).animate().fadeIn().slideY(begin: 0.04, end: 0),
-        );
-      }).toList(),
-    );
-  }
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
-// LANGUAGE & REGION
-// ═════════════════════════════════════════════════════════════════════════════
-
-class _LanguageSection extends StatelessWidget {
-  static const _langs = [
-    ('en', '🇬🇧', 'English'),
-    ('hi', '🇮🇳', 'हिन्दी'),
-    ('mr', '🇮🇳', 'मराठी'),
-    ('ta', '🇮🇳', 'தமிழ்'),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final lp = context.watch<LanguageProvider>();
-    final current = lp.currentLanguage;
-
-    return IndianCard(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 4 language chips
-          GridView.count(
-            shrinkWrap: true,
-            crossAxisCount: 2,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: 2.8,
-            physics: const NeverScrollableScrollPhysics(),
-            children: _langs.map((l) {
-              final (code, flag, name) = l;
-              final active = code == current;
-              return GestureDetector(
-                onTap: () => lp.switchLanguage(code),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 220),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: active
-                        ? AppColors.saffron.withValues(alpha: 0.15)
-                        : AppColors.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color:
-                          active ? AppColors.saffron : AppColors.surfaceBorder,
-                      width: active ? 1.5 : 1,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Text(flag, style: const TextStyle(fontSize: 18)),
-                      const SizedBox(width: 10),
-                      Text(name,
-                          style: GoogleFonts.poppins(
-                            color: active
-                                ? AppColors.saffron
-                                : AppColors.textSecondary,
-                            fontSize: 14,
-                            fontWeight:
-                                active ? FontWeight.w600 : FontWeight.w500,
-                          )),
-                      if (active) ...[
-                        const Spacer(),
-                        const Icon(Icons.check_circle_rounded,
-                            color: AppColors.saffron, size: 18),
-                      ],
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 20),
-          const Divider(color: AppColors.surfaceBorder, height: 1),
-          const SizedBox(height: 20),
-
-          // Font size
-          Text('Text Size',
-              style: GoogleFonts.inter(
-                  color: AppColors.textSecondary,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500)),
-          const SizedBox(height: 12),
-          _SegmentedSizeControl(),
-        ],
-      ),
-    ).animate().fadeIn(delay: 100.ms);
-  }
-}
-
-class _SegmentedSizeControl extends StatefulWidget {
-  @override
-  State<_SegmentedSizeControl> createState() => _SegmentedSizeControlState();
-}
-
-class _SegmentedSizeControlState extends State<_SegmentedSizeControl> {
-  static const _options = ['Small', 'Medium', 'Large'];
-  static const _scaleValues = [0.85, 1.0, 1.2];
-
-  @override
-  Widget build(BuildContext context) {
-    final access = context.watch<AccessibilityProvider>();
-    int selected = _scaleValues.indexOf(access.textScaleFactor);
-    if (selected == -1) selected = 1; // fallback to Medium
-
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: AppColors.bgDeep,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.surfaceBorder),
-      ),
-      child: Row(
-        children: List.generate(3, (i) {
-          final active = selected == i;
-          return Expanded(
-            child: GestureDetector(
-              onTap: () => access.setTextScale(_scaleValues[i]),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(
-                  color: active ? AppColors.bgMid : Colors.transparent,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: active
-                      ? [
-                          const BoxShadow(
-                              color: Colors.black26,
-                              blurRadius: 4,
-                              offset: Offset(0, 2))
-                        ]
-                      : null,
-                ),
-                child: Text(_options[i],
-                    textAlign: TextAlign.center,
+                Text('Complete your profile',
                     style: GoogleFonts.poppins(
-                        color: active
-                            ? AppColors.textPrimary
-                            : AppColors.textSecondary,
-                        fontSize: 13,
-                        fontWeight:
-                            active ? FontWeight.w600 : FontWeight.w500)),
-              ),
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14)),
+                Text(
+                  'Only $percent% done. A complete profile helps you find the right schemes.',
+                  style: GoogleFonts.inter(
+                      color: AppColors.textSecondary, fontSize: 12),
+                ),
+              ],
             ),
-          );
-        }),
+          ),
+          const SizedBox(width: 10),
+          GestureDetector(
+            onTap: onTap,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.saffron,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text('Fill',
+                  style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600)),
+            ),
+          ),
+        ],
       ),
-    );
+    ).animate().fadeIn(delay: 200.ms).slideX(begin: 0.05, end: 0);
   }
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// VOICE SETTINGS
+// QUICK ACTIONS
 // ═════════════════════════════════════════════════════════════════════════════
 
-class _VoiceSettingsSection extends StatefulWidget {
-  @override
-  State<_VoiceSettingsSection> createState() => _VoiceSettingsSectionState();
-}
-
-class _VoiceSettingsSectionState extends State<_VoiceSettingsSection> {
-  bool _wakeWord = false;
-
+class _QuickActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final vp = context.watch<VoiceProvider>();
-
-    return IndianCard(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        children: [
-          // TTS speed
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Speech Speed',
-                    style: GoogleFonts.inter(
-                        color: AppColors.textPrimary,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600)),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.gold.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    '${vp.speechRate.toStringAsFixed(1)}×',
-                    style: GoogleFonts.spaceMono(
-                        color: AppColors.gold,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13),
-                  ),
-                ),
-              ],
-            ),
+    return Row(
+      children: [
+        Expanded(
+          child: _ActionTile(
+            emoji: '✏️',
+            label: 'Edit Profile',
+            onTap: () => context.push(Routes.profileEdit),
           ),
-          SliderTheme(
-            data: SliderThemeData(
-              activeTrackColor: AppColors.gold,
-              inactiveTrackColor: AppColors.bgDeep,
-              thumbColor: AppColors.gold,
-              overlayColor: AppColors.gold.withValues(alpha: 0.15),
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
-              trackHeight: 4,
-            ),
-            child: Slider(
-              value: vp.speechRate,
-              min: 0.5,
-              max: 2.0,
-              divisions: 15,
-              onChanged: (v) => vp.setSpeechRate(v),
-            ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _ActionTile(
+            emoji: '⚙️',
+            label: 'Settings',
+            onTap: () => context.push(Routes.settings),
           ),
-          const Divider(color: AppColors.surfaceBorder, height: 1),
-
-          // Voice gender
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text('Voice Gender',
-                      style: GoogleFonts.inter(
-                          color: AppColors.textPrimary,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600)),
-                ),
-                _GenderToggle(current: vp.voiceGender, vp: vp),
-              ],
-            ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _ActionTile(
+            emoji: '📋',
+            label: 'My Applications',
+            onTap: () => context.push(Routes.myApplications),
           ),
-          const Divider(color: AppColors.surfaceBorder, height: 1),
-
-          // Wake word
-          SwitchListTile(
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-            title: Text('Wake Word "Hey CVI"',
-                style: GoogleFonts.inter(
-                    color: AppColors.textPrimary,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500)),
-            subtitle: Text('Beta feature',
-                style: GoogleFonts.inter(
-                    color: AppColors.textMuted, fontSize: 12)),
-            value: _wakeWord,
-            activeThumbColor: AppColors.saffron,
-            activeTrackColor: AppColors.saffron.withValues(alpha: 0.3),
-            inactiveTrackColor: AppColors.bgDeep,
-            onChanged: (v) => setState(() => _wakeWord = v),
-          ),
-          const Divider(color: AppColors.surfaceBorder, height: 1),
-
-          // Mic permission
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: _MicPermissionCard(vp: vp),
-          ),
-        ],
-      ),
+        ),
+      ],
     ).animate().fadeIn(delay: 150.ms);
   }
 }
 
-class _GenderToggle extends StatelessWidget {
-  final String current;
-  final VoiceProvider vp;
-  const _GenderToggle({required this.current, required this.vp});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.bgDeep,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.surfaceBorder),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: ['female', 'male'].map((g) {
-          final active = current == g;
-          return GestureDetector(
-            onTap: () => vp.setVoiceGender(g),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: active ? AppColors.surface : Colors.transparent,
-                borderRadius: BorderRadius.circular(9),
-                boxShadow: active
-                    ? [
-                        const BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 2,
-                            offset: Offset(0, 1))
-                      ]
-                    : null,
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    g == 'female' ? Icons.female_rounded : Icons.male_rounded,
-                    size: 16,
-                    color: active ? AppColors.saffron : AppColors.textMuted,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    g == 'female' ? 'Female' : 'Male',
-                    style: GoogleFonts.inter(
-                      color: active
-                          ? AppColors.textPrimary
-                          : AppColors.textSecondary,
-                      fontSize: 13,
-                      fontWeight: active ? FontWeight.w600 : FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-}
-
-class _MicPermissionCard extends StatelessWidget {
-  final VoiceProvider vp;
-  const _MicPermissionCard({required this.vp});
-
-  @override
-  Widget build(BuildContext context) {
-    final hasPerms = vp.state != VoiceState.permissionDenied;
-    final color = hasPerms ? AppColors.emerald : AppColors.semanticError;
-
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(hasPerms ? Icons.mic_rounded : Icons.mic_off_rounded,
-              color: color, size: 20),
-        ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Text(
-            hasPerms
-                ? 'Microphone setup complete'
-                : 'Microphone access required',
-            style: GoogleFonts.inter(
-                color: hasPerms ? AppColors.textPrimary : color,
-                fontSize: 14,
-                fontWeight: FontWeight.w500),
-          ),
-        ),
-        if (!hasPerms)
-          CviButton(
-            text: 'Fix',
-            variant: CviButtonVariant.secondary,
-            width: 80,
-            onPressed: () => vp.requestMicPermission(),
-          ),
-      ],
-    );
-  }
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
-// PRIVACY & SECURITY
-// ═════════════════════════════════════════════════════════════════════════════
-
-class _PrivacySection extends StatefulWidget {
-  @override
-  State<_PrivacySection> createState() => _PrivacySectionState();
-}
-
-class _PrivacySectionState extends State<_PrivacySection> {
-  bool _biometric = false;
+class _ActionTile extends StatelessWidget {
+  final String emoji;
+  final String label;
+  final VoidCallback onTap;
+  const _ActionTile(
+      {required this.emoji, required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return IndianCard(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        children: [
-          // Biometric
-          SwitchListTile(
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-            title: Text('Biometric Lock',
-                style: GoogleFonts.inter(
-                    color: AppColors.textPrimary,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500)),
-            subtitle: Text('Require fingerprint to open app',
-                style: GoogleFonts.inter(
-                    color: AppColors.textMuted, fontSize: 13)),
-            value: _biometric,
-            activeThumbColor: AppColors.saffron,
-            activeTrackColor: AppColors.saffron.withValues(alpha: 0.3),
-            inactiveTrackColor: AppColors.bgDeep,
-            onChanged: (v) => setState(() => _biometric = v),
-          ),
-          const Divider(color: AppColors.surfaceBorder, height: 1),
-
-          // Clear history
-          _SettingsListTile(
-            icon: Icons.delete_outline_rounded,
-            title: 'Clear Conversation History',
-            iconColor: AppColors.semanticError,
-            textColor: AppColors.semanticError,
-            onTap: () => _confirmClear(context),
-          ),
-          const Divider(color: AppColors.surfaceBorder, height: 1),
-
-          // Export data
-          _SettingsListTile(
-            icon: Icons.download_rounded,
-            title: 'Export My Data',
-            showChevron: true,
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  backgroundColor: AppColors.bgMid,
-                  content: Text(
-                      'Data export initiated. You will receive an email.',
-                      style: TextStyle(color: AppColors.textPrimary)),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-          ),
-          const Divider(color: AppColors.surfaceBorder, height: 1),
-
-          // Delete account
-          _SettingsListTile(
-            icon: Icons.person_remove_rounded,
-            title: 'Delete Account',
-            iconColor: AppColors.semanticError,
-            textColor: AppColors.semanticError,
-            isBold: true,
-            onTap: () => _confirmDelete(context),
-          ),
-        ],
-      ),
-    ).animate().fadeIn(delay: 200.ms);
-  }
-
-  void _confirmClear(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: AppColors.bgMid,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: const BorderSide(color: AppColors.surfaceBorder),
-        ),
-        title: Text('Clear History',
-            style: GoogleFonts.playfairDisplay(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary)),
-        content: Text('This will permanently clear all conversation history.',
-            style: GoogleFonts.inter(
-                color: AppColors.textSecondary, fontSize: 14)),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Cancel',
-                  style: GoogleFonts.inter(color: AppColors.textSecondary))),
-          CviButton(
-            text: 'Clear',
-            variant: CviButtonVariant.primary,
-            width: 100,
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text('Conversation history cleared.'),
-                    behavior: SnackBarBehavior.floating),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _confirmDelete(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: AppColors.bgMid,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: const BorderSide(color: AppColors.semanticError, width: 2),
-        ),
-        title: Row(
+      onTap: onTap,
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Icon(Icons.warning_amber_rounded,
-                color: AppColors.semanticError, size: 28),
-            const SizedBox(width: 10),
-            Text('Delete Account',
-                style: GoogleFonts.playfairDisplay(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.semanticError)),
+            Text(emoji, style: const TextStyle(fontSize: 24)),
+            const SizedBox(height: 6),
+            Text(label,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                    color: AppColors.textSecondary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500)),
           ],
         ),
-        content: Text(
-            'This will permanently delete your account and all data. This action CANNOT be undone.',
-            style:
-                GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 14)),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Cancel',
-                  style: GoogleFonts.inter(color: AppColors.textSecondary))),
-          TextButton(
-            onPressed: () async {
-              final nav = Navigator.of(context);
-              await context.read<AuthProvider>().logout();
-              if (nav.mounted) nav.pop();
-            },
-            child: Text('Delete Account',
-                style: GoogleFonts.inter(
-                    color: AppColors.semanticError,
-                    fontWeight: FontWeight.bold)),
-          ),
-        ],
       ),
-    );
-  }
-}
-
-class _SettingsListTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final VoidCallback onTap;
-  final Color iconColor;
-  final Color textColor;
-  final bool isBold;
-  final bool showChevron;
-
-  const _SettingsListTile({
-    required this.icon,
-    required this.title,
-    required this.onTap,
-    this.iconColor = AppColors.textSecondary,
-    this.textColor = AppColors.textPrimary,
-    this.isBold = false,
-    this.showChevron = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: iconColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(icon, color: iconColor, size: 20),
-      ),
-      title: Text(title,
-          style: GoogleFonts.inter(
-              color: textColor,
-              fontSize: 15,
-              fontWeight: isBold ? FontWeight.w600 : FontWeight.w500)),
-      trailing: showChevron
-          ? const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted)
-          : null,
-      onTap: onTap,
     );
   }
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// ABOUT CVI
+// SECTION HEADER
 // ═════════════════════════════════════════════════════════════════════════════
 
-class _AboutSection extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return IndianCard(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        children: [
-          _SettingsListTile(
-            icon: Icons.info_outline_rounded,
-            title: 'App Version',
-            onTap: () {},
-            // Use trailing instead of trying to hack the list tile
-          ),
-          // Quick hack to add the trailing version since we used a rigid list tile class
-          Transform.translate(
-            offset: const Offset(0, -45),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 20),
-                child: Text('1.0.0 (Build 1)',
-                    style: GoogleFonts.spaceMono(
-                        color: AppColors.textMuted, fontSize: 12)),
-              ),
-            ),
-          ),
-          const Divider(color: AppColors.surfaceBorder, height: 1),
-          _SettingsListTile(
-            icon: Icons.new_releases_outlined,
-            title: "What's New",
-            showChevron: true,
-            onTap: () => _showChangelog(context),
-          ),
-          const Divider(color: AppColors.surfaceBorder, height: 1),
-          _SettingsListTile(
-            icon: Icons.star_outline_rounded,
-            title: 'Rate on Play Store',
-            iconColor: AppColors.gold,
-            showChevron: true,
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text('Opening Play Store...'),
-                    behavior: SnackBarBehavior.floating),
-              );
-            },
-          ),
-          const Divider(color: AppColors.surfaceBorder, height: 1),
-          _SettingsListTile(
-            icon: Icons.share_outlined,
-            title: 'Share CVI',
-            showChevron: true,
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text('Share link copied!'),
-                    behavior: SnackBarBehavior.floating),
-              );
-            },
-          ),
-        ],
-      ),
-    ).animate().fadeIn(delay: 250.ms);
-  }
-
-  void _showChangelog(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (_) => Container(
-        decoration: const BoxDecoration(
-          color: AppColors.bgDeep,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-          border:
-              Border(top: BorderSide(color: AppColors.surfaceBorder, width: 1)),
-        ),
-        padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceBorder,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  const Icon(Icons.new_releases_rounded,
-                      color: AppColors.saffron, size: 28),
-                  const SizedBox(width: 12),
-                  Text("What's New in v1.0.0",
-                      style: GoogleFonts.playfairDisplay(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary)),
-                ],
-              ),
-              const SizedBox(height: 24),
-              ...[
-                '🎤 AI-powered voice assistant for 16 major Indian government services',
-                '🌐 4 native language support: English, Hindi, Marathi, Tamil',
-                '🏛️ "Bharat Silicon" premium design system implementation',
-                '📋 Step-by-step guidance and eligibility checking',
-                '🔐 Secure authentication and session management',
-              ].map((item) {
-                final icon = item.substring(0, 2);
-                final text = item.substring(2);
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(icon, style: const TextStyle(fontSize: 18)),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(text,
-                              style: GoogleFonts.inter(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 14,
-                                  height: 1.4)),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }),
-              const SizedBox(height: 16),
-              CviButton(
-                text: 'Close',
-                variant: CviButtonVariant.primary,
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─── Section header helper ────────────────────────────────────────────────────
-
-class _MySectionHeader extends StatelessWidget {
+class _CardSectionHeader extends StatelessWidget {
   final String title;
-  final String hindiTitle;
   final IconData icon;
-  const _MySectionHeader(this.title, this.hindiTitle, this.icon);
+  const _CardSectionHeader(this.title, this.icon);
 
   @override
   Widget build(BuildContext context) {
@@ -1270,32 +561,269 @@ class _MySectionHeader extends StatelessWidget {
       children: [
         Container(
           width: 4,
-          height: 24,
+          height: 20,
           decoration: BoxDecoration(
-            color: AppColors.saffron,
-            borderRadius: BorderRadius.circular(2),
-          ),
+              color: AppColors.saffron, borderRadius: BorderRadius.circular(2)),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 10),
         Container(
-          padding: const EdgeInsets.all(6),
+          padding: const EdgeInsets.all(5),
           decoration: BoxDecoration(
-            color: AppColors.gold.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(8),
+            color: AppColors.gold.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(7),
           ),
-          child: Icon(icon, color: AppColors.gold, size: 16),
+          child: Icon(icon, color: AppColors.gold, size: 15),
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: BilingualLabel(
-            englishText: title,
-            hindiText: hindiTitle,
-            scale: 1.1,
-            englishColor: AppColors.textPrimary,
-            hindiColor: AppColors.textMuted,
-          ),
-        ),
+        const SizedBox(width: 10),
+        Text(title,
+            style: GoogleFonts.poppins(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w600,
+                fontSize: 15)),
       ],
     );
   }
 }
+
+// ═════════════════════════════════════════════════════════════════════════════
+// DETAILS CARDS
+// ═════════════════════════════════════════════════════════════════════════════
+
+class _PersonalCard extends StatelessWidget {
+  final CitizenProfileModel profile;
+  const _PersonalCard({required this.profile});
+
+  @override
+  Widget build(BuildContext context) {
+    final age = profile.computedAge;
+    return IndianCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          _row('Full Name', profile.fullName, Icons.person_outline_rounded),
+          if (profile.dateOfBirth != null) ...[
+            _divider(),
+            _row(
+              'Date of Birth',
+              '${profile.dateOfBirth!.day}/${profile.dateOfBirth!.month}/${profile.dateOfBirth!.year}',
+              Icons.cake_outlined,
+            ),
+            _divider(),
+            _row('Age', '$age years', Icons.timelapse_rounded),
+          ],
+          if (profile.gender != null) ...[
+            _divider(),
+            _row('Gender', profile.gender!, Icons.wc_rounded),
+          ],
+          if (profile.maritalStatus != null) ...[
+            _divider(),
+            _row('Marital Status', profile.maritalStatus!,
+                Icons.favorite_border_rounded),
+          ],
+        ],
+      ),
+    ).animate().fadeIn(delay: 100.ms);
+  }
+}
+
+class _LocationCard extends StatelessWidget {
+  final CitizenProfileModel profile;
+  const _LocationCard({required this.profile});
+
+  @override
+  Widget build(BuildContext context) {
+    return IndianCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          if (profile.state.isNotEmpty && profile.state != 'Not Set')
+            _row('State / UT', profile.state, Icons.map_outlined),
+          if (profile.district != null) ...[
+            _divider(),
+            _row('District', profile.district!, Icons.location_city_outlined),
+          ],
+          if (profile.pincode != null) ...[
+            _divider(),
+            _row('Pincode', profile.pincode!, Icons.pin_drop_outlined),
+          ],
+          if (profile.state.isEmpty || profile.state == 'Not Set')
+            _emptyState('Location not set'),
+        ],
+      ),
+    ).animate().fadeIn(delay: 150.ms);
+  }
+}
+
+class _FinancialCard extends StatelessWidget {
+  final CitizenProfileModel profile;
+  const _FinancialCard({required this.profile});
+
+  @override
+  Widget build(BuildContext context) {
+    final hasData = profile.occupation != null ||
+        profile.annualIncomeRange != null ||
+        profile.casteCategory != null;
+
+    return IndianCard(
+      padding: const EdgeInsets.all(20),
+      child: hasData
+          ? Column(
+              children: [
+                if (profile.occupation != null)
+                  _row('Occupation', profile.occupation!,
+                      Icons.work_outline_rounded),
+                if (profile.annualIncomeRange != null) ...[
+                  _divider(),
+                  _row('Annual Income', profile.annualIncomeRange!,
+                      Icons.currency_rupee_rounded),
+                ],
+                if (profile.casteCategory != null) ...[
+                  _divider(),
+                  _row('Caste Category', profile.casteCategory!,
+                      Icons.groups_outlined),
+                ],
+              ],
+            )
+          : _emptyState('Financial details not set'),
+    ).animate().fadeIn(delay: 200.ms);
+  }
+}
+
+class _DocumentsCard extends StatelessWidget {
+  final CitizenProfileModel profile;
+  const _DocumentsCard({required this.profile});
+
+  @override
+  Widget build(BuildContext context) {
+    final hasData = profile.aadhaarLastFour != null ||
+        profile.panMasked != null ||
+        profile.rationCardNumber != null;
+
+    return IndianCard(
+      padding: const EdgeInsets.all(20),
+      child: hasData
+          ? Column(
+              children: [
+                if (profile.aadhaarLastFour != null)
+                  _row('Aadhaar', 'XXXX XXXX ${profile.aadhaarLastFour}',
+                      Icons.fingerprint_rounded),
+                if (profile.panMasked != null) ...[
+                  _divider(),
+                  _row('PAN', profile.panMasked!, Icons.credit_card_rounded),
+                ],
+                if (profile.rationCardNumber != null) ...[
+                  _divider(),
+                  _row('Ration Card', profile.rationCardNumber!,
+                      Icons.article_outlined),
+                ],
+              ],
+            )
+          : _emptyState('No documents linked'),
+    ).animate().fadeIn(delay: 250.ms);
+  }
+}
+
+class _DisabilityCard extends StatelessWidget {
+  final CitizenProfileModel profile;
+  const _DisabilityCard({required this.profile});
+
+  @override
+  Widget build(BuildContext context) {
+    return IndianCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          _row('PwD Status', 'Registered', Icons.accessible_rounded,
+              valueColor: AppColors.saffron),
+          if (profile.disabilityType != null) ...[
+            _divider(),
+            _row('Disability Type', profile.disabilityType!,
+                Icons.medical_information_outlined),
+          ],
+        ],
+      ),
+    ).animate().fadeIn(delay: 300.ms);
+  }
+}
+
+// ─── Guest CTA ────────────────────────────────────────────────────────────────
+
+class _GuestCta extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return IndianCard(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          const Icon(Icons.person_add_outlined,
+              color: AppColors.saffron, size: 40),
+          const SizedBox(height: 12),
+          Text('Sign in to access your profile',
+              style: GoogleFonts.poppins(
+                  color: AppColors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600)),
+          const SizedBox(height: 6),
+          Text('Your demographic details help us show you relevant schemes.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                  color: AppColors.textSecondary, fontSize: 13)),
+          const SizedBox(height: 18),
+          CviButton(
+            text: 'Create Account',
+            variant: CviButtonVariant.gold,
+            onPressed: () => context.go(Routes.auth),
+          ),
+        ],
+      ),
+    ).animate().fadeIn(delay: 200.ms);
+  }
+}
+
+// ─── Shared helpers ───────────────────────────────────────────────────────────
+
+Widget _row(String label, String value, IconData icon, {Color? valueColor}) {
+  return Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Icon(icon, size: 18, color: AppColors.textMuted),
+      const SizedBox(width: 12),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label,
+                style: GoogleFonts.inter(
+                    color: AppColors.textMuted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500)),
+            const SizedBox(height: 2),
+            Text(value,
+                style: GoogleFonts.inter(
+                    color: valueColor ?? AppColors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500)),
+          ],
+        ),
+      ),
+    ],
+  );
+}
+
+Widget _divider() => const Padding(
+    padding: EdgeInsets.symmetric(vertical: 12),
+    child: Divider(color: AppColors.surfaceBorder, height: 1));
+
+Widget _emptyState(String message) => Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          const Icon(Icons.add_circle_outline_rounded,
+              color: AppColors.textMuted, size: 18),
+          const SizedBox(width: 10),
+          Text(message,
+              style:
+                  GoogleFonts.inter(color: AppColors.textMuted, fontSize: 13)),
+        ],
+      ),
+    );

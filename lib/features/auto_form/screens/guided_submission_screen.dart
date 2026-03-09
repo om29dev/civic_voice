@@ -9,9 +9,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:screenshot/screenshot.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../models/auto_form_model.dart';
+import '../../voice/widgets/form_help_fab.dart';
+import '../../documents/widgets/vault_document_picker.dart';
+import '../../../models/cvi_document_model.dart';
 
 // Future AWS Translate integration for portal page translation
 
@@ -41,6 +45,7 @@ class _GuidedSubmissionScreenState extends State<GuidedSubmissionScreen> {
   bool _isPanelExpanded = true;
   int _currentStep = 0;
   bool _showDataPanel = false;
+  final ScreenshotController _screenshotController = ScreenshotController();
 
   @override
   void initState() {
@@ -64,25 +69,32 @@ class _GuidedSubmissionScreenState extends State<GuidedSubmissionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.bgDeep,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildTopBar(),
-            if (_isPanelExpanded) _buildGuidedPanel(),
-            if (_showDataPanel) _buildDataPanel(),
-            // Loading indicator
-            if (_isLoading)
-              const LinearProgressIndicator(
-                color: AppColors.saffron,
-                backgroundColor: AppColors.bgDark,
-                minHeight: 3,
+      body: Screenshot(
+        controller: _screenshotController,
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildTopBar(),
+              if (_isPanelExpanded) _buildGuidedPanel(),
+              if (_showDataPanel) _buildDataPanel(),
+              // Loading indicator
+              if (_isLoading)
+                const LinearProgressIndicator(
+                  color: AppColors.saffron,
+                  backgroundColor: AppColors.bgDark,
+                  minHeight: 3,
+                ),
+              // WebView
+              Expanded(
+                child: WebViewWidget(controller: _controller),
               ),
-            // WebView
-            Expanded(
-              child: WebViewWidget(controller: _controller),
-            ),
-          ],
+            ],
+          ),
         ),
+      ),
+      floatingActionButton: FormHelpFab(
+        screenshotController: _screenshotController,
+        formContext: 'guided generic form webview step \${_currentStep + 1}',
       ),
     );
   }
@@ -374,6 +386,26 @@ class _GuidedSubmissionScreenState extends State<GuidedSubmissionScreen> {
             ),
             tooltip: 'Your Data',
             onPressed: () => setState(() => _showDataPanel = !_showDataPanel),
+          ),
+          // Access Vault
+          IconButton(
+            icon: const Icon(Icons.folder_shared_rounded,
+                color: AppColors.saffron, size: 20),
+            tooltip: 'Access Vault',
+            onPressed: () {
+              final isPan = widget.portalName.toLowerCase().contains('pan') ||
+                  widget.portalName.toLowerCase().contains('protean') ||
+                  widget.portalName.toLowerCase().contains('nsdl');
+
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: Colors.transparent,
+                isScrollControlled: true,
+                builder: (context) => VaultDocumentPicker(
+                  requiredTypes: isPan ? [DocumentType.aadhaar] : null,
+                ),
+              );
+            },
           ),
         ],
       ),

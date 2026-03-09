@@ -353,14 +353,16 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
               if (_selectedCategory == 'All') return true;
               final cat = s.category.toLowerCase();
               final filter = _selectedCategory.toLowerCase();
-              if (filter == 'housing')
+              if (filter == 'housing') {
                 return cat.contains('home') ||
                     cat.contains('housing') ||
                     cat.contains('aswas');
-              if (filter == 'education')
+              }
+              if (filter == 'education') {
                 return cat.contains('students') ||
                     cat.contains('education') ||
                     cat.contains('shiksha');
+              }
               return cat.contains(filter);
             }).toList();
 

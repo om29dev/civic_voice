@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../models/service_model.dart';
 
@@ -9,58 +10,60 @@ class CsvSchemesLoader {
 
   static const _categoryMap = <String, ServiceCategory>{
     'agriculture': ServiceCategory.agriculture,
-    'rural':       ServiceCategory.agriculture,
+    'rural': ServiceCategory.agriculture,
     'environment': ServiceCategory.agriculture,
-    'banking':     ServiceCategory.finance,
-    'financial':   ServiceCategory.finance,
-    'insurance':   ServiceCategory.finance,
-    'business':    ServiceCategory.business,
-    'entrepren':   ServiceCategory.business,
-    'education':   ServiceCategory.education,
-    'learning':    ServiceCategory.education,
+    'banking': ServiceCategory.finance,
+    'financial': ServiceCategory.finance,
+    'insurance': ServiceCategory.finance,
+    'business': ServiceCategory.business,
+    'entrepren': ServiceCategory.business,
+    'education': ServiceCategory.education,
+    'learning': ServiceCategory.education,
     'scholarship': ServiceCategory.education,
-    'health':      ServiceCategory.health,
-    'wellness':    ServiceCategory.health,
-    'housing':     ServiceCategory.welfare,
-    'shelter':     ServiceCategory.welfare,
-    'social':      ServiceCategory.welfare,
-    'women':       ServiceCategory.welfare,
-    'child':       ServiceCategory.welfare,
-    'utility':     ServiceCategory.welfare,
-    'sanitation':  ServiceCategory.welfare,
-    'transport':   ServiceCategory.transport,
+    'health': ServiceCategory.health,
+    'wellness': ServiceCategory.health,
+    'housing': ServiceCategory.welfare,
+    'shelter': ServiceCategory.welfare,
+    'social': ServiceCategory.welfare,
+    'women': ServiceCategory.welfare,
+    'child': ServiceCategory.welfare,
+    'utility': ServiceCategory.welfare,
+    'sanitation': ServiceCategory.welfare,
+    'transport': ServiceCategory.transport,
     'infrastructure': ServiceCategory.transport,
-    'skills':      ServiceCategory.employment,
-    'employment':  ServiceCategory.employment,
-    'science':     ServiceCategory.business,
-    'it':          ServiceCategory.business,
+    'skills': ServiceCategory.employment,
+    'employment': ServiceCategory.employment,
+    'science': ServiceCategory.business,
+    'it': ServiceCategory.business,
     'communication': ServiceCategory.business,
-    'legal':       ServiceCategory.identity,
-    'justice':     ServiceCategory.identity,
-    'travel':      ServiceCategory.business,
-    'tourism':     ServiceCategory.business,
-    'property':    ServiceCategory.property,
-    'land':        ServiceCategory.property,
+    'legal': ServiceCategory.identity,
+    'justice': ServiceCategory.identity,
+    'travel': ServiceCategory.business,
+    'tourism': ServiceCategory.business,
+    'property': ServiceCategory.property,
+    'land': ServiceCategory.property,
   };
 
   static const _emojiMap = <ServiceCategory, String>{
     ServiceCategory.agriculture: '🌾',
-    ServiceCategory.finance:     '💰',
-    ServiceCategory.business:    '🏢',
-    ServiceCategory.education:   '📚',
-    ServiceCategory.health:      '🏥',
-    ServiceCategory.welfare:     '🤝',
-    ServiceCategory.transport:   '🚗',
-    ServiceCategory.employment:  '💼',
-    ServiceCategory.identity:    '🪪',
-    ServiceCategory.property:    '🏠',
+    ServiceCategory.finance: '💰',
+    ServiceCategory.business: '🏢',
+    ServiceCategory.education: '📚',
+    ServiceCategory.health: '🏥',
+    ServiceCategory.welfare: '🤝',
+    ServiceCategory.transport: '🚗',
+    ServiceCategory.employment: '💼',
+    ServiceCategory.identity: '🪪',
+    ServiceCategory.property: '🏠',
   };
 
   /// Load and parse CSV, returning a list of [ServiceModel]s.
+  /// Parsing is done in a background isolate to avoid blocking the UI thread.
   static Future<List<ServiceModel>> load() async {
     try {
       final raw = await rootBundle.loadString(_assetPath);
-      return _parseCsv(raw);
+      // Offload heavy parsing to a background isolate — prevents ANR freezes
+      return await compute(_parseCsv, raw);
     } catch (e) {
       return [];
     }
@@ -72,14 +75,14 @@ class CsvSchemesLoader {
 
     // Parse header
     final header = _splitCsvRow(lines[0]);
-    final nameIdx   = _idx(header, 'scheme_name');
-    final slugIdx   = _idx(header, 'slug');
+    final nameIdx = _idx(header, 'scheme_name');
+    final slugIdx = _idx(header, 'slug');
     final detailIdx = _idx(header, 'details');
-    final benIdx    = _idx(header, 'benefits');
-    final eligIdx   = _idx(header, 'eligibility');
-    final appIdx    = _idx(header, 'application');
-    final docIdx    = _idx(header, 'documents');
-    final catIdx    = _idx(header, 'schemeCategory');
+    final benIdx = _idx(header, 'benefits');
+    final eligIdx = _idx(header, 'eligibility');
+    final appIdx = _idx(header, 'application');
+    final docIdx = _idx(header, 'documents');
+    final catIdx = _idx(header, 'schemeCategory');
 
     final results = <ServiceModel>[];
     final seenIds = <String>{};
@@ -94,23 +97,26 @@ class CsvSchemesLoader {
       final name = _col(cols, nameIdx).trim();
       if (name.isEmpty || name.length < 4) continue;
 
-      final id = _col(cols, slugIdx).trim().replaceAll(RegExp(r'[^a-z0-9_-]'), '_');
+      final id =
+          _col(cols, slugIdx).trim().replaceAll(RegExp(r'[^a-z0-9_-]'), '_');
       if (id.isEmpty || seenIds.contains(id)) continue;
       seenIds.add(id);
 
-      final details  = _col(cols, detailIdx);
+      final details = _col(cols, detailIdx);
       final benefits = _col(cols, benIdx);
-      final eligib   = _col(cols, eligIdx);
-      final steps    = _col(cols, appIdx);
-      final docs     = _col(cols, docIdx);
-      final catRaw   = _col(cols, catIdx).toLowerCase();
+      final eligib = _col(cols, eligIdx);
+      final steps = _col(cols, appIdx);
+      final docs = _col(cols, docIdx);
+      final catRaw = _col(cols, catIdx).toLowerCase();
 
       if (details.length < 40 || eligib.length < 15) continue;
 
       final cat = _inferCategory(catRaw);
 
-      final desc = _trim('${details.substring(0, details.length.clamp(0, 350))}'
-          '${benefits.isNotEmpty ? ' Benefits: ${benefits.substring(0, benefits.length.clamp(0, 180))}' : ''}', 500);
+      final desc = _trim(
+          '${details.substring(0, details.length.clamp(0, 350))}'
+          '${benefits.isNotEmpty ? ' Benefits: ${benefits.substring(0, benefits.length.clamp(0, 180))}' : ''}',
+          500);
 
       if (_isPopular(name)) {
         results.add(ServiceModel(
@@ -120,7 +126,8 @@ class CsvSchemesLoader {
           isPopular: true,
           name: {'en': name.substring(0, name.length.clamp(0, 120))},
           description: {'en': desc},
-          eligibilityCriteria: _splitSentences(eligib, 4), // assuming there's an issue with _splitSentences so I will keep using the original name _splitSentences
+          eligibilityCriteria: _splitSentences(eligib,
+              4), // assuming there's an issue with _splitSentences so I will keep using the original name _splitSentences
           requiredDocuments: _parseDocs(docs),
           steps: _parseSteps(steps),
           estimatedTimeline: '15–30 working days',
@@ -184,8 +191,20 @@ class CsvSchemesLoader {
   }
 
   static bool _isPopular(String name) {
-    const kw = ['pm kisan', 'ayushman', 'mudra', 'scholarship', 'atal pension',
-      'bpl', 'mnrega', 'jan dhan', 'ujjwala', 'swachh', 'pmay', 'digital india'];
+    const kw = [
+      'pm kisan',
+      'ayushman',
+      'mudra',
+      'scholarship',
+      'atal pension',
+      'bpl',
+      'mnrega',
+      'jan dhan',
+      'ujjwala',
+      'swachh',
+      'pmay',
+      'digital india'
+    ];
     final n = name.toLowerCase();
     return kw.any(n.contains);
   }
@@ -202,8 +221,10 @@ class CsvSchemesLoader {
 
   static List<DocumentItem> _parseDocs(String s) {
     if (s.isEmpty) {
-      return [const DocumentItem(name: 'Aadhaar Card', description: ''),
-              const DocumentItem(name: 'Proof of Identity', description: '')];
+      return [
+        const DocumentItem(name: 'Aadhaar Card', description: ''),
+        const DocumentItem(name: 'Proof of Identity', description: '')
+      ];
     }
     final parts = s
         .split(RegExp(r'\.\s+(?=[A-Z])|(?<=\w)\n(?=[A-Z])'))
@@ -213,30 +234,46 @@ class CsvSchemesLoader {
         .toList();
     return parts.isEmpty
         ? [const DocumentItem(name: 'Aadhaar Card', description: '')]
-        : parts.map((d) => DocumentItem(
-              name: d.substring(0, d.length.clamp(0, 100)).replaceAll('"', ''),
-              description: '',
-            )).toList();
+        : parts
+            .map((d) => DocumentItem(
+                  name: d
+                      .substring(0, d.length.clamp(0, 100))
+                      .replaceAll('"', ''),
+                  description: '',
+                ))
+            .toList();
   }
 
   static List<StepItem> _parseSteps(String s) {
     if (s.isEmpty) {
-      return [const StepItem(number: 1, title: 'Apply Online',
-                  description: 'Visit the official government portal to apply.')];
+      return [
+        const StepItem(
+            number: 1,
+            title: 'Apply Online',
+            description: 'Visit the official government portal to apply.')
+      ];
     }
 
     // Look for "Step N:" pattern
-    final matches = RegExp(r'Step\s*\d+[:.]\s*([^S]{20,250}?)(?=Step\s*\d+[:.:]|$)', caseSensitive: false)
+    final matches = RegExp(
+            r'Step\s*\d+[:.]\s*([^S]{20,250}?)(?=Step\s*\d+[:.:]|$)',
+            caseSensitive: false)
         .allMatches(s)
         .take(5)
         .toList();
 
     if (matches.isNotEmpty) {
-      return matches.asMap().entries.map((e) => StepItem(
-        number: e.key + 1,
-        title: 'Step ${e.key + 1}',
-        description: e.value.group(1)?.trim().substring(0, e.value.group(1)!.trim().length.clamp(0, 200)) ?? '',
-      )).toList();
+      return matches
+          .asMap()
+          .entries
+          .map((e) => StepItem(
+                number: e.key + 1,
+                title: 'Step ${e.key + 1}',
+                description: e.value.group(1)?.trim().substring(
+                        0, e.value.group(1)!.trim().length.clamp(0, 200)) ??
+                    '',
+              ))
+          .toList();
     }
 
     // Fallback: split on sentence boundaries
@@ -245,10 +282,14 @@ class CsvSchemesLoader {
         .where((e) => e.length > 20)
         .take(4)
         .toList();
-    return parts.asMap().entries.map((e) => StepItem(
-      number: e.key + 1,
-      title: 'Step ${e.key + 1}',
-      description: e.value.substring(0, e.value.length.clamp(0, 200)),
-    )).toList();
+    return parts
+        .asMap()
+        .entries
+        .map((e) => StepItem(
+              number: e.key + 1,
+              title: 'Step ${e.key + 1}',
+              description: e.value.substring(0, e.value.length.clamp(0, 200)),
+            ))
+        .toList();
   }
 }

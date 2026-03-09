@@ -287,81 +287,156 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
 
   // ─── Grouped Document List ────────────────────────────────────────────────
 
+  Widget _buildCategoryHeader(String title, String hindi, String emoji) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16, bottom: 12),
+      child: Row(
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 18)),
+          const SizedBox(width: 8),
+          Text(
+            title.toUpperCase(),
+            style: GoogleFonts.outfit(
+              color: const Color(0xFFD4930A),
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            hindi,
+            style: GoogleFonts.notoSansDevanagari(
+              color: Colors.white24,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   List<Widget> _buildGroupedDocumentList(DocumentVaultProvider vault) {
-    return _docCategories.map((category) {
+    final allDocs = vault.documents;
+    final displayedIds = <String>{};
+    final widgets = <Widget>[];
+
+    // Core Categories
+    for (final category in _docCategories) {
       final (title, titleHindi, emoji, slots) = category;
 
-      // Filter slots based on search
       final filteredSlots = slots.where((slot) {
         if (_searchQuery.isEmpty) return true;
         return slot.label.toLowerCase().contains(_searchQuery) ||
             slot.labelHindi.contains(_searchQuery);
       }).toList();
 
-      if (filteredSlots.isEmpty) return const SizedBox.shrink();
+      if (filteredSlots.isEmpty && _searchQuery.isNotEmpty) continue;
 
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 16, bottom: 12),
-            child: Row(
-              children: [
-                Text(emoji, style: const TextStyle(fontSize: 18)),
-                const SizedBox(width: 8),
-                Text(
-                  title.toUpperCase(),
-                  style: GoogleFonts.outfit(
-                    color: const Color(0xFFD4930A),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  titleHindi,
-                  style: GoogleFonts.notoSansDevanagari(
-                    color: Colors.white24,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          ...filteredSlots.map((slot) {
-            final doc = vault.getDocument(slot.type);
-            final isUploaded = doc != null;
-            final isVerified = doc?['is_verified'] == true;
-            final confidence =
-                (doc?['confidence_score'] as num?)?.toDouble() ?? 0.0;
+      final categoryChildren = <Widget>[];
 
-            return Padding(
+      for (final slot in slots) {
+        // Find ALL documents of this type
+        final matchingDocs =
+            allDocs.where((d) => d['document_type'] == slot.type).toList();
+
+        if (matchingDocs.isEmpty) {
+          // Show empty slot placeholder if not searching
+          if (_searchQuery.isEmpty ||
+              slot.label.toLowerCase().contains(_searchQuery) ||
+              slot.labelHindi.contains(_searchQuery)) {
+            categoryChildren.add(
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _DocumentSlotCard(
+                  slot: slot,
+                  isUploaded: false,
+                  isVerified: false,
+                  confidence: 0,
+                  doc: null,
+                  isExtracting: vault.isExtracting,
+                  onTap: () => _showUploadSheet(slot),
+                ),
+              ),
+            );
+          }
+        } else {
+          for (final doc in matchingDocs) {
+            displayedIds.add(doc['id'].toString());
+            categoryChildren.add(
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _DocumentSlotCard(
+                  slot: slot,
+                  isUploaded: true,
+                  isVerified: doc['is_verified'] == true,
+                  confidence:
+                      (doc['confidence_score'] as num?)?.toDouble() ?? 0.0,
+                  doc: doc,
+                  isExtracting: vault.isExtracting,
+                  onTap: () => _showExtractedDataPreview(vault, slot, doc: doc),
+                  onDelete: () => _confirmDelete(
+                      vault, doc['id'].toString(), doc['file_path'] as String),
+                ),
+              ),
+            );
+          }
+        }
+      }
+
+      if (categoryChildren.isNotEmpty) {
+        widgets.add(_buildCategoryHeader(title, titleHindi, emoji));
+        widgets.addAll(categoryChildren);
+      }
+    }
+
+    // Other Documents (Misc Section)
+    final otherDocs = allDocs
+        .where((d) => !displayedIds.contains(d['id'].toString()))
+        .toList();
+
+    if (otherDocs.isNotEmpty) {
+      final filteredOther = otherDocs.where((d) {
+        if (_searchQuery.isEmpty) return true;
+        final name = (d['name'] as String? ?? '').toLowerCase();
+        return name.contains(_searchQuery);
+      }).toList();
+
+      if (filteredOther.isNotEmpty) {
+        widgets.add(
+            _buildCategoryHeader('Other Documents', 'अन्य दस्तावेज़', '📂'));
+
+        for (final doc in filteredOther) {
+          final slot = _DocSlot(
+            'other',
+            doc['name'] ?? 'Document',
+            'दस्तावेज़',
+            '📄',
+            const Color(0xFF643D2A),
+          );
+
+          widgets.add(
+            Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: _DocumentSlotCard(
                 slot: slot,
-                isUploaded: isUploaded,
-                isVerified: isVerified,
-                confidence: confidence,
+                isUploaded: true,
+                isVerified: doc['is_verified'] == true,
+                confidence:
+                    (doc['confidence_score'] as num?)?.toDouble() ?? 0.0,
                 doc: doc,
                 isExtracting: vault.isExtracting,
-                onTap: () {
-                  if (isUploaded) {
-                    _showExtractedDataPreview(vault, slot);
-                  } else {
-                    _showUploadSheet(slot);
-                  }
-                },
-                onDelete: isUploaded
-                    ? () => _confirmDelete(
-                        vault, doc['id'].toString(), doc['file_path'] as String)
-                    : null,
+                onTap: () => _showExtractedDataPreview(vault, slot, doc: doc),
+                onDelete: () => _confirmDelete(
+                    vault, doc['id'].toString(), doc['file_path'] as String),
               ),
-            );
-          }),
-        ],
-      );
-    }).toList();
+            ),
+          );
+        }
+      }
+    }
+
+    return widgets;
   }
 
   // ─── Extraction Status ────────────────────────────────────────────────────
@@ -579,12 +654,74 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
 
   // ─── Extracted Data Preview ───────────────────────────────────────────────
 
-  void _showExtractedDataPreview(DocumentVaultProvider vault, _DocSlot slot) {
-    final data = vault.extractedData;
-    if (data == null) return;
+  void _showExtractedDataPreview(DocumentVaultProvider vault, _DocSlot slot,
+      {Map<String, dynamic>? doc}) {
+    // Priority 1: Specific document extraction if provided
+    // Priority 2: Full vault merged data
+    Map<String, dynamic> data = {};
+
+    if (doc != null && doc['extracted_text'] != null) {
+      try {
+        data = SafeDecode.decode(doc['extracted_text'] as String);
+      } catch (_) {}
+    }
+
+    if (data.isEmpty) {
+      data = vault.extractedData ?? {};
+    }
+
+    if (data.isEmpty) return;
 
     // Show relevant fields based on document type
-    final fieldsToShow = _getFieldsForDocType(slot.type);
+    List<Map<String, String>> fieldsToShow = _getFieldsForDocType(slot.type);
+
+    // For 'other' or if generic extracted data exists, expand fields
+    if (slot.type == 'other' || data.length > fieldsToShow.length) {
+      final existingKeys = fieldsToShow.map((f) => f['key']).toSet();
+      final extraFields = <Map<String, String>>[];
+
+      // Filter out internal keys
+      final ignore = {
+        'confidence',
+        'confidence_score',
+        'document_type',
+        'raw_text',
+        'id',
+        'user_id'
+      };
+
+      data.forEach((key, value) {
+        if (!existingKeys.contains(key) &&
+            !ignore.contains(key) &&
+            value != null) {
+          // Format keys better (e.g. 'full_name' -> 'Full Name')
+          final label = key
+              .split('_')
+              .map((s) =>
+                  s.isNotEmpty ? '${s[0].toUpperCase()}${s.substring(1)}' : s)
+              .join(' ');
+          extraFields.add({'key': key, 'label': label});
+        }
+      });
+      fieldsToShow = [...fieldsToShow, ...extraFields];
+    }
+
+    String formatValue(dynamic val, String key) {
+      if (val == null || val.toString().isEmpty || val.toString() == 'null') {
+        return 'Not found';
+      }
+      final s = val.toString();
+      // Simple date formatting check
+      if (key.contains('date') || s.contains('T')) {
+        try {
+          final dt = DateTime.tryParse(s);
+          if (dt != null) {
+            return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}';
+          }
+        } catch (_) {}
+      }
+      return s;
+    }
 
     showModalBottomSheet(
       context: context,
@@ -594,9 +731,9 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (_) => DraggableScrollableSheet(
-        initialChildSize: 0.5,
+        initialChildSize: 0.6,
         minChildSize: 0.3,
-        maxChildSize: 0.8,
+        maxChildSize: 0.9,
         expand: false,
         builder: (_, scrollCtrl) => Padding(
           padding: const EdgeInsets.all(24),
@@ -607,12 +744,16 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
                 children: [
                   Text(slot.emoji, style: const TextStyle(fontSize: 28)),
                   const SizedBox(width: 12),
-                  Text(
-                    '${slot.label} — Extracted Data',
-                    style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                  Expanded(
+                    child: Text(
+                      '${doc?['name'] ?? slot.label} — Extracted Data',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ],
@@ -622,11 +763,17 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
               _buildSmartInsight(slot, data),
               const SizedBox(height: 24),
               ...fieldsToShow.map((field) {
-                final value = data[field['key']]?.toString();
-                final hasValue =
-                    value != null && value.isNotEmpty && value != 'null';
+                final rawValue = data[field['key']];
+                final value = formatValue(rawValue, field['key'] ?? '');
+                final hasValue = value != 'Not found';
+
+                // For 'other' documents, hide 'Not found' fields to reduce clutter
+                if (!hasValue && slot.type == 'other') {
+                  return const SizedBox.shrink();
+                }
+
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.only(bottom: 12),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -652,7 +799,7 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
                               ),
                             ),
                             Text(
-                              hasValue ? value : 'Not found',
+                              value,
                               style: GoogleFonts.outfit(
                                 color: hasValue
                                     ? const Color(0xFFD4930A)
@@ -965,7 +1112,10 @@ class _DocumentSlotCard extends StatelessWidget {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: slot.color.withValues(alpha: 0.15),
+                color: (doc?['document_type'] == 'other'
+                        ? const Color(0xFF666666)
+                        : slot.color)
+                    .withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(14),
               ),
               alignment: Alignment.center,
@@ -979,7 +1129,9 @@ class _DocumentSlotCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    slot.label,
+                    doc?['name'] ?? slot.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
@@ -988,7 +1140,9 @@ class _DocumentSlotCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    slot.labelHindi,
+                    doc?['document_type'] == 'other'
+                        ? 'Uncategorized'
+                        : slot.labelHindi,
                     style: GoogleFonts.outfit(
                       color: const Color(0xFFB8A898),
                       fontSize: 12,

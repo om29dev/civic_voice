@@ -6,23 +6,23 @@ class MockServicesData {
   MockServicesData._();
 
   static List<ServiceModel> get all => [
-    aadhaarCard,
-    panCard,
-    passport,
-    drivingLicense,
-    landRecords,
-    birthCertificate,
-    rationCard,
-    seniorCitizenPension,
-    incomeTax,
-    voterId,
-    gstRegistration,
-    epfoAccount,
-    pmKisan,
-    ayushmanBharat,
-    nationalScholarship,
-    msmeRegistration,
-  ];
+        aadhaarCard,
+        panCard,
+        passport,
+        drivingLicense,
+        landRecords,
+        birthCertificate,
+        rationCard,
+        seniorCitizenPension,
+        incomeTax,
+        voterId,
+        gstRegistration,
+        epfoAccount,
+        pmKisan,
+        ayushmanBharat,
+        nationalScholarship,
+        msmeRegistration,
+      ];
 
   // ─────────────────────────────────────────────────────────────────────────
   // SERVICE 1: Aadhaar Card
@@ -107,7 +107,7 @@ class MockServicesData {
     ],
     estimatedTimeline: '5–10 working days',
     fees: 'Free',
-    officialLink: 'https://uidai.gov.in',
+    officialLink: 'https://myaadhaar.uidai.gov.in/CheckAadhaarStatus',
     helplineNumber: '1947',
   );
 
@@ -171,7 +171,8 @@ class MockServicesData {
         title: 'Visit Income Tax e-Filing Portal',
         description:
             'Go to incometax.gov.in and click on "Instant e-PAN" for a free e-PAN using Aadhaar.',
-        actionUrl: 'https://onlineservices.proteantech.in/paam/endUserRegisterContact.html',
+        actionUrl:
+            'https://onlineservices.proteantech.in/paam/endUserRegisterContact.html',
       ),
       StepItem(
         number: 2,
@@ -196,12 +197,12 @@ class MockServicesData {
         title: 'Receive PAN',
         description:
             'Receive your PAN via post (physical) or email (e-PAN). Track status using acknowledgment number.',
-        actionUrl: 'https://tin.tin.nsdl.com/panstatus',
+        actionUrl: 'https://tin.tin.nsdl.com/pantan/StatusTrack.html',
       ),
     ],
     estimatedTimeline: '15–20 working days (physical), instant (e-PAN)',
     fees: '₹107 (physical card) | ₹72 (e-PAN)',
-    officialLink: 'https://onlineservices.proteantech.in/paam/endUserRegisterContact.html',
+    officialLink: 'https://tin.tin.nsdl.com/pantan/StatusTrack.html',
     helplineNumber: '1800-180-1961',
   );
 
@@ -305,7 +306,8 @@ class MockServicesData {
     ],
     estimatedTimeline: '30–45 days (normal) | 7–14 days (tatkal)',
     fees: '₹1500 (normal, 36 pages) | ₹2000 (tatkal)',
-    officialLink: 'https://passportindia.gov.in',
+    officialLink:
+        'https://passportindia.gov.in/AppOnlineProject/statusTracking/trackApplicationStatus',
     helplineNumber: '1800-258-1800',
   );
 
@@ -403,7 +405,8 @@ class MockServicesData {
     ],
     estimatedTimeline: '30–60 days (including LL holding period)',
     fees: '₹200–₹500 depending on vehicle class',
-    officialLink: 'https://parivahan.gov.in',
+    officialLink:
+        'https://sarathi.parivahan.gov.in/sarathiservice/statusOfApplication.do',
     helplineNumber: '0120-4925505',
   );
 
@@ -498,7 +501,7 @@ class MockServicesData {
     ],
     estimatedTimeline: 'Instant (view/download) | 15–30 days (mutation)',
     fees: '₹15–₹50 per page (varies by state)',
-    officialLink: 'https://dilrmp.gov.in',
+    officialLink: 'https://bhulekh.gov.in',
     helplineNumber: 'State Revenue Department helpline',
   );
 
@@ -694,7 +697,7 @@ class MockServicesData {
     ],
     estimatedTimeline: '15–30 days',
     fees: 'Free',
-    officialLink: 'https://nfsa.gov.in',
+    officialLink: 'https://nfsa.gov.in/portal/ration_card_status',
     helplineNumber: '1967 / 14445',
   );
 
@@ -751,7 +754,8 @@ class MockServicesData {
       ),
       DocumentItem(
         name: 'Residence Proof',
-        description: 'Aadhaar, Voter ID, or utility bill showing current address',
+        description:
+            'Aadhaar, Voter ID, or utility bill showing current address',
       ),
       DocumentItem(
         name: 'Photograph',
@@ -799,7 +803,7 @@ class MockServicesData {
     ],
     estimatedTimeline: '30–90 days',
     fees: 'Free',
-    officialLink: 'https://nsap.nic.in',
+    officialLink: 'https://nsap.nic.in/pensionStatus.do',
     helplineNumber: '1800-111-555',
   );
 
@@ -818,10 +822,14 @@ class MockServicesData {
       'ta': 'வருமான வரி கணக்கு (ITR)',
     },
     description: {
-      'en': 'Income Tax Return is a form filed globally by taxpayers with the Income Tax Department declaring their income, deductions, and tax payments. It is mandatory for individuals earning above the basic exemption limit.',
-      'hi': 'आयकर रिटर्न आयकर विभाग के पास करदाताओं द्वारा दाखिल किया जाने वाला एक फॉर्म है जो उनकी आय, कटौतियों और कर भुगतानों की घोषणा करता है।',
-      'mr': 'आयकर रिटर्न हा करदात्यांनी आयकर विभागाकडे भरलेला फॉर्म आहे जो त्यांचे उत्पन्न, वजावट आणि कर भरणे घोषित करतो.',
-      'ta': 'வருமான வரி அறிக்கை என்பது வரி செலுத்துவோர் தங்கள் வருமானம், பிடித்தங்கள் மற்றும் வரி செலுத்தல்களை அறிவிக்கும் படிவமாகும்.',
+      'en':
+          'Income Tax Return is a form filed globally by taxpayers with the Income Tax Department declaring their income, deductions, and tax payments. It is mandatory for individuals earning above the basic exemption limit.',
+      'hi':
+          'आयकर रिटर्न आयकर विभाग के पास करदाताओं द्वारा दाखिल किया जाने वाला एक फॉर्म है जो उनकी आय, कटौतियों और कर भुगतानों की घोषणा करता है।',
+      'mr':
+          'आयकर रिटर्न हा करदात्यांनी आयकर विभागाकडे भरलेला फॉर्म आहे जो त्यांचे उत्पन्न, वजावट आणि कर भरणे घोषित करतो.',
+      'ta':
+          'வருமான வரி அறிக்கை என்பது வரி செலுத்துவோர் தங்கள் வருமானம், பிடித்தங்கள் மற்றும் வரி செலுத்தல்களை அறிவிக்கும் படிவமாகும்.',
     },
     eligibilityCriteria: [
       'Individuals with gross total income exceeding ₹2.5 Lakhs (varies by age/regime)',
@@ -831,18 +839,39 @@ class MockServicesData {
     requiredDocuments: [
       DocumentItem(name: 'PAN Card', description: 'Mandatory for filing ITR'),
       DocumentItem(name: 'Aadhaar Card', description: 'Must be linked to PAN'),
-      DocumentItem(name: 'Form 16', description: 'Issued by employer for salaried individuals'),
-      DocumentItem(name: 'Bank Statements', description: 'For interest income and transaction proof'),
+      DocumentItem(
+          name: 'Form 16',
+          description: 'Issued by employer for salaried individuals'),
+      DocumentItem(
+          name: 'Bank Statements',
+          description: 'For interest income and transaction proof'),
     ],
     steps: [
-      StepItem(number: 1, title: 'Register on e-Filing Portal', description: 'Create an account on the Income Tax e-Filing portal using PAN.', actionUrl: 'https://eportal.incometax.gov.in'),
-      StepItem(number: 2, title: 'Link Aadhaar', description: 'Ensure your Aadhaar is linked to your PAN before filing.'),
-      StepItem(number: 3, title: 'Fill Applicable ITR Form', description: 'Select and fill the appropriate form (ITR-1, 2, 3, 4, etc.) based on income sources.'),
-      StepItem(number: 4, title: 'Verify Details', description: 'e-Verify your return using Aadhaar OTP, Net Banking, or send a physical copy to CPC.'),
+      StepItem(
+          number: 1,
+          title: 'Register on e-Filing Portal',
+          description:
+              'Create an account on the Income Tax e-Filing portal using PAN.',
+          actionUrl: 'https://www.incometax.gov.in'),
+      StepItem(
+          number: 2,
+          title: 'Link Aadhaar',
+          description:
+              'Ensure your Aadhaar is linked to your PAN before filing.'),
+      StepItem(
+          number: 3,
+          title: 'Fill Applicable ITR Form',
+          description:
+              'Select and fill the appropriate form (ITR-1, 2, 3, 4, etc.) based on income sources.'),
+      StepItem(
+          number: 4,
+          title: 'Verify Details',
+          description:
+              'e-Verify your return using Aadhaar OTP, Net Banking, or send a physical copy to CPC.'),
     ],
     estimatedTimeline: 'Instant (Filing) | 1-3 months (Processing & Refund)',
     fees: 'Free (Late filing penalties apply)',
-    officialLink: 'https://www.incometax.gov.in',
+    officialLink: 'https://tin.tin.nsdl.com/oltas/refundstatuslogin.html',
     helplineNumber: '1800 103 0025',
   );
 
@@ -861,10 +890,14 @@ class MockServicesData {
       'ta': 'வாக்காளர் அடையாள அட்டை',
     },
     description: {
-      'en': 'The Voter ID, also known as EPIC (Electors Photo Identity Card), is issued by the Election Commission of India. It serves primarily as an identity proof while casting votes.',
-      'hi': 'मतदाता पहचान पत्र, जिसे EPIC के नाम से भी जाना जाता है, भारत के चुनाव आयोग द्वारा जारी किया जाता है। यह मुख्य रूप से मतदान के दौरान पहचान प्रमाण के रूप में कार्य करता है।',
-      'mr': 'मतदान कार्ड, ज्याला EPIC म्हणूनही ओळखले जाते, भारताच्या निवडणूक आयोगाने जारी केले आहे. हे प्रामुख्याने मतदान करताना ओळख पुरावा म्हणून काम करते.',
-      'ta': 'வாக்காளர் அடையாள அட்டை இந்திய தேர்தல் ஆணையத்தால் வழங்கப்படுகிறது. இது வாக்களிக்கும் போது முதன்மையாக அடையாளச் சான்றாக செயல்படுகிறது.',
+      'en':
+          'The Voter ID, also known as EPIC (Electors Photo Identity Card), is issued by the Election Commission of India. It serves primarily as an identity proof while casting votes.',
+      'hi':
+          'मतदाता पहचान पत्र, जिसे EPIC के नाम से भी जाना जाता है, भारत के चुनाव आयोग द्वारा जारी किया जाता है। यह मुख्य रूप से मतदान के दौरान पहचान प्रमाण के रूप में कार्य करता है।',
+      'mr':
+          'मतदान कार्ड, ज्याला EPIC म्हणूनही ओळखले जाते, भारताच्या निवडणूक आयोगाने जारी केले आहे. हे प्रामुख्याने मतदान करताना ओळख पुरावा म्हणून काम करते.',
+      'ta':
+          'வாக்காளர் அடையாள அட்டை இந்திய தேர்தல் ஆணையத்தால் வழங்கப்படுகிறது. இது வாக்களிக்கும் போது முதன்மையாக அடையாளச் சான்றாக செயல்படுகிறது.',
     },
     eligibilityCriteria: [
       'Indian citizen',
@@ -872,15 +905,36 @@ class MockServicesData {
       'Ordinary resident of the polling area',
     ],
     requiredDocuments: [
-      DocumentItem(name: 'Age Proof', description: 'Birth certificate, Aadhaar, PAN, or 10th certificate'),
-      DocumentItem(name: 'Address Proof', description: 'Aadhaar, Utility bill, Bank passbook'),
-      DocumentItem(name: 'Passport Photograph', description: 'Recent color photograph'),
+      DocumentItem(
+          name: 'Age Proof',
+          description: 'Birth certificate, Aadhaar, PAN, or 10th certificate'),
+      DocumentItem(
+          name: 'Address Proof',
+          description: 'Aadhaar, Utility bill, Bank passbook'),
+      DocumentItem(
+          name: 'Passport Photograph', description: 'Recent color photograph'),
     ],
     steps: [
-      StepItem(number: 1, title: 'Visit NVSP Portal', description: 'Register on the National Voters Services Portal or Voter Helpline App.', actionUrl: 'https://voters.eci.gov.in'),
-      StepItem(number: 2, title: 'Fill Form 6', description: 'Fill Form 6 for registration of new voter/shifting from AC.'),
-      StepItem(number: 3, title: 'Upload Documents', description: 'Upload age proof, address proof, and photograph.'),
-      StepItem(number: 4, title: 'Track Application', description: 'BLO will verify details. Track status using the reference ID.'),
+      StepItem(
+          number: 1,
+          title: 'Visit NVSP Portal',
+          description:
+              'Register on the National Voters Services Portal or Voter Helpline App.',
+          actionUrl: 'https://voters.eci.gov.in'),
+      StepItem(
+          number: 2,
+          title: 'Fill Form 6',
+          description:
+              'Fill Form 6 for registration of new voter/shifting from AC.'),
+      StepItem(
+          number: 3,
+          title: 'Upload Documents',
+          description: 'Upload age proof, address proof, and photograph.'),
+      StepItem(
+          number: 4,
+          title: 'Track Application',
+          description:
+              'BLO will verify details. Track status using the reference ID.'),
     ],
     estimatedTimeline: '30-45 Days',
     fees: 'Free',
@@ -903,10 +957,14 @@ class MockServicesData {
       'ta': 'GST பதிவு',
     },
     description: {
-      'en': 'Goods and Services Tax (GST) registration is mandatory for businesses whose turnover exceeds threshold limits, and for certain other specific categories like e-commerce operators.',
-      'hi': 'वस्तु एवं सेवा कर (GST) पंजीकरण उन व्यवसायों के लिए अनिवार्य है जिनका टर्नओवर सीमा से अधिक है और ई-कॉमर्स जैसे कुछ अन्य विशिष्ट श्रेणियों के लिए।',
-      'mr': 'वस्तू आणि सेवा कर (GST) नोंदणी अशा व्यवसायांसाठी अनिवार्य आहे ज्यांची उलाढाल थ्रेशोल्ड मर्यादेपेक्षा जास्त आहे.',
-      'ta': 'சரக்கு மற்றும் சேவைகள் வரி (GST) பதிவு என்பது வரம்புகளைத் தாண்டும் வணிகங்களுக்குக் கட்டாயமாகும்.',
+      'en':
+          'Goods and Services Tax (GST) registration is mandatory for businesses whose turnover exceeds threshold limits, and for certain other specific categories like e-commerce operators.',
+      'hi':
+          'वस्तु एवं सेवा कर (GST) पंजीकरण उन व्यवसायों के लिए अनिवार्य है जिनका टर्नओवर सीमा से अधिक है और ई-कॉमर्स जैसे कुछ अन्य विशिष्ट श्रेणियों के लिए।',
+      'mr':
+          'वस्तू आणि सेवा कर (GST) नोंदणी अशा व्यवसायांसाठी अनिवार्य आहे ज्यांची उलाढाल थ्रेशोल्ड मर्यादेपेक्षा जास्त आहे.',
+      'ta':
+          'சரக்கு மற்றும் சேவைகள் வரி (GST) பதிவு என்பது வரம்புகளைத் தாண்டும் வணிகங்களுக்குக் கட்டாயமாகும்.',
     },
     eligibilityCriteria: [
       'Businesses with turnover exceeding ₹40 Lakh (Goods) / ₹20 Lakh (Services) (Varies for NE states)',
@@ -914,21 +972,50 @@ class MockServicesData {
       'Individuals holding service tax, VAT, or central excise registrations previously',
     ],
     requiredDocuments: [
-      DocumentItem(name: 'PAN Card', description: 'PAN configuration of the business or applicant'),
-      DocumentItem(name: 'Identity & Address Proof', description: 'Of Promoters/Directors with Photographs'),
-      DocumentItem(name: 'Business Address Proof', description: 'Rent agreement or electricity bill'),
-      DocumentItem(name: 'Bank Account Proof', description: 'Cancelled check or bank statement extract'),
+      DocumentItem(
+          name: 'PAN Card',
+          description: 'PAN configuration of the business or applicant'),
+      DocumentItem(
+          name: 'Identity & Address Proof',
+          description: 'Of Promoters/Directors with Photographs'),
+      DocumentItem(
+          name: 'Business Address Proof',
+          description: 'Rent agreement or electricity bill'),
+      DocumentItem(
+          name: 'Bank Account Proof',
+          description: 'Cancelled check or bank statement extract'),
     ],
     steps: [
-      StepItem(number: 1, title: 'Go to GST Portal', description: 'Navigate to the official GST portal and click "New Registration".', actionUrl: 'https://www.gst.gov.in'),
-      StepItem(number: 2, title: 'Fill Part-A', description: 'Provide PAN, mobile number, and email. Verify with OTP to get TRN.'),
-      StepItem(number: 3, title: 'Fill Part-B', description: 'Login using TRN and fill business details, promoter info, authorized signatories, and places of business.'),
-      StepItem(number: 4, title: 'Aadhaar Authentication', description: 'Complete Aadhaar authentication for promoters to expedite approval.'),
-      StepItem(number: 5, title: 'Receive GSTIN', description: 'Upon successful verification, get the Registration Certificate containing GSTIN.'),
+      StepItem(
+          number: 1,
+          title: 'Go to GST Portal',
+          description:
+              'Navigate to the official GST portal and click "New Registration".',
+          actionUrl: 'https://www.gst.gov.in'),
+      StepItem(
+          number: 2,
+          title: 'Fill Part-A',
+          description:
+              'Provide PAN, mobile number, and email. Verify with OTP to get TRN.'),
+      StepItem(
+          number: 3,
+          title: 'Fill Part-B',
+          description:
+              'Login using TRN and fill business details, promoter info, authorized signatories, and places of business.'),
+      StepItem(
+          number: 4,
+          title: 'Aadhaar Authentication',
+          description:
+              'Complete Aadhaar authentication for promoters to expedite approval.'),
+      StepItem(
+          number: 5,
+          title: 'Receive GSTIN',
+          description:
+              'Upon successful verification, get the Registration Certificate containing GSTIN.'),
     ],
     estimatedTimeline: '3-7 Working Days',
     fees: 'Free (Government fees; professional charges may vary)',
-    officialLink: 'https://www.gst.gov.in',
+    officialLink: 'https://services.gst.gov.in/services/checkregistration',
     helplineNumber: '1800 103 4786',
   );
 
@@ -947,10 +1034,14 @@ class MockServicesData {
       'ta': 'EPF உறுப்பினர் தளம் (UAN)',
     },
     description: {
-      'en': 'Employees\' Provident Fund (EPF) is a retirement benefit scheme for salaried employees. The UAN (Universal Account Number) links all PF accounts of a member.',
-      'hi': 'कर्मचारी भविष्य निधि (EPF) वेतनभोगी कर्मचारियों के लिए सेवानिवृत्ति लाभ योजना है।',
-      'mr': 'कर्मचारी भविष्य निर्वाह निधी (EPF) ही पगारदार कर्मचाऱ्यांसाठी निवृत्ती लाभ योजना आहे.',
-      'ta': 'ஊழியர் வருங்கால வைப்பு நிதி (EPF) என்பது சம்பளம் பெறும் ஊழியர்களுக்கான ஓய்வூதிய பலன் திட்டமாகும்.',
+      'en':
+          'Employees\' Provident Fund (EPF) is a retirement benefit scheme for salaried employees. The UAN (Universal Account Number) links all PF accounts of a member.',
+      'hi':
+          'कर्मचारी भविष्य निधि (EPF) वेतनभोगी कर्मचारियों के लिए सेवानिवृत्ति लाभ योजना है।',
+      'mr':
+          'कर्मचारी भविष्य निर्वाह निधी (EPF) ही पगारदार कर्मचाऱ्यांसाठी निवृत्ती लाभ योजना आहे.',
+      'ta':
+          'ஊழியர் வருங்கால வைப்பு நிதி (EPF) என்பது சம்பளம் பெறும் ஊழியர்களுக்கான ஓய்வூதிய பலன் திட்டமாகும்.',
     },
     eligibilityCriteria: [
       'Salaried employee under covered establishments',
@@ -958,19 +1049,42 @@ class MockServicesData {
     ],
     requiredDocuments: [
       DocumentItem(name: 'UAN Number', description: 'Provided by the employer'),
-      DocumentItem(name: 'Aadhaar Card', description: 'Must be seeded with UAN'),
-      DocumentItem(name: 'PAN Card', description: 'For tax exemption on withdrawals > ₹50,000'),
-      DocumentItem(name: 'Bank Account Detail', description: 'Account number and IFSC seeded to UAN'),
+      DocumentItem(
+          name: 'Aadhaar Card', description: 'Must be seeded with UAN'),
+      DocumentItem(
+          name: 'PAN Card',
+          description: 'For tax exemption on withdrawals > ₹50,000'),
+      DocumentItem(
+          name: 'Bank Account Detail',
+          description: 'Account number and IFSC seeded to UAN'),
     ],
     steps: [
-      StepItem(number: 1, title: 'Activate UAN', description: 'Visit UAN Member Portal to generate password and activate the UAN.', actionUrl: 'https://unifiedportal-mem.epfindia.gov.in/memberinterface/'),
-      StepItem(number: 2, title: 'Update KYC', description: 'Ensure Aadhaar, PAN, and Bank details are approved by employer under Manage > KYC.'),
-      StepItem(number: 3, title: 'Online Services', description: 'Click Online Services to apply for Claim (Form-31, 19, 10C & 10D).'),
-      StepItem(number: 4, title: 'Track Claim', description: 'Track withdrawal status using the "Track Claim Status" tab.'),
+      StepItem(
+          number: 1,
+          title: 'Activate UAN',
+          description:
+              'Visit UAN Member Portal to generate password and activate the UAN.',
+          actionUrl:
+              'https://unifiedportal-mem.epfindia.gov.in/memberinterface/'),
+      StepItem(
+          number: 2,
+          title: 'Update KYC',
+          description:
+              'Ensure Aadhaar, PAN, and Bank details are approved by employer under Manage > KYC.'),
+      StepItem(
+          number: 3,
+          title: 'Online Services',
+          description:
+              'Click Online Services to apply for Claim (Form-31, 19, 10C & 10D).'),
+      StepItem(
+          number: 4,
+          title: 'Track Claim',
+          description:
+              'Track withdrawal status using the "Track Claim Status" tab.'),
     ],
     estimatedTimeline: '7-20 Days for Claim Settlement',
     fees: 'Free',
-    officialLink: 'https://www.epfindia.gov.in',
+    officialLink: 'https://unifiedportal-mem.epfindia.gov.in/memberinterface/',
     helplineNumber: '14470',
   );
 
@@ -989,29 +1103,56 @@ class MockServicesData {
       'ta': 'பிஎம் கிசான் சம்மன் நிதி',
     },
     description: {
-      'en': 'PM Kisan is a central sector scheme providing income support of ₹6,000 per year in three equal installments to all landholding farmer families.',
-      'hi': 'पीएम किसान एक केंद्रीय क्षेत्र की योजना है जो सभी भूमिधारक किसान परिवारों को तीन समान किस्तों में ₹6,000 प्रति वर्ष की आय सहायता प्रदान करती है।',
-      'mr': 'पीएम किसान ही एक केंद्रीय क्षेत्रातील योजना आहे जी सर्व जमीनधारक शेतकरी कुटुंबांना तीन समान हप्त्यांमध्ये दरवर्षी ₹6,000 चे उत्पन्न समर्थन देते.',
-      'ta': 'பிஎம் கிசான் என்பது அனைத்து நிலமுள்ள விவசாய குடும்பங்களுக்கும் ஆண்டுக்கு ₹6,000 வருமான ஆதரவை வழங்கும் திட்டமாகும்.',
+      'en':
+          'PM Kisan is a central sector scheme providing income support of ₹6,000 per year in three equal installments to all landholding farmer families.',
+      'hi':
+          'पीएम किसान एक केंद्रीय क्षेत्र की योजना है जो सभी भूमिधारक किसान परिवारों को तीन समान किस्तों में ₹6,000 प्रति वर्ष की आय सहायता प्रदान करती है।',
+      'mr':
+          'पीएम किसान ही एक केंद्रीय क्षेत्रातील योजना आहे जी सर्व जमीनधारक शेतकरी कुटुंबांना तीन समान हप्त्यांमध्ये दरवर्षी ₹6,000 चे उत्पन्न समर्थन देते.',
+      'ta':
+          'பிஎம் கிசான் என்பது அனைத்து நிலமுள்ள விவசாய குடும்பங்களுக்கும் ஆண்டுக்கு ₹6,000 வருமான ஆதரவை வழங்கும் திட்டமாகும்.',
     },
     eligibilityCriteria: [
       'Landholding farmer families with cultivable land in their names',
       'Exclusion criteria applies for institutional landholders, tax payers, professionals, etc.',
     ],
     requiredDocuments: [
-      DocumentItem(name: 'Aadhaar Card', description: 'Must be linked with active bank account'),
-      DocumentItem(name: 'Land Holding Papers', description: 'Proof of land ownership (Khata/Khasra)'),
-      DocumentItem(name: 'Bank Account', description: 'For direct benefit transfer (DBT)'),
+      DocumentItem(
+          name: 'Aadhaar Card',
+          description: 'Must be linked with active bank account'),
+      DocumentItem(
+          name: 'Land Holding Papers',
+          description: 'Proof of land ownership (Khata/Khasra)'),
+      DocumentItem(
+          name: 'Bank Account',
+          description: 'For direct benefit transfer (DBT)'),
     ],
     steps: [
-      StepItem(number: 1, title: 'New Farmer Registration', description: 'Visit PM Kisan portal and select "New Farmer Registration".', actionUrl: 'https://pmkisan.gov.in'),
-      StepItem(number: 2, title: 'Submit Details', description: 'Enter Aadhaar, selection state, and complete captcha. Provide personal and land details.'),
-      StepItem(number: 3, title: 'e-KYC Completion', description: 'Complete mandatory e-KYC via OTP or CSC center for installment processing.'),
-      StepItem(number: 4, title: 'Beneficiary Status', description: 'Track your application and payment status using Aadhaar number.'),
+      StepItem(
+          number: 1,
+          title: 'New Farmer Registration',
+          description:
+              'Visit PM Kisan portal and select "New Farmer Registration".',
+          actionUrl: 'https://pmkisan.gov.in'),
+      StepItem(
+          number: 2,
+          title: 'Submit Details',
+          description:
+              'Enter Aadhaar, selection state, and complete captcha. Provide personal and land details.'),
+      StepItem(
+          number: 3,
+          title: 'e-KYC Completion',
+          description:
+              'Complete mandatory e-KYC via OTP or CSC center for installment processing.'),
+      StepItem(
+          number: 4,
+          title: 'Beneficiary Status',
+          description:
+              'Track your application and payment status using Aadhaar number.'),
     ],
     estimatedTimeline: 'Varies per installment schedule',
     fees: 'Free',
-    officialLink: 'https://pmkisan.gov.in',
+    officialLink: 'https://pmkisan.gov.in/BeneficiaryStatus_New.aspx',
     helplineNumber: '155261 / 1800115526',
   );
 
@@ -1030,10 +1171,14 @@ class MockServicesData {
       'ta': 'ஆயுஷ்மான் பாரத் (PM-JAY)',
     },
     description: {
-      'en': 'Pradhan Mantri Jan Arogya Yojana is the world\'s largest health insurance scheme fully financed by the government. It provides a cover of ₹5 lakhs per family per year for secondary and tertiary care hospitalization.',
-      'hi': 'प्रधानमंत्री जन आरोग्य योजना पूरी तरह से सरकार द्वारा वित्तपोषित दुनिया की सबसे बड़ी स्वास्थ्य बीमा योजना है।',
-      'mr': 'प्रधानमंत्री जन आरोग्य योजना ही पूर्णपणे सरकारद्वारे वित्तपुरवठा केलेली जगातील सर्वात मोठी आरोग्य विमा योजना आहे.',
-      'ta': 'பிரதான் மந்திரி ஜன் ஆரோக்கிய யோஜனா என்பது அரசாங்கத்தால் முழுமையாக நிதியளிக்கப்படும் உலகின் மிகப்பெரிய சுகாதார காப்பீட்டு திட்டமாகும்.',
+      'en':
+          'Pradhan Mantri Jan Arogya Yojana is the world\'s largest health insurance scheme fully financed by the government. It provides a cover of ₹5 lakhs per family per year for secondary and tertiary care hospitalization.',
+      'hi':
+          'प्रधानमंत्री जन आरोग्य योजना पूरी तरह से सरकार द्वारा वित्तपोषित दुनिया की सबसे बड़ी स्वास्थ्य बीमा योजना है।',
+      'mr':
+          'प्रधानमंत्री जन आरोग्य योजना ही पूर्णपणे सरकारद्वारे वित्तपुरवठा केलेली जगातील सर्वात मोठी आरोग्य विमा योजना आहे.',
+      'ta':
+          'பிரதான் மந்திரி ஜன் ஆரோக்கிய யோஜனா என்பது அரசாங்கத்தால் முழுமையாக நிதியளிக்கப்படும் உலகின் மிகப்பெரிய சுகாதார காப்பீட்டு திட்டமாகும்.',
     },
     eligibilityCriteria: [
       'Deprived families identified via Socio-Economic Caste Census (SECC) 2011',
@@ -1041,18 +1186,39 @@ class MockServicesData {
       'No cap on family size, age, or gender',
     ],
     requiredDocuments: [
-      DocumentItem(name: 'Aadhaar Card', description: 'For identity verification and e-KYC'),
-      DocumentItem(name: 'Ration Card / PMJAY Letter', description: 'As proof of eligibility mapping'),
+      DocumentItem(
+          name: 'Aadhaar Card',
+          description: 'For identity verification and e-KYC'),
+      DocumentItem(
+          name: 'Ration Card / PMJAY Letter',
+          description: 'As proof of eligibility mapping'),
     ],
     steps: [
-      StepItem(number: 1, title: 'Check Eligibility', description: 'Visit the "Am I Eligible" portal and input your mobile number or Ration Card.', actionUrl: 'https://pmjay.gov.in'),
-      StepItem(number: 2, title: 'Visit Empaneled Hospital/CSC', description: 'Visit an authorized CSC or empaneled hospital with Aadhaar to verify identity.'),
-      StepItem(number: 3, title: 'e-KYC and Approval', description: 'Complete Aadhaar e-KYC. Authorities will approve the generation of the card.'),
-      StepItem(number: 4, title: 'Get Ayushman Card', description: 'Download your Ayushman card after approval for cashless hospital treatments.'),
+      StepItem(
+          number: 1,
+          title: 'Check Eligibility',
+          description:
+              'Visit the "Am I Eligible" portal and input your mobile number or Ration Card.',
+          actionUrl: 'https://beneficiary.nha.gov.in/'),
+      StepItem(
+          number: 2,
+          title: 'Visit Empaneled Hospital/CSC',
+          description:
+              'Visit an authorized CSC or empaneled hospital with Aadhaar to verify identity.'),
+      StepItem(
+          number: 3,
+          title: 'e-KYC and Approval',
+          description:
+              'Complete Aadhaar e-KYC. Authorities will approve the generation of the card.'),
+      StepItem(
+          number: 4,
+          title: 'Get Ayushman Card',
+          description:
+              'Download your Ayushman card after approval for cashless hospital treatments.'),
     ],
     estimatedTimeline: 'Instant approval after e-KYC',
     fees: 'Free',
-    officialLink: 'https://pmjay.gov.in',
+    officialLink: 'https://beneficiary.nha.gov.in/',
     helplineNumber: '14555',
   );
 
@@ -1071,10 +1237,14 @@ class MockServicesData {
       'ta': 'தேசிய உதவித்தொகை போர்டல்',
     },
     description: {
-      'en': 'The National Scholarship Portal (NSP) is a one-stop portal providing various scholarships to eligible students from weaker sections, minorities, SC/ST, etc.',
-      'hi': 'NSP एक वन-स्टॉप पोर्टल है जो पात्र छात्रों को विभिन्न छात्रवृत्तियां प्रदान करता है।',
-      'mr': 'NSP हे एक वन-स्टॉप पोर्टल आहे जे पात्र विद्यार्थ्यांना विविध शिष्यवृत्ती प्रदान करते.',
-      'ta': 'தகுதியான மாணவர்களுக்கு பல்வேறு உதவித்தொகைகளை வழங்கும் ஒரு நிறுத்த தளம் NSP ஆகும்.',
+      'en':
+          'The National Scholarship Portal (NSP) is a one-stop portal providing various scholarships to eligible students from weaker sections, minorities, SC/ST, etc.',
+      'hi':
+          'NSP एक वन-स्टॉप पोर्टल है जो पात्र छात्रों को विभिन्न छात्रवृत्तियां प्रदान करता है।',
+      'mr':
+          'NSP हे एक वन-स्टॉप पोर्टल आहे जे पात्र विद्यार्थ्यांना विविध शिष्यवृत्ती प्रदान करते.',
+      'ta':
+          'தகுதியான மாணவர்களுக்கு பல்வேறு உதவித்தொகைகளை வழங்கும் ஒரு நிறுத்த தளம் NSP ஆகும்.',
     },
     eligibilityCriteria: [
       'Students pursuing studies in recognized schools/institutions',
@@ -1083,20 +1253,45 @@ class MockServicesData {
     ],
     requiredDocuments: [
       DocumentItem(name: 'Aadhaar Card', description: 'For e-KYC and DBT'),
-      DocumentItem(name: 'Bank Account Passbook', description: 'Student\'s account seeded with Aadhaar'),
-      DocumentItem(name: 'Income & Caste Certificate', description: 'Required for specific quota schemes'),
-      DocumentItem(name: 'Previous Marks Sheet', description: 'Academic records of last passed exam'),
-      DocumentItem(name: 'Fee Receipt / Bonafide', description: 'Issued by current institution'),
+      DocumentItem(
+          name: 'Bank Account Passbook',
+          description: 'Student\'s account seeded with Aadhaar'),
+      DocumentItem(
+          name: 'Income & Caste Certificate',
+          description: 'Required for specific quota schemes'),
+      DocumentItem(
+          name: 'Previous Marks Sheet',
+          description: 'Academic records of last passed exam'),
+      DocumentItem(
+          name: 'Fee Receipt / Bonafide',
+          description: 'Issued by current institution'),
     ],
     steps: [
-      StepItem(number: 1, title: 'OTR Registration', description: 'Complete One Time Registration (OTR) on the portal using Aadhaar authentication.', actionUrl: 'https://scholarships.gov.in'),
-      StepItem(number: 2, title: 'Fill Application', description: 'Login and fill personal, academic, and scheme details.'),
-      StepItem(number: 3, title: 'Upload Documents', description: 'Upload digitized copies of marks sheets, income certificate, and bank details.'),
-      StepItem(number: 4, title: 'Institute Verification', description: 'Submit the application so the respective institute nodal officer can verify it online.'),
+      StepItem(
+          number: 1,
+          title: 'OTR Registration',
+          description:
+              'Complete One Time Registration (OTR) on the portal using Aadhaar authentication.',
+          actionUrl: 'https://scholarships.gov.in'),
+      StepItem(
+          number: 2,
+          title: 'Fill Application',
+          description:
+              'Login and fill personal, academic, and scheme details.'),
+      StepItem(
+          number: 3,
+          title: 'Upload Documents',
+          description:
+              'Upload digitized copies of marks sheets, income certificate, and bank details.'),
+      StepItem(
+          number: 4,
+          title: 'Institute Verification',
+          description:
+              'Submit the application so the respective institute nodal officer can verify it online.'),
     ],
     estimatedTimeline: 'Annually as per Academic Calendar',
     fees: 'Free',
-    officialLink: 'https://scholarships.gov.in',
+    officialLink: 'https://scholarships.gov.in/fresh/trackStatus',
     helplineNumber: '0120 - 6619540',
   );
 
@@ -1115,30 +1310,60 @@ class MockServicesData {
       'ta': 'உத்யம் (MSME) பதிவு',
     },
     description: {
-      'en': 'Udyam Registration is a government portal for the registration of Micro, Small & Medium Enterprises (MSMEs). It provides various benefits including subsidies, easier loans, and intellectual property support.',
-      'hi': 'उद्यम पंजीकरण सूक्ष्म, लघु और मध्यम उद्यमों (MSMEs) के पंजीकरण के लिए एक सरकारी पोर्टल है।',
-      'mr': 'उद्यम नोंदणी हे सूक्ष्म, लघु आणि मध्यम उपक्रम (MSMEs) नोंदणीसाठी एक सरकारी पोर्टल आहे.',
-      'ta': 'உத்யம் பதிவு என்பது சிறு, குறு மற்றும் நடுத்தர நிறுவனங்களின் (MSMEs) பதிவுக்கான அரசு தளமாகும்.',
+      'en':
+          'Udyam Registration is a government portal for the registration of Micro, Small & Medium Enterprises (MSMEs). It provides various benefits including subsidies, easier loans, and intellectual property support.',
+      'hi':
+          'उद्यम पंजीकरण सूक्ष्म, लघु और मध्यम उद्यमों (MSMEs) के पंजीकरण के लिए एक सरकारी पोर्टल है।',
+      'mr':
+          'उद्यम नोंदणी हे सूक्ष्म, लघु आणि मध्यम उपक्रम (MSMEs) नोंदणीसाठी एक सरकारी पोर्टल आहे.',
+      'ta':
+          'உத்யம் பதிவு என்பது சிறு, குறு மற்றும் நடுத்தர நிறுவனங்களின் (MSMEs) பதிவுக்கான அரசு தளமாகும்.',
     },
     eligibilityCriteria: [
       'Any individual intending to establish a Micro, Small, or Medium Enterprise',
       'Classification depends on investment in plant/machinery and annual turnover',
     ],
     requiredDocuments: [
-      DocumentItem(name: 'Aadhaar Card', description: 'Aadhaar of proprietor/director/managing partner'),
-      DocumentItem(name: 'PAN & GSTIN', description: 'Mandatory PAN and GSTIN (if applicable)'),
-      DocumentItem(name: 'Bank Account Details', description: 'Current account number and IFSC code'),
+      DocumentItem(
+          name: 'Aadhaar Card',
+          description: 'Aadhaar of proprietor/director/managing partner'),
+      DocumentItem(
+          name: 'PAN & GSTIN',
+          description: 'Mandatory PAN and GSTIN (if applicable)'),
+      DocumentItem(
+          name: 'Bank Account Details',
+          description: 'Current account number and IFSC code'),
     ],
     steps: [
-      StepItem(number: 1, title: 'Visit Udyam Portal', description: 'Go to the official Udyam Registration portal. Select "For New Entrepreneurs".', actionUrl: 'https://udyamregistration.gov.in'),
-      StepItem(number: 2, title: 'Aadhaar Verification', description: 'Enter Aadhaar number and Name, then validate via OTP.'),
-      StepItem(number: 3, title: 'PAN Verification', description: 'Select type of organization and provide PAN number. Details will be auto-fetched.'),
-      StepItem(number: 4, title: 'Application Details', description: 'Fill business addresses, bank details, NIC codes for activities, investment, and turnover (auto-filled if ITR filed).'),
-      StepItem(number: 5, title: 'Final Submit', description: 'Submit using OTP and receive the Udyam Registration Certificate online.'),
+      StepItem(
+          number: 1,
+          title: 'Visit Udyam Portal',
+          description:
+              'Go to the official Udyam Registration portal. Select "For New Entrepreneurs".',
+          actionUrl: 'https://udyamregistration.gov.in'),
+      StepItem(
+          number: 2,
+          title: 'Aadhaar Verification',
+          description: 'Enter Aadhaar number and Name, then validate via OTP.'),
+      StepItem(
+          number: 3,
+          title: 'PAN Verification',
+          description:
+              'Select type of organization and provide PAN number. Details will be auto-fetched.'),
+      StepItem(
+          number: 4,
+          title: 'Application Details',
+          description:
+              'Fill business addresses, bank details, NIC codes for activities, investment, and turnover (auto-filled if ITR filed).'),
+      StepItem(
+          number: 5,
+          title: 'Final Submit',
+          description:
+              'Submit using OTP and receive the Udyam Registration Certificate online.'),
     ],
     estimatedTimeline: 'Instant to 3 Working Days',
     fees: 'Free',
-    officialLink: 'https://udyamregistration.gov.in',
+    officialLink: 'https://udyamregistration.gov.in/Udyam_Verify.aspx',
     helplineNumber: '011-23063800',
   );
 

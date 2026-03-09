@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/services/aws_amplify_service.dart';
+import 'core/services/notification_service.dart';
 
 import 'providers/auth_provider.dart';
 import 'providers/language_provider.dart';
@@ -40,6 +41,9 @@ void main() {
     // Critical initialization
     debugPrint('!!! [CVI_BOOT] Initializing AWS Amplify...');
     await AwsAmplifyService.initialize();
+
+    debugPrint('!!! [CVI_BOOT] Initializing Notifications...');
+    await NotificationService().init();
 
     debugPrint('!!! [CVI_BOOT] Loading preferences...');
     await SharedPreferences.getInstance();

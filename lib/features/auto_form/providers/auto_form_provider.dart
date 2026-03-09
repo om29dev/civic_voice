@@ -152,7 +152,7 @@ class AutoFormProvider extends ChangeNotifier {
         profileData['email'] = citizen.email;
       }
       if (citizen.state.isNotEmpty) profileData['state'] = citizen.state;
-      if (citizen.district.isNotEmpty) {
+      if (citizen.district != null && citizen.district!.isNotEmpty) {
         profileData['district'] = citizen.district;
       }
       if (citizen.age > 0) profileData['age'] = citizen.age.toString();

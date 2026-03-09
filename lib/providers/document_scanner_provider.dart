@@ -44,9 +44,9 @@ class DocumentScannerProvider with ChangeNotifier {
           final rawType =
               _extractedData!['document_type'].toString().toLowerCase();
           // Map to standard vault types
-          if (rawType.contains('aadhaar'))
+          if (rawType.contains('aadhaar')) {
             _documentType = 'aadhaar';
-          else if (rawType.contains('pan'))
+          } else if (rawType.contains('pan'))
             _documentType = 'pan';
           else if (rawType.contains('passport'))
             _documentType = 'passport';

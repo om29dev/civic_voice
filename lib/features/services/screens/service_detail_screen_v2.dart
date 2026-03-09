@@ -3,12 +3,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/router/app_router.dart';
+import '../../../models/cvi_document_model.dart';
 import '../../../models/service_model.dart';
+import '../../../providers/document_vault_provider.dart';
 import '../../../providers/language_provider.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -785,6 +788,72 @@ class _DocumentCard extends StatefulWidget {
 
 class _DocumentCardState extends State<_DocumentCard> {
   bool _expanded = false;
+  bool _isUploading = false;
+
+  DocumentType _mapToDocumentType(String docName) {
+    final name = docName.toLowerCase();
+    if (name.contains('aadhaar')) return DocumentType.aadhaar;
+    if (name.contains('pan')) return DocumentType.pan;
+    if (name.contains('voter')) return DocumentType.voterID;
+    if (name.contains('license')) return DocumentType.drivingLicense;
+    if (name.contains('passport')) return DocumentType.passport;
+    if (name.contains('bank') || name.contains('passbook')) {
+      return DocumentType.bankPassbook;
+    }
+    if (name.contains('photo')) return DocumentType.photo;
+    if (name.contains('income')) return DocumentType.incomeCertificate;
+    if (name.contains('caste')) return DocumentType.casteCertificate;
+    if (name.contains('ration')) return DocumentType.rationCard;
+    if (name.contains('birth')) return DocumentType.birthCertificate;
+    if (name.contains('land')) return DocumentType.landRecord;
+    if (name.contains('marksheet')) return DocumentType.marksheet;
+    if (name.contains('signature')) return DocumentType.signature;
+    return DocumentType.other;
+  }
+
+  Future<void> _handleUpload() async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 70,
+    );
+
+    if (image == null) return;
+
+    setState(() => _isUploading = true);
+
+    try {
+      final bytes = await image.readAsBytes();
+      final docType = _mapToDocumentType(widget.doc.name);
+
+      if (!mounted) return;
+      await context.read<DocumentVaultProvider>().addDocument(
+            imageBytes: bytes,
+            documentType: docType.name,
+            customName: widget.doc.name,
+          );
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${widget.doc.name} uploaded successfully!'),
+          backgroundColor: AppColors.emeraldLight,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Upload failed: $e'),
+          backgroundColor: AppColors.accentRed,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isUploading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -889,13 +958,91 @@ class _DocumentCardState extends State<_DocumentCard> {
                           border: Border.all(
                               color: AppColors.surfaceBorder, width: 1),
                         ),
-                        child: Text(
-                          widget.doc.description,
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: AppColors.textSecondary,
-                            height: 1.6,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.doc.description,
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
+                                height: 1.6,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            const Divider(
+                                color: AppColors.surfaceBorder, height: 1),
+                            const SizedBox(height: 12),
+                            Consumer<DocumentVaultProvider>(
+                              builder: (context, vault, child) {
+                                final docType =
+                                    _mapToDocumentType(widget.doc.name);
+                                final exists = vault.hasDocument(docType.name);
+
+                                if (exists) {
+                                  return Row(
+                                    children: [
+                                      const Icon(Icons.check_circle_rounded,
+                                          color: AppColors.emeraldLight,
+                                          size: 16),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Already in Vault',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.emeraldLight,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }
+
+                                return InkWell(
+                                  onTap: _isUploading ? null : _handleUpload,
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: widget.accentColor
+                                          .withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: widget.accentColor
+                                            .withValues(alpha: 0.3),
+                                      ),
+                                    ),
+                                    child: _isUploading
+                                        ? const SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: AppColors.textPrimary),
+                                          )
+                                        : Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(Icons.cloud_upload_outlined,
+                                                  size: 16,
+                                                  color: widget.accentColor),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                'Upload to Vault',
+                                                style: GoogleFonts.poppins(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: widget.accentColor,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
                         ),
                       ),
                     )
