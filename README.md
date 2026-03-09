@@ -1,4 +1,4 @@
-# Civic Voice — CVI 🇮🇳
+# Civic Voice — CVI
 
 <div align="center">
 
@@ -196,57 +196,13 @@ Deep dive into the specifics of Civic Voice's architecture:
 
 ## 📁 Project Structure
 
-```
-lib/
-├── core/
-│   ├── constants/        # AppColors, AppStrings, AppAssets
-│   ├── engine/           # ReasoningEngine, IntentEngine
-│   ├── router/           # GoRouter declarations (AppRouter, Routes)
-│   ├── services/         # API, AI, Document, Emergency, Notification services
-│   ├── theme/            # AppTheme, typography definitions
-│   └── utils/            # Helpers, AppInitializer, ResponseGenerator
-├── features/
-│   ├── auth/             # Login, Register, OTP verification screens
-│   ├── auto_form/        # Smart form filling & guided submission
-│   ├── community/        # Community verification flows
-│   ├── dashboard/        # Main & Premium dashboard variants
-│   ├── documents/        # Document vault & AI scanner
-│   ├── eligibility/      # AI eligibility checker
-│   ├── forms/            # Auto-fill form & smart browser
-│   ├── gamification/     # Achievements, badges, civic score
-│   ├── location/         # Office locator & maps
-│   ├── notifications/    # Notification management screen
-│   ├── onboarding/       # First-launch & language selection
-│   ├── profile/          # Citizen profile & family dashboard
-│   ├── recommendations/  # Scheme discovery & recommendations
-│   ├── services/         # Services hub & detail screens
-│   └── voice/            # CVI voice assistant interface
-├── models/               # User, Service, Scheme, Document, Queue models
-├── providers/            # Auth, Language, Voice, Analytics, Notification…
-├── services/             # High-level service orchestrators
-└── widgets/              # Glass cards, Indian motifs, navigation, animations
-```
+The project follows a feature-first architectural pattern:
 
----
-
-## ☁️ Cloud Architecture (AWS)
-
-```
-┌─────────────────────────────────────────────────────┐
-│                   Civic Voice App                   │
-│              (Flutter Client)                       │
-└──────────┬──────────────┬────────────────┬──────────┘
-           │              │                │
-           ▼              ▼                ▼
-    Amazon Cognito    AWS AppSync     API Gateway
-    (Authentication)  (GraphQL API)   (REST → Lambda)
-                          │                │
-                          ▼                ▼
-                    Amazon DynamoDB  Amazon Bedrock
-                    (Data Storage)   (Llama 3 AI)
-```
-
----
+*   `lib/core/`: Application-wide constants, networking, routing, and theme definitions.
+*   `lib/features/`: Individual feature modules (auth, dashboard, services, voice, profile).
+*   `lib/models/`: Data structures representing application entities.
+*   `lib/providers/`: State management controllers handling business logic.
+*   `lib/widgets/`: Reusable, custom UI components.
 
 ## 🤝 Contributing
 
@@ -270,7 +226,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## 📬 Contact
 
-Project Link: [https://github.com/yourusername/civic_voice](https://github.com/yourusername/civic_voice)
+Project Link: [https://github.com/om29dev/civic_voice](https://github.com/om29dev/civic_voice)
 
 ---
 
