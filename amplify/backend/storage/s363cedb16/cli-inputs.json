@@ -1,0 +1,14 @@
+{
+  "resourceName": "s363cedb16",
+  "bucketName": "civicvoicestorage",
+  "policyUUID": "63cedb16",
+  "storageAccess": "authAndGuest",
+  "guestAccess": [
+    "READ"
+  ],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ]
+}

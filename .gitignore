@@ -1,82 +1,86 @@
-# Miscellaneous
+# General
 *.class
 *.log
 *.pyc
 *.swp
+*.swo
+*.tmp
 .DS_Store
-.atom/
-.build/
-.buildlog/
-.history
-.svn/
-.swiftpm/
-migrate_working_dir/
+Thumbs.db
 .env
-.eslintignore
-.eslintignore
+.env.*
+!.env.example
 
-# IntelliJ related
+# IDE / editor
+.vscode/
+.idea/
 *.iml
 *.ipr
 *.iws
-.idea/
+.metadata/
 
-# VS Code related
-.vscode/
-
-# Flutter/Dart related
-**/doc/api/
-**/ios/Flutter/.last_build_id
+# Flutter / Dart
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
+.packages
 .pub-cache/
 .pub/
-/build/
-
-# Symbolication/Obfuscation
-app.*.symbols
-app.*.map.json
-
-# Android
-/android/app/debug
-/android/app/profile
-/android/app/release
-/android/app/.cxx/
-android/app/build/
-
-# iOS
+build/
+coverage/
+**/doc/api/
+**/ios/Flutter/.last_build_id
 **/ios/Flutter/Generated.xcconfig
 **/ios/Flutter/flutter_export_environment.sh
 **/ios/ServiceDefinitions.json
 **/ios/Runner/GeneratedPluginRegistrant.[mh]
+**/macos/Flutter/GeneratedPluginRegistrant.swift
+**/linux/flutter/generated_plugin_registrant.cc
+**/linux/flutter/generated_plugin_registrant.h
+**/linux/flutter/generated_plugins.cmake
+**/windows/flutter/generated_plugin_registrant.cc
+**/windows/flutter/generated_plugin_registrant.h
+**/windows/flutter/generated_plugins.cmake
 
-# Windows
-/windows/flutter/generated_plugin_registrant.cc
-/windows/flutter/generated_plugin_registrant.h
-/windows/flutter/generated_plugins.cmake
+# Android
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+**/android/app/.cxx/
+**/android/app/build/
+**/android/.gradle/
+**/android/local.properties
+**/android/**/build/
 
-# Config files
-# Config files
-*.json
+# iOS / macOS
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/macos/Pods/
+**/macos/.symlinks/
+**/macos/Flutter/ephemeral/
 
-# AWS Amplify (do-not-edit-begin)
-amplify/#current-cloud-backend
-amplify/.config/local-*
-amplify/logs
-amplify/mock-data
-amplify/mock-api-resources
-amplify/backend/amplify-meta.json
-amplify/backend/.temp
-dist/
-node_modules/
-aws-exports.js
-awsconfiguration.json
-amplifyconfiguration.json
-amplifyconfiguration.dart
-amplify-build-config.json
-amplify-gradle-config.json
-amplifytools.xcconfig
+# Secrets / local config
+*.jks
+*.keystore
+*.p8
+*.mobileprovision
+GoogleService-Info.plist
+google-services.json
+secrets/
 .secret-*
-**.sample
-# AWS Amplify (do-not-edit-end)
+
+# Amplify / AWS local artifacts
+amplify/#current-cloud-backend/
+amplify/.config/local-*
+amplify/logs/
+amplify/mock-data/
+amplify/mock-api-resources/
+amplify/backend/.temp/
+amplify/backend/amplify-meta.json
+
+# Tooling
+node_modules/
+dist/
