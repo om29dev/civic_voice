@@ -72,15 +72,30 @@ google-services.json
 secrets/
 .secret-*
 
+# Temporary Cleanup / Binaries
+aws-nuke*
+nuke-config*.yaml
+*.zip
+*.bak
+
+# Tooling
+node_modules/
+dist/
+
 # Amplify / AWS local artifacts
 amplify/#current-cloud-backend/
+amplify/\#current-cloud-backend/
 amplify/.config/local-*
 amplify/logs/
 amplify/mock-data/
 amplify/mock-api-resources/
 amplify/backend/.temp/
 amplify/backend/amplify-meta.json
-
-# Tooling
-node_modules/
-dist/
+amplify/backend/awscloudformation/build/
+amplify/backend/**/build/
+amplify-build-config.json
+amplify-gradle-config.json
+amplifytools.xcconfig
+aws-exports.js
+awsconfiguration.json
+amplifyconfiguration.json

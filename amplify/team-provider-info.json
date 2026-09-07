@@ -1,19 +1,22 @@
 {
   "dev": {
     "awscloudformation": {
-      "AuthRoleName": "amplify-civicvoice-dev-eb20b-authRole",
-      "UnauthRoleArn": "arn:aws:iam::742435394268:role/amplify-civicvoice-dev-eb20b-unauthRole",
-      "AuthRoleArn": "arn:aws:iam::742435394268:role/amplify-civicvoice-dev-eb20b-authRole",
-      "Region": "us-east-1",
-      "DeploymentBucketName": "amplify-civicvoice-dev-eb20b-deployment",
-      "UnauthRoleName": "amplify-civicvoice-dev-eb20b-unauthRole",
-      "StackName": "amplify-civicvoice-dev-eb20b",
-      "StackId": "arn:aws:cloudformation:us-east-1:742435394268:stack/amplify-civicvoice-dev-eb20b/3772fe60-1ab2-11f1-9647-0affdacdfdf9",
-      "AmplifyAppId": "d3c3eiprpv1kk7"
+      "AuthRoleName": "amplify-civicvoice-dev-71deb-authRole",
+      "UnauthRoleArn": "arn:aws:iam::742435394268:role/amplify-civicvoice-dev-71deb-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::742435394268:role/amplify-civicvoice-dev-71deb-authRole",
+      "Region": "ap-south-1",
+      "DeploymentBucketName": "amplify-civicvoice-dev-71deb-deployment",
+      "UnauthRoleName": "amplify-civicvoice-dev-71deb-unauthRole",
+      "StackName": "amplify-civicvoice-dev-71deb",
+      "StackId": "arn:aws:cloudformation:ap-south-1:742435394268:stack/amplify-civicvoice-dev-71deb/941fbc50-ab05-11f1-ba29-0226e582ff47",
+      "AmplifyAppId": "d2o5i1x3ygcmoz"
     },
     "categories": {
       "auth": {
         "civicvoice53cd2ba4": {}
+      },
+      "api": {
+        "civicvoiceapi": {}
       },
       "storage": {
         "s363cedb16": {}

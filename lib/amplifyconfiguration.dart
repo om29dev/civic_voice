@@ -1,76 +1,89 @@
-const String amplifyconfig = '''
-{
-  "UserAgent": "aws-amplify-cli/2.0",
-  "Version": "1.0",
-  "auth": {
-    "plugins": {
-      "awsCognitoAuthPlugin": {
-        "UserAgent": "aws-amplify-cli/0.1.0",
-        "Version": "0.1.0",
-        "IdentityManager": {
-          "Default": {}
-        },
-        "CredentialsProvider": {
-          "CognitoIdentity": {
-            "Default": {
-              "PoolId": "us-east-1:6d43a735-9a1a-4260-8405-dbb43b2081c4",
-              "Region": "us-east-1"
+const amplifyconfig = '''{
+    "UserAgent": "aws-amplify-cli/2.0",
+    "Version": "1.0",
+    "api": {
+        "plugins": {
+            "awsAPIPlugin": {
+                "civicvoiceapi": {
+                    "endpointType": "GraphQL",
+                    "endpoint": "https://672nmbmz2zgntmteqh7tpew4i4.appsync-api.ap-south-1.amazonaws.com/graphql",
+                    "region": "ap-south-1",
+                    "authorizationType": "AMAZON_COGNITO_USER_POOLS"
+                }
             }
-          }
-        },
-        "CognitoUserPool": {
-          "Default": {
-            "PoolId": "us-east-1_6wHybFEqZ",
-            "AppClientId": "2b74772a5j0q4oa2q3fiic6bfd",
-            "Region": "us-east-1"
-          }
-        },
-        "Auth": {
-          "Default": {
-            "authenticationFlowType": "USER_SRP_AUTH",
-            "socialProviders": [],
-            "usernameAttributes": [
-              "EMAIL",
-              "PHONE_NUMBER"
-            ],
-            "signupAttributes": [
-              "EMAIL"
-            ],
-            "passwordProtectionSettings": {
-              "passwordPolicyMinLength": 8,
-              "passwordPolicyCharacters": []
-            },
-            "mfaConfiguration": "OFF",
-            "mfaTypes": [
-              "SMS"
-            ],
-            "verificationMechanisms": [
-              "EMAIL"
-            ]
-          }
         }
-      }
-    }
-  },
-  "api": {
-    "plugins": {
-      "awsAPIPlugin": {
-        "civicvoiceapi": {
-          "endpointType": "GraphQL",
-          "endpoint": "https://3pxiukdkkzfvnnf7fc322ej34e.appsync-api.us-east-1.amazonaws.com/graphql",
-          "region": "us-east-1",
-          "authorizationType": "AMAZON_COGNITO_USER_POOLS"
+    },
+    "auth": {
+        "plugins": {
+            "awsCognitoAuthPlugin": {
+                "UserAgent": "aws-amplify-cli/0.1.0",
+                "Version": "0.1.0",
+                "IdentityManager": {
+                    "Default": {}
+                },
+                "CredentialsProvider": {
+                    "CognitoIdentity": {
+                        "Default": {
+                            "PoolId": "ap-south-1:b2b7786b-f8e2-47b9-b246-e87480016a8d",
+                            "Region": "ap-south-1"
+                        }
+                    }
+                },
+                "CognitoUserPool": {
+                    "Default": {
+                        "PoolId": "ap-south-1_jXuQiKf9L",
+                        "AppClientId": "7iebs954ls999m8n3gqbmt8f51",
+                        "Region": "ap-south-1"
+                    }
+                },
+                "Auth": {
+                    "Default": {
+                        "authenticationFlowType": "USER_SRP_AUTH",
+                        "mfaConfiguration": "OFF",
+                        "mfaTypes": [
+                            "SMS"
+                        ],
+                        "passwordProtectionSettings": {
+                            "passwordPolicyMinLength": 8,
+                            "passwordPolicyCharacters": []
+                        },
+                        "signupAttributes": [
+                            "EMAIL"
+                        ],
+                        "socialProviders": [],
+                        "usernameAttributes": [
+                            "EMAIL",
+                            "PHONE_NUMBER"
+                        ],
+                        "verificationMechanisms": [
+                            "EMAIL"
+                        ]
+                    }
+                },
+                "AppSync": {
+                    "Default": {
+                        "ApiUrl": "https://672nmbmz2zgntmteqh7tpew4i4.appsync-api.ap-south-1.amazonaws.com/graphql",
+                        "Region": "ap-south-1",
+                        "AuthMode": "AMAZON_COGNITO_USER_POOLS",
+                        "ClientDatabasePrefix": "civicvoiceapi_AMAZON_COGNITO_USER_POOLS"
+                    }
+                },
+                "S3TransferUtility": {
+                    "Default": {
+                        "Bucket": "civicvoicestorage71deb-dev",
+                        "Region": "ap-south-1"
+                    }
+                }
+            }
         }
-      }
+    },
+    "storage": {
+        "plugins": {
+            "awsS3StoragePlugin": {
+                "bucket": "civicvoicestorage71deb-dev",
+                "region": "ap-south-1",
+                "defaultAccessLevel": "guest"
+            }
+        }
     }
-  },
-  "storage": {
-    "plugins": {
-      "awsS3StoragePlugin": {
-        "bucket": "civicvoicestorageeb20b-dev",
-        "region": "us-east-1"
-      }
-    }
-  }
-}
-''';
+}''';
