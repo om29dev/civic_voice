@@ -25,6 +25,7 @@ import 'providers/offline_guidance_provider.dart';
 import 'providers/citizen_profile_provider.dart';
 import 'features/auto_form/providers/auto_form_provider.dart';
 import 'core/services/csv_scheme_service.dart';
+import 'core/services/prompt_loader.dart';
 import 'app.dart';
 
 void main() {
@@ -37,6 +38,7 @@ void main() {
     // Start background tasks immediately without awaiting here
     debugPrint('!!! [CVI_BOOT] Initializing background services...');
     unawaited(CsvSchemeService.init());
+    unawaited(PromptLoader.loadPrompts());
 
     // Critical initialization
     debugPrint('!!! [CVI_BOOT] Initializing AWS Amplify...');

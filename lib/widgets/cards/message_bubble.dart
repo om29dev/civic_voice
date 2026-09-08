@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../../core/constants/app_colors.dart';
 
 class MessageBubble extends StatelessWidget {
@@ -61,13 +62,54 @@ class MessageBubble extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
-              Text(
-                text,
-                style: TextStyle(
-                  color: isUser ? AppColors.white : AppColors.textBody,
-                  fontSize: 16,
-                ),
-              ),
+              isUser
+                  ? Text(
+                      text,
+                      style: const TextStyle(
+                        color: AppColors.white,
+                        fontSize: 16,
+                      ),
+                    )
+                  : MarkdownBody(
+                      data: text,
+                      selectable: true,
+                      styleSheet: MarkdownStyleSheet(
+                        p: const TextStyle(
+                          color: AppColors.textBody,
+                          fontSize: 15,
+                          height: 1.4,
+                        ),
+                        strong: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                        em: const TextStyle(
+                          color: AppColors.textBody,
+                          fontStyle: FontStyle.italic,
+                          fontSize: 15,
+                        ),
+                        h1: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                        h2: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                        listBullet: const TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 15,
+                        ),
+                        code: const TextStyle(
+                          fontSize: 13,
+                          backgroundColor: AppColors.bgDeep,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
             ],
           ),
         ),

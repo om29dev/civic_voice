@@ -855,7 +855,7 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
       context: context,
       barrierDismissible: true,
       builder: (_) => Scaffold(
-        backgroundColor: Colors.black.withOpacity(0.9),
+        backgroundColor: Colors.black.withValues(alpha: 0.9),
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,

@@ -12,8 +12,7 @@ import '../../../../providers/language_provider.dart';
 import '../../../../models/conversation_model.dart';
 import '../../../../widgets/decorative/chakra_painter.dart';
 import '../../../../widgets/decorative/jali_pattern.dart';
-import '../../../../widgets/bilingual_label.dart';
-
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class VoiceDashboardScreen extends StatelessWidget {
@@ -526,14 +525,76 @@ class _ConversationConsole extends StatelessWidget {
                 bottomRight: Radius.circular(isUser ? 4 : 20),
               ),
             ),
-            child: Text(
-              msg.text,
-              style: GoogleFonts.inter(
-                color: isUser ? AppColors.textPrimary : AppColors.textSecondary,
-                height: 1.5,
-                fontSize: 14,
-              ),
-            ),
+            child: isUser
+                ? Text(
+                    msg.text,
+                    style: GoogleFonts.inter(
+                      color: AppColors.textPrimary,
+                      height: 1.5,
+                      fontSize: 14,
+                    ),
+                  )
+                : MarkdownBody(
+                    data: msg.text,
+                    selectable: true,
+                    styleSheet: MarkdownStyleSheet(
+                      p: GoogleFonts.inter(
+                        color: AppColors.textSecondary,
+                        height: 1.5,
+                        fontSize: 14,
+                      ),
+                      strong: GoogleFonts.inter(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                      em: GoogleFonts.inter(
+                        color: AppColors.textSecondary,
+                        fontStyle: FontStyle.italic,
+                        fontSize: 14,
+                      ),
+                      h1: GoogleFonts.inter(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 17,
+                      ),
+                      h2: GoogleFonts.inter(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                      h3: GoogleFonts.inter(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                      listBullet: GoogleFonts.inter(
+                        color: AppColors.saffron,
+                        fontSize: 14,
+                      ),
+                      code: GoogleFonts.firaCode(
+                        fontSize: 12,
+                        backgroundColor: AppColors.bgDeep,
+                        color: AppColors.saffron,
+                      ),
+                      codeblockDecoration: BoxDecoration(
+                        color: AppColors.bgDeep,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      blockquote: GoogleFonts.inter(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                      ),
+                      blockquoteDecoration: BoxDecoration(
+                        border: Border(
+                          left: BorderSide(
+                            color: AppColors.saffron,
+                            width: 3,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
           ),
           
           if (msg.action != null)

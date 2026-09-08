@@ -154,7 +154,7 @@ Do NOT output any JSON or markdown, just the plain spoken text response.
       // 5. Speak the answer back.
       await _tts.speak(aiResponse);
     } catch (e) {
-      debugPrint("FormHelp Error: \$e");
+      debugPrint("FormHelp Error: $e");
       await _tts.speak("Sorry, I encountered an error while viewing the form.");
     } finally {
       if (mounted) {

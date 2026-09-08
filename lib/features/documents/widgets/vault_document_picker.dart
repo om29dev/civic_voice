@@ -238,7 +238,8 @@ class _VaultDocumentPickerState extends State<VaultDocumentPicker> {
                             Positioned.fill(
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color: AppColors.bgDeep.withOpacity(0.7),
+                                  color:
+                                      AppColors.bgDeep.withValues(alpha: 0.7),
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: const Center(

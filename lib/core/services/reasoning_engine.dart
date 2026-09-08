@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'aws_bedrock_service.dart';
+import 'prompt_loader.dart';
 import 'scheme_knowledge_base.dart';
 
 enum Intent {
@@ -253,7 +254,7 @@ class ReasoningEngine {
     return result.schemeId ?? '';
   }
 
-  String _buildSystemInstruction() {
+  Future<String> _buildSystemInstruction() async {
     final schemesSummary = SchemeKnowledgeBase.schemes.map((s) {
       return """
       Scheme: ${s.names['en']} (${s.names['hi']}) / ${s.names['ta'] ?? ''}
@@ -264,29 +265,10 @@ class ReasoningEngine {
       """;
     }).join("\n---\n");
 
-    return """
-    You are 'Civic Voice Assistant' (CVI), an advanced AI specialized in Indian Government Schemes.
-    
-    KNOWLEDGE BASE:
-    $schemesSummary
-
-    Your goal is to be a helpful, empathetic guide.
-
-    Intelligence Guidelines:
-    1. **"What-If" & Disqualification**:
-       - Explain precisely WHY they might be disqualified.
-       - IMMEDIATELY suggest 'Alternatives'.
-    
-    2. **Fraud Detection**:
-       - If user mentions "paying money", "agent", "bribe", "password", TRIGGER FRAUD WARNING.
-       - "⚠️ WARNING: Government schemes never ask for money or passwords. This sounds like a SCAM."
-
-    3. **Actionable Commands**:
-       - [ACTION:LINK], [ACTION:NAVIGATE], [ACTION:GUIDE], [ACTION:REMINDER] are supported.
-
-    4. **Language**:
-       - You MUST respond in the language code: $languageCode.
-    """;
+    return await PromptLoader.getPrompt('general_assistant', {
+      'schemesSummary': schemesSummary,
+      'languageCode': languageCode,
+    });
   }
 
   Future<String> generateAIResponse(
@@ -307,8 +289,8 @@ class ReasoningEngine {
     }
 
     try {
-      debugPrint('ReasoningEngine: Formatting Llama 3 Prompt...');
-      final systemPrompt = _buildSystemInstruction();
+      debugPrint('ReasoningEngine: Formatting Llama 3 Prompt from Markdown...');
+      final systemPrompt = await _buildSystemInstruction();
 
       final StringBuffer promptBuffer = StringBuffer();
       promptBuffer.write(
@@ -344,28 +326,15 @@ class ReasoningEngine {
     required Map<String, dynamic> formContext,
     required Map<String, dynamic> userProfile,
   }) async {
-    final systemPrompt = """
-    You are 'Civic Voice Form Partner' (CVI), an expert in Indian government paperwork.
-    Your task is to guide the user as they fill out a form for: ${formContext['serviceName'] ?? 'a civic service'}.
-
-    USER PROFILE DATA (Use this to provide personalized advice):
-    ${json.encode(userProfile)}
-
-    FORM CONTEXT:
-    - Service ID: ${formContext['serviceId']}
-    - Current Field: ${formContext['currentFieldLabel']}
-    - All Fields: ${formContext['allFields']}
-
-    GUIDE RULES:
-    1. Be concise but extremely helpful.
-    2. If the user asks "How do I fill this?", look at their PROFILE. If they have the data (like Aadhaar Number), tell them exactly what to type.
-    3. If they don't have the data, tell them where to find it (e.g., "Look at the back of your Aadhaar card").
-    4. Speak in the $languageCode language.
-    5. Be encouraging. Filling forms is stressful; be their calm partner.
-    6. If the user says something unrelated, gently bring them back to the form.
-
-    Current field being filled: ${formContext['currentFieldLabel']} (${formContext['currentFieldValue'] ?? 'empty'})
-    """;
+    final systemPrompt = await PromptLoader.getPrompt('form_guidance', {
+      'serviceName': formContext['serviceName'] ?? 'a civic service',
+      'userProfile': json.encode(userProfile),
+      'serviceId': formContext['serviceId']?.toString() ?? '',
+      'currentFieldLabel': formContext['currentFieldLabel']?.toString() ?? '',
+      'allFields': formContext['allFields']?.toString() ?? '',
+      'currentFieldValue': formContext['currentFieldValue']?.toString() ?? 'empty',
+      'languageCode': languageCode,
+    });
 
     try {
       final StringBuffer promptBuffer = StringBuffer();
@@ -379,7 +348,7 @@ class ReasoningEngine {
           .write('<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n');
 
       final finalPrompt = promptBuffer.toString();
-      debugPrint('ReasoningEngine: Requesting Form Guidance from Llama 3...');
+      debugPrint('ReasoningEngine: Requesting Form Guidance from Nova Micro...');
       return await AWSBedrockService.chatWithLlama3(finalPrompt);
     } catch (e) {
       debugPrint("Form Guidance Error: $e");
@@ -395,25 +364,14 @@ class ReasoningEngine {
     required List<String> availableDocuments,
     List<Map<String, String>> history = const [],
   }) async {
-    final systemPrompt = """
-    You are 'Civic Voice SPECIALIST' (CVI), an elite advisor for Indian government schemes.
-    Your task: Help the user understand their eligibility and requirements for: ${schemeContext['name']}.
-
-    CONTEXT AUDIT (Compare Vault/Profile vs Scheme):
-    1. USER PROFILE: ${json.encode(userProfile)}
-    2. VAULT DOCUMENTS: ${availableDocuments.join(', ')}
-    3. SCHEME REQUIREMENTS:
-       - Eligibility: ${schemeContext['eligibilityCriteria']}
-       - Required Docs: ${schemeContext['requiredDocuments']}
-
-    GUIDE RULES:
-    1. PROACTIVE GAP ANALYSIS: Immediately identify if they are missing a document or don't meet an age/income requirement.
-    2. DOCUMENT MAPPING: If a scheme requires "Proof of Identity", check if they have "Aadhaar" or "PAN" in their vault. Tell them they are "Set" or "Need help".
-    3. BE BOLD & SPECIFIC: Don't say "You may need papers." Say "You have your Aadhaar, but your Income Certificate is missing. I can help you find where to apply for it."
-    4. ACTION ORIENTED: If eligible, push them to 'Apply Now'. If not, suggest a fix or alternative.
-    5. LANGUAGE: Respond in $languageCode. Use a premium, expert tone.
-    6. Form Guidance: If they ask about filling the form, assure them you'll be there every step of the way with their details pre-remembered.
-    """;
+    final systemPrompt = await PromptLoader.getPrompt('scheme_guidance', {
+      'schemeName': schemeContext['name']?.toString() ?? 'Scheme',
+      'userProfile': json.encode(userProfile),
+      'availableDocuments': availableDocuments.join(', '),
+      'eligibilityCriteria': schemeContext['eligibilityCriteria']?.toString() ?? '',
+      'requiredDocuments': schemeContext['requiredDocuments']?.toString() ?? '',
+      'languageCode': languageCode,
+    });
 
     try {
       final StringBuffer promptBuffer = StringBuffer();
@@ -438,7 +396,7 @@ class ReasoningEngine {
 
       final finalPrompt = promptBuffer.toString();
       debugPrint(
-          'ReasoningEngine: Requesting Scheme Guidance from Llama 70B...');
+          'ReasoningEngine: Requesting Scheme Guidance from Nova Micro...');
       return await AWSBedrockService.chatWithLlama3(finalPrompt);
     } catch (e) {
       debugPrint("Scheme Guidance Error: $e");
@@ -447,16 +405,7 @@ class ReasoningEngine {
   }
 
   Future<Map<String, dynamic>> verifyDocumentImage(String base64Image) async {
-    const verificationPrompt = """
-    Verify this Indian document image. 
-    Check for:
-    1. Validity (Is it a real document?)
-    2. Expiry date (if Aadhaar/PAN don't have expiry, skip)
-    3. Extracted text overview.
-    
-    Return ONLY JSON:
-    {"isValid": true/false, "message": "...", "documentType": "...", "expiryDate": "YYYY-MM-DD", "extractedText": "..."}
-    """;
+    final verificationPrompt = await PromptLoader.getPrompt('document_verification');
 
     try {
       debugPrint(

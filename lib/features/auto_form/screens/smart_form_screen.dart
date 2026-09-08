@@ -337,7 +337,7 @@ class _SmartFormScreenState extends State<SmartFormScreen>
         border: Border.all(
           color: isGood
               ? AppColors.emeraldLight.withValues(alpha: 0.4)
-              : AppColors.gold.withOpacity(0.3),
+              : AppColors.gold.withValues(alpha: 0.3),
         ),
       ),
       child: Column(
@@ -400,7 +400,7 @@ class _SmartFormScreenState extends State<SmartFormScreen>
       decoration: BoxDecoration(
         color: AppColors.bgDark,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.saffron.withOpacity(0.3)),
+        border: Border.all(color: AppColors.saffron.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -757,14 +757,14 @@ class _SmartFieldCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isHighlighted
-            ? AppColors.saffron.withOpacity(0.08)
+            ? AppColors.saffron.withValues(alpha: 0.08)
             : AppColors.bgDark,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isHighlighted
-              ? AppColors.saffron.withOpacity(0.5)
+              ? AppColors.saffron.withValues(alpha: 0.5)
               : hasValue
-                  ? AppColors.emeraldLight.withOpacity(0.3)
+                  ? AppColors.emeraldLight.withValues(alpha: 0.3)
                   : AppColors.surfaceBorder,
           width: isHighlighted ? 1.5 : 1,
         ),
@@ -823,7 +823,7 @@ class _SmartFieldCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: AppColors.saffron.withOpacity(0.12),
+                    color: AppColors.saffron.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(

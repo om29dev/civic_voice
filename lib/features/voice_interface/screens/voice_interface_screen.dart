@@ -7,7 +7,7 @@ import 'package:civic_voice_interface/widgets/animated/particle_background.dart'
 import 'package:civic_voice_interface/providers/conversation_provider.dart';
 import 'package:civic_voice_interface/providers/voice_provider.dart';
 import 'package:civic_voice_interface/models/conversation_model.dart'; // Ensure this model is available
-
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:intl/intl.dart';
 
 class VoiceInterfaceScreen extends StatefulWidget {
@@ -564,14 +564,76 @@ class _AnimatedMessageBubbleState extends State<_AnimatedMessageBubble>
                   ),
                 ],
               ),
-              child: Text(
-                widget.message,
-                style: GoogleFonts.inter(
-                  fontSize: 15,
-                  color: AppTheme.pureWhite,
-                  height: 1.5,
-                ),
-              ),
+              child: widget.isUser
+                  ? Text(
+                      widget.message,
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        color: AppTheme.pureWhite,
+                        height: 1.5,
+                      ),
+                    )
+                  : MarkdownBody(
+                      data: widget.message,
+                      selectable: true,
+                      styleSheet: MarkdownStyleSheet(
+                        p: GoogleFonts.inter(
+                          fontSize: 15,
+                          color: AppTheme.pureWhite,
+                          height: 1.5,
+                        ),
+                        strong: GoogleFonts.inter(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.pureWhite,
+                        ),
+                        em: GoogleFonts.inter(
+                          fontSize: 15,
+                          fontStyle: FontStyle.italic,
+                          color: AppTheme.pureWhite.withValues(alpha: 0.9),
+                        ),
+                        h1: GoogleFonts.inter(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.pureWhite,
+                        ),
+                        h2: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.pureWhite,
+                        ),
+                        h3: GoogleFonts.inter(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.pureWhite,
+                        ),
+                        listBullet: GoogleFonts.inter(
+                          fontSize: 15,
+                          color: AppTheme.electricBlue,
+                        ),
+                        code: GoogleFonts.firaCode(
+                          fontSize: 13,
+                          backgroundColor: Colors.black26,
+                          color: AppTheme.saffron,
+                        ),
+                        codeblockDecoration: BoxDecoration(
+                          color: Colors.black38,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        blockquote: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: AppTheme.pureWhite.withValues(alpha: 0.8),
+                        ),
+                        blockquoteDecoration: BoxDecoration(
+                          border: Border(
+                            left: BorderSide(
+                              color: AppTheme.electricBlue,
+                              width: 3,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
             ),
           ),
         ),

@@ -16,6 +16,7 @@ import '../../widgets/decorative/tricolor_bar.dart';
 import '../../models/service_model.dart';
 import '../../providers/citizen_profile_provider.dart';
 import '../../providers/document_vault_provider.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // VOICE SCREEN — Bharat Silicon Design
@@ -960,12 +961,53 @@ class _BotBubble extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  message.text,
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    color: AppColors.textPrimary,
-                    height: 1.5,
+                MarkdownBody(
+                  data: message.text,
+                  selectable: true,
+                  styleSheet: MarkdownStyleSheet(
+                    p: GoogleFonts.poppins(
+                      fontSize: 13,
+                      color: AppColors.textPrimary,
+                      height: 1.5,
+                    ),
+                    strong: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                    em: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontStyle: FontStyle.italic,
+                      color: AppColors.textPrimary,
+                    ),
+                    h1: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.saffron,
+                    ),
+                    h2: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.saffron,
+                    ),
+                    h3: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.saffron,
+                    ),
+                    listBullet: GoogleFonts.poppins(
+                      fontSize: 13,
+                      color: AppColors.saffron,
+                    ),
+                    code: GoogleFonts.jetBrainsMono(
+                      fontSize: 12,
+                      backgroundColor: AppColors.bgDeep,
+                      color: AppColors.saffron,
+                    ),
+                    codeblockDecoration: BoxDecoration(
+                      color: AppColors.bgDeep,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 6),

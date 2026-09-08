@@ -120,7 +120,7 @@ class ConversationProvider extends ChangeNotifier {
 
       String responseText;
       if (_activeSchemeContext != null) {
-        // Use specialized scheme guidance (Llama 70B)
+        // Use specialized scheme guidance (Nova Micro)
         responseText = await engine.generateSchemeGuidance(
           userInput: trimmed,
           schemeContext: _activeSchemeContext!.toJson(),

@@ -31,6 +31,7 @@ dependencies:
   animated_text_kit: ^4.2.2
   shimmer: ^3.0.0
   confetti: ^0.8.0
+  flutter_markdown: ^0.7.6
 
   # Visual Effects
   glassmorphism: ^3.0.0
@@ -88,7 +89,6 @@ dev_dependencies:
 
 flutter_icons:
   android: true
-  ios: true
   image_path: "assets/icons/app_icon.png"
 
 flutter:
@@ -100,6 +100,7 @@ flutter:
     - assets/icons/
     - assets/data/
     - assets/forms/
+    - assets/prompts/
     - assets/flag/flag.html
 
   # Fonts are loaded via the google_fonts package (no local font files needed)
