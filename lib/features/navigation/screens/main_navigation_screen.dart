@@ -5,6 +5,7 @@ import '../../../providers/user_provider.dart';
 import '../../dashboard/screens/premium_dashboard_screen.dart';
 import '../../services/screens/services_screen.dart';
 import '../../voice_interface/screens/voice_dashboard_screen.dart';
+import '../../recommendations/screens/recommendations_screen.dart';
 import '../../profile/profile_screen.dart';
 import '../../../widgets/navigation/cvi_bottom_nav.dart';
 
@@ -18,11 +19,11 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
 
-  // Re-ordered to put Voice in the center
   final List<Widget> _pages = [
     const PremiumDashboardScreen(),
     const ServicesScreen(),
     const VoiceDashboardScreen(),
+    const RecommendationsScreen(),
     const ProfileScreen(),
   ];
 

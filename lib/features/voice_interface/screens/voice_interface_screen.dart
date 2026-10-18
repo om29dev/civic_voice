@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:civic_voice_interface/core/constants/app_colors.dart';
 import 'package:civic_voice_interface/core/theme/app_theme.dart';
 import 'package:civic_voice_interface/widgets/animated/voice_waveform.dart';
 import 'package:civic_voice_interface/widgets/animated/particle_background.dart';
@@ -614,7 +615,7 @@ class _AnimatedMessageBubbleState extends State<_AnimatedMessageBubble>
                         code: GoogleFonts.firaCode(
                           fontSize: 13,
                           backgroundColor: Colors.black26,
-                          color: AppTheme.saffron,
+                          color: AppColors.saffron,
                         ),
                         codeblockDecoration: BoxDecoration(
                           color: Colors.black38,

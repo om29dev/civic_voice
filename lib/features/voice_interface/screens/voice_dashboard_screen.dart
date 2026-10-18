@@ -12,6 +12,7 @@ import '../../../../providers/language_provider.dart';
 import '../../../../models/conversation_model.dart';
 import '../../../../widgets/decorative/chakra_painter.dart';
 import '../../../../widgets/decorative/jali_pattern.dart';
+import '../../../../widgets/bilingual_label.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
 

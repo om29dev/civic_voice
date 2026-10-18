@@ -13,6 +13,7 @@ import '../../features/services/screens/eligibility_checker_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../../features/profile/screens/edit_profile_screen.dart';
 
+import '../../features/location/screens/office_locator_screen.dart';
 import '../../providers/language_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../features/auth/auth_screen.dart';
@@ -317,8 +318,7 @@ class AppRouter {
           name: 'officeLocator',
           pageBuilder: (context, state) => _buildPage(
             state,
-            const Scaffold(
-                body: Center(child: Text('Office Locator Screen'))), // Temp
+            const OfficeLocatorScreen(),
           ),
         ),
         GoRoute(

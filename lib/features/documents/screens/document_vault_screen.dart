@@ -7,7 +7,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../core/router/app_router.dart';
 import '../../../providers/document_vault_provider.dart';
 import '../../../core/services/document_vault_service.dart';
 
@@ -123,7 +125,8 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios_new_rounded,
             color: Colors.white, size: 20),
-        onPressed: () => Navigator.pop(context),
+        onPressed: () =>
+            context.canPop() ? context.pop() : context.go(Routes.dashboard),
       ),
       title: Text(
         '🔒 Document Vault',
@@ -1020,7 +1023,7 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
       DocumentVaultProvider vault, String docId, String filePath) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogCtx) => AlertDialog(
         backgroundColor: const Color(0xFF1A1208),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
@@ -1033,16 +1036,17 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.of(dialogCtx).pop(),
             child: Text('Cancel',
                 style: GoogleFonts.outfit(color: Colors.white54)),
           ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context);
+              final messenger = ScaffoldMessenger.of(context);
+              Navigator.of(dialogCtx).pop();
               final success = await vault.removeDocument(docId, filePath);
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
+              if (mounted) {
+                messenger.showSnackBar(
                   SnackBar(
                     content: Text(success
                         ? 'Document deleted successfully'

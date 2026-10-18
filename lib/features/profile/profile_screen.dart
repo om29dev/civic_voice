@@ -325,7 +325,12 @@ class _ProfileHero extends StatelessWidget {
             CviButton(
               text: 'Create Account',
               variant: CviButtonVariant.gold,
-              onPressed: () => context.go(Routes.auth),
+              onPressed: () async {
+                await context.read<AuthProvider>().logout();
+                if (context.mounted) {
+                  context.go(Routes.auth);
+                }
+              },
             ),
           ],
         ],
@@ -772,7 +777,12 @@ class _GuestCta extends StatelessWidget {
           CviButton(
             text: 'Create Account',
             variant: CviButtonVariant.gold,
-            onPressed: () => context.go(Routes.auth),
+            onPressed: () async {
+              await context.read<AuthProvider>().logout();
+              if (context.mounted) {
+                context.go(Routes.auth);
+              }
+            },
           ),
         ],
       ),

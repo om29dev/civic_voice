@@ -149,7 +149,7 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> {
                 ],
               ),
             ),
-          ).animate(target: _currentPage == 2 ? 1 : 0).scale(duration: 200.ms),
+          ),
         ],
       ),
     );

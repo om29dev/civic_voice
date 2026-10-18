@@ -5,164 +5,50 @@ import 'package:aws_signature_v4/aws_signature_v4.dart';
 import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 import '../config/ai_config.dart';
-
-class _AWSTemporaryCredentials {
-  final String accessKeyId;
-  final String secretAccessKey;
-  final String sessionToken;
-  final DateTime expiration;
-
-  _AWSTemporaryCredentials({
-    required this.accessKeyId,
-    required this.secretAccessKey,
-    required this.sessionToken,
-    required this.expiration,
-  });
-
-  bool get isValid =>
-      DateTime.now().isBefore(expiration.subtract(const Duration(minutes: 5)));
-}
 
 class AWSBedrockService {
   static const String _region = AIConfig.bedrockRegion;
 
-  // Cognito & STS configuration for Guest (Unauthenticated) Bedrock Access
-  static const String _cognitoRegion = 'ap-south-1';
-  static const String _identityPoolId =
-      'ap-south-1:b2b7786b-f8e2-47b9-b246-e87480016a8d';
-  static const String _unauthRoleArn =
-      'arn:aws:iam::742435394268:role/amplify-civicvoice-dev-71deb-unauthRole';
 
-  static _AWSTemporaryCredentials? _cachedGuestCreds;
+  // In-memory cache for Bedrock responses (cost & latency optimization)
+  static final Map<String, _CachedResponse> _responseCache = {};
 
-  /// Fetches guest credentials using Cognito OpenID Token + STS AssumeRoleWithWebIdentity
-  /// (Classic Auth Flow). This flow bypasses Cognito's restrictive guest session policy,
-  /// granting full unauthRole Bedrock permissions without requiring the user to sign in.
-  static Future<_AWSTemporaryCredentials> _fetchGuestCredentials() async {
-    if (_cachedGuestCreds != null && _cachedGuestCreds!.isValid) {
-      return _cachedGuestCreds!;
-    }
-
-    debugPrint(
-        'Bedrock: Obtaining fresh guest credentials via STS Classic Flow...');
-
-    // 1. Get Identity ID from Cognito
-    final idResponse = await http.post(
-      Uri.parse('https://cognito-identity.$_cognitoRegion.amazonaws.com/'),
-      headers: {
-        'Content-Type': 'application/x-amz-json-1.1',
-        'X-Amz-Target': 'AWSCognitoIdentityService.GetId',
-      },
-      body: jsonEncode({'IdentityPoolId': _identityPoolId}),
-    );
-
-    if (idResponse.statusCode != 200) {
-      throw Exception('Failed to get Cognito Identity ID: ${idResponse.body}');
-    }
-
-    final idData = jsonDecode(idResponse.body) as Map<String, dynamic>;
-    final identityId = idData['IdentityId'] as String;
-
-    // 2. Get OpenID Token from Cognito
-    final tokenResponse = await http.post(
-      Uri.parse('https://cognito-identity.$_cognitoRegion.amazonaws.com/'),
-      headers: {
-        'Content-Type': 'application/x-amz-json-1.1',
-        'X-Amz-Target': 'AWSCognitoIdentityService.GetOpenIdToken',
-      },
-      body: jsonEncode({'IdentityId': identityId}),
-    );
-
-    if (tokenResponse.statusCode != 200) {
-      throw Exception(
-          'Failed to get Cognito OpenId Token: ${tokenResponse.body}');
-    }
-
-    final tokenData = jsonDecode(tokenResponse.body) as Map<String, dynamic>;
-    final openIdToken = tokenData['Token'] as String;
-
-    // 3. Assume unauthRole using STS AssumeRoleWithWebIdentity
-    final stsResponse = await http.post(
-      Uri.parse('https://sts.$_cognitoRegion.amazonaws.com/'),
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: {
-        'Action': 'AssumeRoleWithWebIdentity',
-        'Version': '2011-06-15',
-        'RoleArn': _unauthRoleArn,
-        'RoleSessionName': 'civicvoice-guest',
-        'WebIdentityToken': openIdToken,
-        'DurationSeconds': '3600',
-      },
-    );
-
-    if (stsResponse.statusCode != 200) {
-      throw Exception(
-          'Failed to assume unauth role via STS: ${stsResponse.body}');
-    }
-
-    final xml = stsResponse.body;
-    final accessKeyId =
-        RegExp(r'<AccessKeyId>(.*?)</AccessKeyId>').firstMatch(xml)?.group(1);
-    final secretAccessKey = RegExp(r'<SecretAccessKey>(.*?)</SecretAccessKey>')
-        .firstMatch(xml)
-        ?.group(1);
-    final sessionToken =
-        RegExp(r'<SessionToken>(.*?)</SessionToken>').firstMatch(xml)?.group(1);
-    final expirationStr =
-        RegExp(r'<Expiration>(.*?)</Expiration>').firstMatch(xml)?.group(1);
-
-    if (accessKeyId == null || secretAccessKey == null || sessionToken == null) {
-      throw Exception('Could not parse STS credentials from response: $xml');
-    }
-
-    final expiration = expirationStr != null
-        ? DateTime.tryParse(expirationStr) ??
-            DateTime.now().add(const Duration(hours: 1))
-        : DateTime.now().add(const Duration(hours: 1));
-
-    _cachedGuestCreds = _AWSTemporaryCredentials(
-      accessKeyId: accessKeyId,
-      secretAccessKey: secretAccessKey,
-      sessionToken: sessionToken,
-      expiration: expiration,
-    );
-
-    debugPrint('Bedrock: Guest credentials cached successfully.');
-    return _cachedGuestCreds!;
+  static String _generateCacheKey(String modelId, Map<String, dynamic> body) {
+    final raw = '$modelId:${jsonEncode(body)}';
+    return sha256.convert(utf8.encode(raw)).toString();
   }
 
   /// Invokes a Bedrock model with SigV4 signing.
-  /// Works for both signed-in users AND anonymous guest users.
+  /// Zero-Trust Enforced: Requires a verified Cognito user session.
   static Future<Map<String, dynamic>> invokeModel({
     required String modelId,
     required Map<String, dynamic> body,
     String api = 'invoke',
   }) async {
+    // 1. Check cache first to optimize AWS resource utilization
+    final cacheKey = _generateCacheKey(modelId, body);
+    final cached = _responseCache[cacheKey];
+    if (cached != null && !cached.isExpired) {
+      debugPrint('Bedrock: Serving from memory cache ($cacheKey)');
+      return cached.data;
+    }
+
     try {
-      // 1. Get AWS Credentials (from logged in user or classic guest flow)
+      // 2. Zero-Trust Authenticated Session Check
       final session =
           await Amplify.Auth.fetchAuthSession() as CognitoAuthSession;
 
-      String accessKeyId;
-      String secretAccessKey;
-      String? sessionToken;
-
-      if (session.isSignedIn) {
-        final creds = session.credentialsResult.value;
-        accessKeyId = creds.accessKeyId;
-        secretAccessKey = creds.secretAccessKey;
-        sessionToken = creds.sessionToken;
-      } else {
-        // Guest mode: Obtain STS credentials via Classic Flow to bypass Cognito session policy
-        final guestCreds = await _fetchGuestCredentials();
-        accessKeyId = guestCreds.accessKeyId;
-        secretAccessKey = guestCreds.secretAccessKey;
-        sessionToken = guestCreds.sessionToken;
+      if (!session.isSignedIn) {
+        throw const AuthRequiredException(
+          'Authentication required: Please sign in with your Citizen Account to access Amazon Bedrock.',
+        );
       }
+
+      final creds = session.credentialsResult.value;
+      final accessKeyId = creds.accessKeyId;
+      final secretAccessKey = creds.secretAccessKey;
+      final sessionToken = creds.sessionToken;
 
       final signer = AWSSigV4Signer(
         credentialsProvider: AWSCredentialsProvider(
@@ -215,7 +101,9 @@ class AWSBedrockService {
 
       if (response.statusCode == 200) {
         debugPrint('Bedrock Success Result: $responseBody');
-        return jsonDecode(responseBody) as Map<String, dynamic>;
+        final parsed = jsonDecode(responseBody) as Map<String, dynamic>;
+        _responseCache[cacheKey] = _CachedResponse(data: parsed, timestamp: DateTime.now());
+        return parsed;
       } else {
         final errorMsg = 'Bedrock Error ${response.statusCode}: $responseBody';
         debugPrint(errorMsg);
@@ -375,4 +263,19 @@ class AWSBedrockService {
     throw Exception(
         'Failed to extract valid JSON from Vision response: $result');
   }
+}
+
+class AuthRequiredException implements Exception {
+  final String message;
+  const AuthRequiredException(this.message);
+  @override
+  String toString() => message;
+}
+
+class _CachedResponse {
+  final Map<String, dynamic> data;
+  final DateTime timestamp;
+  _CachedResponse({required this.data, required this.timestamp});
+  bool get isExpired =>
+      DateTime.now().difference(timestamp) > const Duration(minutes: 30);
 }

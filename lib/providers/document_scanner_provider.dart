@@ -46,22 +46,23 @@ class DocumentScannerProvider with ChangeNotifier {
           // Map to standard vault types
           if (rawType.contains('aadhaar')) {
             _documentType = 'aadhaar';
-          } else if (rawType.contains('pan'))
+          } else if (rawType.contains('pan')) {
             _documentType = 'pan';
-          else if (rawType.contains('passport'))
+          } else if (rawType.contains('passport')) {
             _documentType = 'passport';
-          else if (rawType.contains('voter'))
+          } else if (rawType.contains('voter')) {
             _documentType = 'voterID';
-          else if (rawType.contains('driving') || rawType.contains('license'))
+          } else if (rawType.contains('driving') || rawType.contains('license')) {
             _documentType = 'drivingLicense';
-          else if (rawType.contains('passbook') || rawType.contains('bank'))
+          } else if (rawType.contains('passbook') || rawType.contains('bank')) {
             _documentType = 'bankPassbook';
-          else if (rawType.contains('income'))
+          } else if (rawType.contains('income')) {
             _documentType = 'incomeCertificate';
-          else if (rawType.contains('ration'))
+          } else if (rawType.contains('ration')) {
             _documentType = 'rationCard';
-          else
+          } else {
             _documentType = rawType;
+          }
         }
 
         // Remove internal technical keys from UI display if they exist

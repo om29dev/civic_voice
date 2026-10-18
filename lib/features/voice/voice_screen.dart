@@ -17,6 +17,8 @@ import '../../models/service_model.dart';
 import '../../providers/citizen_profile_provider.dart';
 import '../../providers/document_vault_provider.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:go_router/go_router.dart';
+import '../../core/router/app_router.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // VOICE SCREEN — Bharat Silicon Design
@@ -299,7 +301,11 @@ class _TopBar extends StatelessWidget {
                 color: AppColors.textSecondary, size: 20),
             onPressed: () {
               context.read<VoiceProvider>().stopSpeaking();
-              Navigator.of(context).maybePop();
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go(Routes.dashboard);
+              }
             },
           ),
           Expanded(

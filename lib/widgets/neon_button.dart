@@ -87,7 +87,6 @@ class _NeonButtonState extends State<NeonButton>
       setState(() => _isPressed = false);
       _scaleController.reverse();
     }
-    widget.onTap?.call();
   }
 
   void _onTapCancel() {
@@ -110,6 +109,7 @@ class _NeonButtonState extends State<NeonButton>
         onTapDown: _onTapDown,
         onTapUp: _onTapUp,
         onTapCancel: _onTapCancel,
+        onTap: disabled ? null : () => widget.onTap?.call(),
         child: Container(
           width: widget.width ?? double.infinity,
           height: widget.height,

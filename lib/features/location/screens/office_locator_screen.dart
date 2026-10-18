@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/router/app_router.dart';
 import '../../../../widgets/glass_card.dart';
 
 class OfficeLocatorScreen extends StatefulWidget {
@@ -93,7 +94,7 @@ class _OfficeLocatorScreenState extends State<OfficeLocatorScreen> {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_rounded, color: AppColors.textPrimary),
-          onPressed: () => context.pop(),
+          onPressed: () => context.canPop() ? context.pop() : context.go(Routes.dashboard),
         ),
         title: Text(
           'Govt Offices Near You',

@@ -1084,138 +1084,76 @@ class _StepsTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final steps = service.steps;
 
-    return Stack(
+    return ListView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
       children: [
-        ListView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
-          children: [
-            // Progress indicator
-            if (currentStep >= 0) ...[
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: accentColor.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                      color: accentColor.withValues(alpha: 0.25), width: 1),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Your Progress',
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: accentColor,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    LinearProgressIndicator(
-                      value:
-                          steps.isEmpty ? 0 : (currentStep + 1) / steps.length,
-                      backgroundColor: AppColors.surfaceBorder,
-                      valueColor: AlwaysStoppedAnimation(accentColor),
-                      borderRadius: BorderRadius.circular(4),
-                      minHeight: 6,
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Step ${currentStep + 1} of ${steps.length}',
-                      style: GoogleFonts.poppins(
-                          fontSize: 11, color: AppColors.textMuted),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-
-            if (steps.isEmpty)
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Text(
-                    'Visit the official website for step-by-step guidance.',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.poppins(
-                        fontSize: 13, color: AppColors.textMuted),
-                  ),
-                ),
-              )
-            else
-              ...steps.asMap().entries.map(
-                    (e) => _StepTile(
-                      step: e.value,
-                      index: e.key,
-                      accentColor: accentColor,
-                      isDone: e.key < currentStep,
-                      isActive: e.key == currentStep,
-                      isLast: e.key == steps.length - 1,
-                      onTap: () => onStartStep(e.key),
-                    ),
-                  ),
-          ],
-        ),
-
-        // Sticky CTA
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.transparent, AppColors.bgDeep],
-              ),
+        // Progress indicator
+        if (currentStep >= 0) ...[
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: accentColor.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                  color: accentColor.withValues(alpha: 0.25), width: 1),
             ),
-            child: SafeArea(
-              top: false,
-              child: GestureDetector(
-                onTap: onLaunchUrl,
-                child: Container(
-                  height: 54,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        accentColor,
-                        Color.lerp(accentColor, Colors.black, 0.25)!
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: accentColor.withValues(alpha: 0.35),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.rocket_launch_rounded,
-                          color: Colors.white, size: 18),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Start Application Online',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Your Progress',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: accentColor,
                   ),
                 ),
-              ),
+                const SizedBox(height: 8),
+                LinearProgressIndicator(
+                  value:
+                      steps.isEmpty ? 0 : (currentStep + 1) / steps.length,
+                  backgroundColor: AppColors.surfaceBorder,
+                  valueColor: AlwaysStoppedAnimation(accentColor),
+                  borderRadius: BorderRadius.circular(4),
+                  minHeight: 6,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Step ${currentStep + 1} of ${steps.length}',
+                  style: GoogleFonts.poppins(
+                      fontSize: 11, color: AppColors.textMuted),
+                ),
+              ],
             ),
           ),
-        ),
+          const SizedBox(height: 16),
+        ],
+
+        if (steps.isEmpty)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Text(
+                'Visit the official website for step-by-step guidance.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                    fontSize: 13, color: AppColors.textMuted),
+              ),
+            ),
+          )
+        else
+          ...steps.asMap().entries.map(
+                (e) => _StepTile(
+                  step: e.value,
+                  index: e.key,
+                  accentColor: accentColor,
+                  isDone: e.key < currentStep,
+                  isActive: e.key == currentStep,
+                  isLast: e.key == steps.length - 1,
+                  onTap: () => onStartStep(e.key),
+                ),
+              ),
       ],
     );
   }

@@ -4,6 +4,7 @@
 
 import 'dart:convert';
 import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:io';
@@ -13,6 +14,19 @@ import 'document_ai_service.dart';
 import '../../models/cvi_document_model.dart';
 
 class DocumentVaultService {
+  static Future<String> _protectedPath(String storageKey) async {
+    final session =
+        await Amplify.Auth.fetchAuthSession() as CognitoAuthSession;
+    if (!session.isSignedIn) {
+      throw StateError(
+        'Authentication required to access documents.',
+      );
+    }
+
+    final identityId = session.identityIdResult.value;
+    return 'protected/$identityId/$storageKey';
+  }
+
   // ────────────────────────────────────────────────────────────────────────────
   // UPLOAD DOCUMENT — compress → upload to S3 → AI extract → save metadata
   // ────────────────────────────────────────────────────────────────────────────
@@ -23,21 +37,19 @@ class DocumentVaultService {
     String? customName,
   }) async {
     try {
-      await Amplify.Auth.getCurrentUser();
-      // userId is currently used implicitly by Amplify Auth rules (owner-based)
-
-      // Step 1: Upload to S3
+      // Step 1: Upload to S3 (isolated user-protected path)
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final actualName = customName ?? documentType;
       final fileName = '${actualName.replaceAll(' ', '_')}_$timestamp.jpg';
       final storageKey = 'documents/$fileName';
+      final securePath = await _protectedPath(storageKey);
 
       await Amplify.Storage.uploadData(
         data: StorageDataPayload.bytes(
           imageBytes,
           contentType: 'image/jpeg',
         ),
-        path: StoragePath.fromString('public/$storageKey'),
+        path: StoragePath.fromString(securePath),
       ).result;
 
       // Step 2: AI extraction via Gemini
@@ -215,7 +227,7 @@ class DocumentVaultService {
   static Future<String?> getDocumentSignedUrl(String storageKey) async {
     try {
       final result = await Amplify.Storage.getUrl(
-        path: StoragePath.fromString('public/$storageKey'),
+        path: StoragePath.fromString(await _protectedPath(storageKey)),
         options: const StorageGetUrlOptions(
           pluginOptions: S3GetUrlPluginOptions(
             expiresIn: Duration(hours: 1),
@@ -257,8 +269,14 @@ class DocumentVaultService {
       final localPath = '${downloadsDir.path}/$fileName';
       final localFile = AWSFile.fromPath(localPath);
 
+      final fullPath = storageKey.startsWith('protected/') ||
+              storageKey.startsWith('private/') ||
+              storageKey.startsWith('public/')
+          ? storageKey
+          : await _protectedPath(storageKey);
+
       final operation = Amplify.Storage.downloadFile(
-        path: StoragePath.fromString('public/$storageKey'),
+        path: StoragePath.fromString(fullPath),
         localFile: localFile,
       );
 
@@ -280,9 +298,15 @@ class DocumentVaultService {
   static Future<Map<String, dynamic>> deleteDocument(
       String documentId, String storageKey) async {
     try {
+      final fullPath = storageKey.startsWith('protected/') ||
+              storageKey.startsWith('private/') ||
+              storageKey.startsWith('public/')
+          ? storageKey
+          : await _protectedPath(storageKey);
+
       // 1. Delete from S3
       await Amplify.Storage.remove(
-        path: StoragePath.fromString('public/$storageKey'),
+        path: StoragePath.fromString(fullPath),
       ).result;
 
       // 2. Delete from DynamoDB

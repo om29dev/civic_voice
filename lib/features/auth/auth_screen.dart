@@ -181,7 +181,7 @@ class _AnimatedTabBar extends StatelessWidget {
         ),
         child: TabBar(
           controller: controller,
-          labelColor: AppColors.accent,
+          labelColor: Colors.white,
           unselectedLabelColor: AppColors.textSecondary,
           labelStyle: const TextStyle(
             fontFamily: 'Rajdhani',

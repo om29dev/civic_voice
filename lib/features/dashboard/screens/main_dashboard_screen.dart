@@ -329,6 +329,12 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
         AppColors.saffron,
         () => context.push(Routes.documentVault)
       ),
+      (
+        'Find Kendra',
+        Icons.location_on_rounded,
+        AppColors.emeraldLight,
+        () => context.push(Routes.officeLocator)
+      ),
     ];
 
     return Column(
@@ -431,6 +437,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
           itemBuilder: (context, index) {
             final f = features[index];
             return GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: () => context.push(f.$5),
               child: Container(
                 decoration: BoxDecoration(
@@ -807,6 +814,7 @@ class _QuickActionBtn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Column(
         children: [

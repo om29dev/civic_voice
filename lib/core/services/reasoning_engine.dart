@@ -316,7 +316,16 @@ class ReasoningEngine {
       return await AWSBedrockService.chatWithLlama3(finalPrompt);
     } catch (e) {
       debugPrint("Bedrock Error: $e");
-      return "I'm having trouble connecting to my brain. Please try again soon.";
+      final errStr = e.toString().toLowerCase();
+      if (errStr.contains('authentication required') ||
+          errStr.contains('authrequiredexception')) {
+        return languageCode == 'hi'
+            ? '🔒 सुरक्षा सूचना: AI वॉयस बातचीत के लिए कृपया लॉग इन करें। अतिथि मोड में केवल ऑफ़लाइन योजना जानकारी उपलब्ध है।'
+            : '🔒 Security Note: Please sign in to enable live AI voice queries and protect your identity. Guest mode provides offline scheme guidance only.';
+      }
+      return languageCode == 'hi'
+          ? 'नेटवर्क कनेक्शन अनुपलब्ध है। कृपया अपना इंटरनेट जांचें।'
+          : "I'm having trouble connecting to my cloud assistant. Please check your connection or try again shortly.";
     }
   }
 
