@@ -24,39 +24,39 @@ class LanguageProvider extends ChangeNotifier {
 
   // ── Getters ───────────────────────────────────────────────────────────────
 
-  String  get currentLanguage   => _currentLanguage;
-  String  get currentCode       => _currentLanguage;
-  bool    get isTranslating     => _isTranslating;
-  String? get translationError  => _translationError;
-  String  get languageCode      => _currentLanguage;
+  String get currentLanguage => _currentLanguage;
+  String get currentCode => _currentLanguage;
+  bool get isTranslating => _isTranslating;
+  String? get translationError => _translationError;
+  String get languageCode => _currentLanguage;
 
   Locale get currentLocale => switch (_currentLanguage) {
         'hi' => const Locale('hi', 'IN'),
         'mr' => const Locale('mr', 'IN'),
         'ta' => const Locale('ta', 'IN'),
-        _    => const Locale('en', 'IN'),
+        _ => const Locale('en', 'IN'),
       };
 
   String get currentLanguageName => switch (_currentLanguage) {
         'hi' => 'हिन्दी',
         'mr' => 'मराठी',
         'ta' => 'தமிழ்',
-        _    => 'English',
+        _ => 'English',
       };
 
-  String get languageName  => currentLanguageName;
-  String get fullLocaleId  => switch (_currentLanguage) {
+  String get languageName => currentLanguageName;
+  String get fullLocaleId => switch (_currentLanguage) {
         'hi' => 'hi-IN',
         'mr' => 'mr-IN',
         'ta' => 'ta-IN',
-        _    => 'en-IN',
+        _ => 'en-IN',
       };
 
   static const List<Map<String, String>> supportedLanguages = [
-    {'code': 'en', 'name': 'English',  'native': 'English'},
-    {'code': 'hi', 'name': 'Hindi',    'native': 'हिन्दी'},
-    {'code': 'mr', 'name': 'Marathi',  'native': 'मराठी'},
-    {'code': 'ta', 'name': 'Tamil',    'native': 'தமிழ்'},
+    {'code': 'en', 'name': 'English', 'native': 'English'},
+    {'code': 'hi', 'name': 'Hindi', 'native': 'हिन्दी'},
+    {'code': 'mr', 'name': 'Marathi', 'native': 'मराठी'},
+    {'code': 'ta', 'name': 'Tamil', 'native': 'தமிழ்'},
   ];
 
   // ── Constructor ───────────────────────────────────────────────────────────
@@ -105,7 +105,7 @@ class LanguageProvider extends ChangeNotifier {
     final cached = _cache[englishText];
     if (cached != null) return cached;
 
-    // Not cached yet — schedule background translation
+    // Not cached yet - schedule background translation
     _schedulePendingTranslation(englishText);
     return englishText; // show English temporarily
   }
@@ -146,7 +146,8 @@ class LanguageProvider extends ChangeNotifier {
   }
 
   // Deprecated aliases kept for legacy callers
-  String getLocalizedText(Map<String, String> m) => m[_currentLanguage] ?? m['en'] ?? '';
+  String getLocalizedText(Map<String, String> m) =>
+      m[_currentLanguage] ?? m['en'] ?? '';
   String translate(String key) => t(key);
 
   // ── Language Switch ───────────────────────────────────────────────────────

@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// SMART FORM SCREEN — AI Auto-Fill with Animated Visualization
+// SMART FORM SCREEN - AI Auto-Fill with Animated Visualization
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import 'package:flutter/material.dart';
@@ -525,7 +525,7 @@ class _SmartFormScreenState extends State<SmartFormScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Voice Explain Button — opens language chooser
+            // Voice Explain Button - opens language chooser
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
@@ -723,7 +723,7 @@ class _SmartFormScreenState extends State<SmartFormScreen>
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SMART FIELD CARD — Individual form field with source transparency
+// SMART FIELD CARD - Individual form field with source transparency
 // ═══════════════════════════════════════════════════════════════════════════════
 
 class _SmartFieldCard extends StatelessWidget {
@@ -916,7 +916,7 @@ class _SmartFieldCard extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// LANGUAGE OPTION — Language chooser item for voice readout
+// LANGUAGE OPTION - Language chooser item for voice readout
 // ═══════════════════════════════════════════════════════════════════════════════
 
 class _LanguageOption extends StatelessWidget {

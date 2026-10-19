@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../core/constants/app_colors.dart';
 import '../providers/language_provider.dart';
 
-/// Bilingual label widget — English text on top, Hindi (Devanagari) below.
+/// Bilingual label widget - English text on top, Hindi (Devanagari) below.
 /// Used throughout the app for culturally authentic, accessible labeling.
 /// In English mode, only English text is shown to keep UI clean.
 class BilingualLabel extends StatelessWidget {

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 
 /// CustomPainter that draws a Mughal-inspired Jali (lattice) pattern.
-/// A repeating diamond-octagon grid — purely geometric, culturally iconic.
+/// A repeating diamond-octagon grid - purely geometric, culturally iconic.
 class JaliPatternPainter extends CustomPainter {
   final Color color;
   final double opacity;
@@ -40,7 +40,8 @@ class JaliPatternPainter extends CustomPainter {
     }
   }
 
-  void _drawOctagonCell(Canvas canvas, Paint paint, double cx, double cy, double r) {
+  void _drawOctagonCell(
+      Canvas canvas, Paint paint, double cx, double cy, double r) {
     // draw the diamond centre cross
     final path = Path();
     // Octagon

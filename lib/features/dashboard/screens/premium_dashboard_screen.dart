@@ -571,7 +571,7 @@ class _PremiumDashboardScreenState extends State<PremiumDashboardScreen>
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'PM Kisan, Ayushman Bharat & more — Ask CVI to check eligibility',
+                    'PM Kisan, Ayushman Bharat & more - Ask CVI to check eligibility',
                     style: GoogleFonts.poppins(
                       fontSize: 11,
                       color: AppColors.textSecondary,

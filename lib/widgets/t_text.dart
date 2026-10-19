@@ -17,7 +17,7 @@ import '../providers/language_provider.dart';
 ///   3. Otherwise, renders English while LanguageProvider fetches translation in the background.
 ///   4. Rebuilds automatically when translation completes (via LanguageProvider.notifyListeners).
 ///
-/// The widget itself is stateless — all state lives in LanguageProvider's cache.
+/// The widget itself is stateless - all state lives in LanguageProvider's cache.
 class TText extends StatelessWidget {
   final String text;
   final TextStyle? style;

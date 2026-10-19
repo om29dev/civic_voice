@@ -7,6 +7,7 @@ class IndianCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
   final double borderRadius;
+
   /// When true, uses gold border and gradient background (featured card).
   final bool isPremium;
   final VoidCallback? onTap;
@@ -30,7 +31,8 @@ class IndianCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = backgroundColor ?? (isPremium ? AppColors.bgDark : AppColors.bgMid);
+    final bg =
+        backgroundColor ?? (isPremium ? AppColors.bgDark : AppColors.bgMid);
     final borderColor = isPremium
         ? AppColors.gold.withValues(alpha: 0.25)
         : AppColors.surfaceBorder;
@@ -76,8 +78,8 @@ class IndianCard extends StatelessWidget {
                 child: Container(
                   height: 1,
                   decoration: BoxDecoration(
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(borderRadius)),
+                    borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(borderRadius)),
                     gradient: LinearGradient(
                       colors: [
                         AppColors.saffron.withValues(alpha: 0.6),
@@ -106,7 +108,7 @@ class IndianCard extends StatelessWidget {
   }
 }
 
-/// Frosted glass style card — kept for backward compatibility with legacy screens.
+/// Frosted glass style card - kept for backward compatibility with legacy screens.
 class GlassCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;

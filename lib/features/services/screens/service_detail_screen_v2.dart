@@ -78,11 +78,11 @@ class _ServiceDetailScreenV2State extends State<ServiceDetailScreenV2>
 
   String _buildChecklist() {
     final buf = StringBuffer();
-    buf.writeln('DOCUMENT CHECKLIST — ${s.localizedName("en")}');
+    buf.writeln('DOCUMENT CHECKLIST - ${s.localizedName("en")}');
     buf.writeln('=' * 42);
     for (final doc in s.requiredDocuments) {
       buf.writeln(
-          '\n${doc.isOptional ? "[ ] OPTIONAL" : "[*] MANDATORY"} — ${doc.name}');
+          '\n${doc.isOptional ? "[ ] OPTIONAL" : "[*] MANDATORY"} - ${doc.name}');
       buf.writeln('    ${doc.description}');
     }
     return buf.toString();
@@ -117,10 +117,10 @@ class _ServiceDetailScreenV2State extends State<ServiceDetailScreenV2>
               controller: _tabCtrl,
               physics: const BouncingScrollPhysics(),
               children: [
-                // Tab 1 — Overview
+                // Tab 1 - Overview
                 _OverviewTab(service: s, accentColor: _accentColor),
 
-                // Tab 2 — Documents
+                // Tab 2 - Documents
                 _DocumentsTab(
                   service: s,
                   accentColor: _accentColor,
@@ -136,7 +136,7 @@ class _ServiceDetailScreenV2State extends State<ServiceDetailScreenV2>
                   },
                 ),
 
-                // Tab 3 — Steps
+                // Tab 3 - Steps
                 _StepsTab(
                   service: s,
                   accentColor: _accentColor,
@@ -145,7 +145,7 @@ class _ServiceDetailScreenV2State extends State<ServiceDetailScreenV2>
                   onLaunchUrl: () => _launch(s.officialLink),
                 ),
 
-                // Tab 4 — Track
+                // Tab 4 - Track
                 _TrackTab(
                   service: s,
                   accentColor: _accentColor,
@@ -409,7 +409,7 @@ class _CVITabBar extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TAB 1 — OVERVIEW
+// TAB 1 - OVERVIEW
 // ═══════════════════════════════════════════════════════════════════════════════
 
 class _OverviewTab extends StatelessWidget {
@@ -644,7 +644,7 @@ class _GlanceItem extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TAB 2 — DOCUMENTS
+// TAB 2 - DOCUMENTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 class _DocumentsTab extends StatelessWidget {
@@ -1062,7 +1062,7 @@ class _DocumentCardState extends State<_DocumentCard> {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TAB 3 — STEPS
+// TAB 3 - STEPS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 class _StepsTab extends StatelessWidget {
@@ -1111,8 +1111,7 @@ class _StepsTab extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 LinearProgressIndicator(
-                  value:
-                      steps.isEmpty ? 0 : (currentStep + 1) / steps.length,
+                  value: steps.isEmpty ? 0 : (currentStep + 1) / steps.length,
                   backgroundColor: AppColors.surfaceBorder,
                   valueColor: AlwaysStoppedAnimation(accentColor),
                   borderRadius: BorderRadius.circular(4),
@@ -1319,7 +1318,7 @@ class _StepTile extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TAB 4 — TRACK
+// TAB 4 - TRACK
 // ═══════════════════════════════════════════════════════════════════════════════
 
 class _TrackTab extends StatelessWidget {

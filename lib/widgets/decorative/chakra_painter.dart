@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 
-/// CustomPainter that draws the Ashoka Chakra — 24-spoke wheel.
+/// CustomPainter that draws the Ashoka Chakra - 24-spoke wheel.
 /// Used as a watermark overlay on splash and voice screens.
 class ChakraPainter extends CustomPainter {
   final Color color;
@@ -55,7 +55,7 @@ class ChakraPainter extends CustomPainter {
 
       // Small decorative dot at inner rim junction
 
-      // Every 3rd spoke (major spokes) — slightly thicker
+      // Every 3rd spoke (major spokes) - slightly thicker
       if (i % 3 == 0) {
         final thickPaint = Paint()
           ..color = color.withValues(alpha: opacity * 1.4)

@@ -470,7 +470,7 @@ class _DocumentsTab extends StatefulWidget {
 }
 
 class _DocumentsTabState extends State<_DocumentsTab> {
-  // Local toggle state (not persisted — steps persistence is for steps)
+  // Local toggle state (not persisted - steps persistence is for steps)
   late final List<bool> _have;
   final Map<int, bool> _uploading = {};
 
@@ -1144,10 +1144,10 @@ class _TimelineTab extends StatelessWidget {
                       color: AppColors.textPrimary)),
               SizedBox(height: 10),
               _LegendItem(
-                  color: AppColors.success, label: 'Fast — Under 7 days'),
+                  color: AppColors.success, label: 'Fast - Under 7 days'),
               _LegendItem(
-                  color: Color(0xFFFFB300), label: 'Medium — 7 to 30 days'),
-              _LegendItem(color: AppColors.error, label: 'Slow — Over 30 days'),
+                  color: Color(0xFFFFB300), label: 'Medium - 7 to 30 days'),
+              _LegendItem(color: AppColors.error, label: 'Slow - Over 30 days'),
             ],
           ),
         ).animate().fadeIn(delay: 350.ms),

@@ -1,5 +1,5 @@
 class AIConfig {
-  // Amazon Bedrock — Phase 4 Core AI
+  // Amazon Bedrock - Phase 4 Core AI
   static const String bedrockRegion = 'us-east-1';
   static const String bedrockNovaMicro = 'amazon.nova-micro-v1:0';
   static const String bedrockLlama3 = 'meta.llama3-8b-instruct-v1:0';

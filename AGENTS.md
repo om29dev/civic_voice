@@ -1,4 +1,4 @@
-# Civic Voice (CVI) — Agent Knowledge & Hackathon Operations Guide
+# Civic Voice (CVI) - Agent Knowledge & Hackathon Operations Guide
 
 ## 🏆 Hackathon Context: AWS Zero to Shipped
 - **Event**: AWS Zero to Shipped Hackathon (September 18 – October 2, 2026)

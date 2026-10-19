@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 
-/// Eligibility confidence gauge — pure Flutter, no third-party gauge lib needed.
+/// Eligibility confidence gauge - pure Flutter, no third-party gauge lib needed.
 class CivicConfidenceGauge extends StatelessWidget {
   final double score; // 0.0 to 100.0
   const CivicConfidenceGauge({super.key, required this.score});
@@ -87,7 +87,10 @@ class _GaugePainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
     canvas.drawArc(
       Rect.fromCircle(center: Offset(cx, cy), radius: radius),
-      startAngle, sweepFull, false, bgPaint,
+      startAngle,
+      sweepFull,
+      false,
+      bgPaint,
     );
 
     // Filled arc
@@ -102,7 +105,10 @@ class _GaugePainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
     canvas.drawArc(
       Rect.fromCircle(center: Offset(cx, cy), radius: radius),
-      startAngle, sweepFull * (score / 100), false, fgPaint,
+      startAngle,
+      sweepFull * (score / 100),
+      false,
+      fgPaint,
     );
   }
 

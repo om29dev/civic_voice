@@ -15,7 +15,7 @@ import '../../widgets/cvi_button.dart';
 import '../../widgets/decorative/jali_pattern.dart';
 
 // ═════════════════════════════════════════════════════════════════════════════
-// PROFILE SCREEN  — Cloud-synced citizen identity card
+// PROFILE SCREEN  - Cloud-synced citizen identity card
 // ═════════════════════════════════════════════════════════════════════════════
 
 class ProfileScreen extends StatefulWidget {

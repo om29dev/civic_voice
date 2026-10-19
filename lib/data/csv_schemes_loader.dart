@@ -62,7 +62,7 @@ class CsvSchemesLoader {
   static Future<List<ServiceModel>> load() async {
     try {
       final raw = await rootBundle.loadString(_assetPath);
-      // Offload heavy parsing to a background isolate — prevents ANR freezes
+      // Offload heavy parsing to a background isolate - prevents ANR freezes
       return await compute(_parseCsv, raw);
     } catch (e) {
       return [];

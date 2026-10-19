@@ -1,4 +1,4 @@
-// DOCUMENT VAULT SCREEN — AWS-backed upload + AI extraction UI
+// DOCUMENT VAULT SCREEN - AWS-backed upload + AI extraction UI
 
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
@@ -155,7 +155,7 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
         ),
         const SizedBox(height: 4),
         Text(
-          'Upload once — AI fills all your forms forever',
+          'Upload once - AI fills all your forms forever',
           style: GoogleFonts.outfit(
             color: const Color(0xFFB8A898),
             fontSize: 14,
@@ -220,7 +220,7 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
           const SizedBox(height: 8),
           Text(
             pct >= 1.0
-                ? '✓ Vault complete — AI can fill any form instantly!'
+                ? '✓ Vault complete - AI can fill any form instantly!'
                 : pct >= 0.5
                     ? 'Good progress! Upload more for better auto-fill.'
                     : 'Upload documents to enable AI form filling',
@@ -749,7 +749,7 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      '${doc?['name'] ?? slot.label} — Extracted Data',
+                      '${doc?['name'] ?? slot.label} - Extracted Data',
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.outfit(

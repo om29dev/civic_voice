@@ -896,7 +896,7 @@ class _PopularServiceCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top — icon box + arrow
+              // Top - icon box + arrow
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -927,7 +927,7 @@ class _PopularServiceCard extends StatelessWidget {
                 ],
               ),
               const Spacer(),
-              // Bottom — name, hindi, views
+              // Bottom - name, hindi, views
               Flexible(
                 child: Text(
                   context.watch<LanguageProvider>().languageCode == 'hi'

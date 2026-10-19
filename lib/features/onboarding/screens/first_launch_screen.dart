@@ -299,7 +299,7 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> {
           ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.2),
           const SizedBox(height: 16),
           const TText(
-            'Aadhaar, PAN, Passport, Certificates and more — all in one place.',
+            'Aadhaar, PAN, Passport, Certificates and more - all in one place.',
             style: TextStyle(
                 fontSize: 16, color: AppColors.textSecondary, height: 1.5),
             textAlign: TextAlign.center,

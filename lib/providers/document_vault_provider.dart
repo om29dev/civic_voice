@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// DOCUMENT VAULT PROVIDER — AWS Amplify-backed state management
+// DOCUMENT VAULT PROVIDER - AWS Amplify-backed state management
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import 'package:flutter/foundation.dart';

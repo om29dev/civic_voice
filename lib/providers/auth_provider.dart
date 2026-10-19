@@ -34,7 +34,7 @@ class AuthProvider extends ChangeNotifier {
   // ─── Init ──────────────────────────────────────────────────────────────────
 
   Future<void> _init() async {
-    // No notifyListeners() here — we notify once at the end when everything is ready.
+    // No notifyListeners() here - we notify once at the end when everything is ready.
     try {
       debugPrint('[AuthProvider] _init: Checking Amplify initialization...');
       if (!AwsAmplifyService.isInitialized) {
@@ -341,7 +341,7 @@ class AuthProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('$_sessionKey/guest_id', guest.id);
     await prefs.setString('$_sessionKey/lang', guest.language);
-    notifyListeners(); // Single notification — state fully settled.
+    notifyListeners(); // Single notification - state fully settled.
   }
 
   /// Confirm a new user registration with the OTP sent to their email/phone
@@ -409,7 +409,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       await Amplify.Auth.resetPassword(username: email.trim());
     } catch (_) {
-      // Silently fail — success message is always shown for security
+      // Silently fail - success message is always shown for security
     }
   }
 

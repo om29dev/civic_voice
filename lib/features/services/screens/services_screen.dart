@@ -29,7 +29,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
   String? _activeCategory;
   final _searchCtrl = TextEditingController();
 
-  // Categories now built dynamically per language — see _buildCategories(lang)
+  // Categories now built dynamically per language - see _buildCategories(lang)
   List<(String label, String? code)> _buildCategories(LanguageProvider lang) =>
       [
         (lang.t('services_cat_all'), null),

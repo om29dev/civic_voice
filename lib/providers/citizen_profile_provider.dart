@@ -112,7 +112,7 @@ class CitizenProfileProvider with ChangeNotifier {
     }
   }
 
-  /// Partial update — merges only specified fields and saves
+  /// Partial update - merges only specified fields and saves
   Future<bool> patchProfile({
     String? fullName,
     String? state,

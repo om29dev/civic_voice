@@ -209,7 +209,7 @@ class _HeroHeaderState extends State<_HeroHeader> {
                   const TricolorBar(height: 2),
                   const SizedBox(height: 18),
 
-                  // Top row — greeting + avatar
+                  // Top row - greeting + avatar
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Row(

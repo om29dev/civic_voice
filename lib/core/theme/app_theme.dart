@@ -3,22 +3,22 @@ import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
 
 /// The complete CVI ThemeData.
-/// "Bharat Silicon" Design Language — Dark Warm Teak Theme.
+/// "Bharat Silicon" Design Language - Dark Warm Teak Theme.
 class AppTheme {
   AppTheme._();
 
   // ─── Static color constants (legacy + convenience) ────────────────────────
-  static const Color electricBlue  = AppColors.saffron;
-  static const Color pureWhite     = Colors.white;
+  static const Color electricBlue = AppColors.saffron;
+  static const Color pureWhite = Colors.white;
   static const Color deepSpaceBlue = Color(0xFF0C0A08);
-  static const Color neonCyan      = AppColors.goldLight;
+  static const Color neonCyan = AppColors.goldLight;
   static const Color gradientStart = AppColors.saffron;
-  static const Color gradientEnd   = AppColors.gold;
-  static const Color success       = AppColors.emeraldLight;
-  static const Color error         = AppColors.accentRed;
-  static const Color warning       = AppColors.gold;
+  static const Color gradientEnd = AppColors.gold;
+  static const Color success = AppColors.emeraldLight;
+  static const Color error = AppColors.accentRed;
+  static const Color warning = AppColors.gold;
   static const Color glassBackground = Color(0x0DFFFFFF);
-  static const Color glassBorder     = Color(0x1AFFFFFF);
+  static const Color glassBorder = Color(0x1AFFFFFF);
 
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,
@@ -44,7 +44,7 @@ class AppTheme {
   // ─── Typography ─────────────────────────────────────────────────────────────
 
   static TextTheme get _textTheme => TextTheme(
-        // Display — PlayfairDisplay (hero screens / premium moments)
+        // Display - PlayfairDisplay (hero screens / premium moments)
         displayLarge: GoogleFonts.playfairDisplay(
           fontSize: 36,
           fontWeight: FontWeight.w700,
@@ -63,7 +63,7 @@ class AppTheme {
           color: AppColors.textPrimary,
         ),
 
-        // Headline — Poppins (H1, H2, H3)
+        // Headline - Poppins (H1, H2, H3)
         headlineLarge: GoogleFonts.poppins(
           fontSize: 24,
           fontWeight: FontWeight.w700,
@@ -80,7 +80,7 @@ class AppTheme {
           color: AppColors.textPrimary,
         ),
 
-        // Body — Poppins (functional text)
+        // Body - Poppins (functional text)
         bodyLarge: GoogleFonts.poppins(
           fontSize: 14,
           fontWeight: FontWeight.w400,
@@ -97,7 +97,7 @@ class AppTheme {
           color: AppColors.textMuted,
         ),
 
-        // Label — Poppins SemiBold
+        // Label - Poppins SemiBold
         labelLarge: GoogleFonts.poppins(
           fontSize: 14,
           fontWeight: FontWeight.w600,
@@ -134,7 +134,7 @@ class AppTheme {
 
   // ─── Convenience Text Styles ──────────────────────────────────────────────
 
-  /// Hero display — PlayfairDisplay 36px Bold
+  /// Hero display - PlayfairDisplay 36px Bold
   static TextStyle get heroDisplay => GoogleFonts.playfairDisplay(
         fontSize: 36,
         fontWeight: FontWeight.w700,
@@ -142,56 +142,56 @@ class AppTheme {
         letterSpacing: -0.5,
       );
 
-  /// H1 — Poppins 24px Bold
+  /// H1 - Poppins 24px Bold
   static TextStyle get h1 => GoogleFonts.poppins(
         fontSize: 24,
         fontWeight: FontWeight.w700,
         color: AppColors.textPrimary,
       );
 
-  /// H2 — Poppins 18px SemiBold
+  /// H2 - Poppins 18px SemiBold
   static TextStyle get h2 => GoogleFonts.poppins(
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
       );
 
-  /// H3 — Poppins 15px SemiBold
+  /// H3 - Poppins 15px SemiBold
   static TextStyle get h3 => GoogleFonts.poppins(
         fontSize: 15,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
       );
 
-  /// Body — Poppins 13px Regular
+  /// Body - Poppins 13px Regular
   static TextStyle get body => GoogleFonts.poppins(
         fontSize: 13,
         fontWeight: FontWeight.w400,
         color: AppColors.textPrimary,
       );
 
-  /// Caption — Poppins 11px Medium
+  /// Caption - Poppins 11px Medium
   static TextStyle get caption => GoogleFonts.poppins(
         fontSize: 11,
         fontWeight: FontWeight.w500,
         color: AppColors.textSecondary,
       );
 
-  /// Hindi body — NotoSansDevanagari 12px Regular
+  /// Hindi body - NotoSansDevanagari 12px Regular
   static TextStyle get hindi => GoogleFonts.notoSansDevanagari(
         fontSize: 12,
         fontWeight: FontWeight.w400,
         color: AppColors.textSecondary,
       );
 
-  /// Hindi large — NotoSansDevanagari 16px Medium
+  /// Hindi large - NotoSansDevanagari 16px Medium
   static TextStyle get hindiLarge => GoogleFonts.notoSansDevanagari(
         fontSize: 16,
         fontWeight: FontWeight.w500,
         color: AppColors.textPrimary,
       );
 
-  /// Mono — JetBrainsMono for IDs, codes, timestamps
+  /// Mono - JetBrainsMono for IDs, codes, timestamps
   static TextStyle get mono => GoogleFonts.jetBrainsMono(
         fontSize: 11,
         fontWeight: FontWeight.w400,
@@ -260,7 +260,8 @@ class AppTheme {
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: AppColors.accentRed.withValues(alpha: 0.5), width: 1),
+        borderSide: BorderSide(
+            color: AppColors.accentRed.withValues(alpha: 0.5), width: 1),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
@@ -297,7 +298,8 @@ class AppTheme {
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.saffron,
-        side: BorderSide(color: AppColors.saffron.withValues(alpha: 0.4), width: 1.5),
+        side: BorderSide(
+            color: AppColors.saffron.withValues(alpha: 0.4), width: 1.5),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),

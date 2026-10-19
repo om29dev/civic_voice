@@ -1,4 +1,4 @@
-/// AppLanguage enum — legacy screens reference this for language selection.
+/// AppLanguage enum - legacy screens reference this for language selection.
 enum AppLanguage {
   english('en', 'English'),
   hindi('hi', 'हिन्दी'),
@@ -13,7 +13,7 @@ enum AppLanguage {
         'hi' => AppLanguage.hindi,
         'mr' => AppLanguage.marathi,
         'ta' => AppLanguage.tamil,
-        _    => AppLanguage.english,
+        _ => AppLanguage.english,
       };
 
   @override

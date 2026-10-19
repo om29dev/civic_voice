@@ -120,13 +120,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           width: active ? 28 : 8,
                           height: 8,
                           decoration: BoxDecoration(
-                            color: active
-                                ? AppColors.accent
-                                : Colors.transparent,
+                            color:
+                                active ? AppColors.accent : Colors.transparent,
                             border: Border.all(
-                              color: active
-                                  ? AppColors.accent
-                                  : AppColors.border,
+                              color:
+                                  active ? AppColors.accent : AppColors.border,
                               width: 1.5,
                             ),
                             borderRadius: BorderRadius.circular(4),
@@ -191,10 +189,8 @@ class _NextButton extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    color: Colors.white,
-                    size: 20),
+                child: const Icon(Icons.arrow_forward_ios_rounded,
+                    color: Colors.white, size: 20),
               ),
             ),
     );
@@ -202,7 +198,7 @@ class _NextButton extends StatelessWidget {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// SLIDE 1 — "Speak, Don't Search"
+// SLIDE 1 - "Speak, Don't Search"
 // ═════════════════════════════════════════════════════════════════════════════
 
 class _Slide1 extends StatefulWidget {
@@ -286,11 +282,10 @@ class _Slide1State extends State<_Slide1> with SingleTickerProviderStateMixin {
                 ),
               ],
             ),
-          )
-              .animate()
-              .fadeIn(duration: 500.ms)
-              .scale(begin: const Offset(0.8, 0.8), duration: 600.ms,
-                  curve: Curves.elasticOut),
+          ).animate().fadeIn(duration: 500.ms).scale(
+              begin: const Offset(0.8, 0.8),
+              duration: 600.ms,
+              curve: Curves.elasticOut),
 
           const SizedBox(height: 40),
 
@@ -305,11 +300,12 @@ class _Slide1State extends State<_Slide1> with SingleTickerProviderStateMixin {
               color: AppColors.textPrimary,
               letterSpacing: 0.5,
             ),
-          )
-              .animate()
-              .fadeIn(delay: 200.ms, duration: 400.ms)
-              .slideY(begin: 0.3, end: 0, delay: 200.ms, duration: 400.ms,
-                  curve: Curves.easeOut),
+          ).animate().fadeIn(delay: 200.ms, duration: 400.ms).slideY(
+              begin: 0.3,
+              end: 0,
+              delay: 200.ms,
+              duration: 400.ms,
+              curve: Curves.easeOut),
 
           const SizedBox(height: 16),
 
@@ -322,9 +318,7 @@ class _Slide1State extends State<_Slide1> with SingleTickerProviderStateMixin {
               fontSize: 15,
               height: 1.65,
             ),
-          )
-              .animate()
-              .fadeIn(delay: 350.ms, duration: 400.ms),
+          ).animate().fadeIn(delay: 350.ms, duration: 400.ms),
         ],
       ),
     );
@@ -368,7 +362,7 @@ class _WaveRing extends StatelessWidget {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// SLIDE 2 — "8 Services. Zero Confusion."
+// SLIDE 2 - "8 Services. Zero Confusion."
 // ═════════════════════════════════════════════════════════════════════════════
 
 class _Slide2 extends StatefulWidget {
@@ -439,10 +433,9 @@ class _Slide2State extends State<_Slide2> with SingleTickerProviderStateMixin {
 
                     // 8 orbiting service icons
                     ..._icons.asMap().entries.map((e) {
-                      final index  = e.key;
-                      final item   = e.value;
-                      final angle  =
-                          _orbit.value * 2 * pi +
+                      final index = e.key;
+                      final item = e.value;
+                      final angle = _orbit.value * 2 * pi +
                           (index / _icons.length) * 2 * pi;
                       const orbitR = 100.0;
                       final x = orbitR * cos(angle);
@@ -505,11 +498,10 @@ class _Slide2State extends State<_Slide2> with SingleTickerProviderStateMixin {
                 );
               },
             ),
-          )
-              .animate()
-              .fadeIn(duration: 600.ms)
-              .scale(begin: const Offset(0.85, 0.85), duration: 600.ms,
-                  curve: Curves.easeOutBack),
+          ).animate().fadeIn(duration: 600.ms).scale(
+              begin: const Offset(0.85, 0.85),
+              duration: 600.ms,
+              curve: Curves.easeOutBack),
 
           const SizedBox(height: 36),
 
@@ -531,7 +523,7 @@ class _Slide2State extends State<_Slide2> with SingleTickerProviderStateMixin {
           const SizedBox(height: 16),
 
           const Text(
-            'Aadhaar to Pension —\nguidance at your fingertips.',
+            'Aadhaar to Pension -\nguidance at your fingertips.',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: AppColors.textSecondary,
@@ -546,7 +538,7 @@ class _Slide2State extends State<_Slide2> with SingleTickerProviderStateMixin {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// SLIDE 3 — "Your Language. Your India."
+// SLIDE 3 - "Your Language. Your India."
 // ═════════════════════════════════════════════════════════════════════════════
 
 class _Slide3 extends StatefulWidget {
@@ -641,9 +633,7 @@ class _Slide3State extends State<_Slide3> with SingleTickerProviderStateMixin {
                 ],
               ),
             ),
-          )
-              .animate()
-              .fadeIn(duration: 500.ms),
+          ).animate().fadeIn(duration: 500.ms),
 
           const SizedBox(height: 8),
 
@@ -706,7 +696,8 @@ class _LangChip {
   final String code;
   final String flag;
   final String label;
-  const _LangChip({required this.code, required this.flag, required this.label});
+  const _LangChip(
+      {required this.code, required this.flag, required this.label});
 }
 
 class _LanguageChip extends StatelessWidget {
@@ -726,8 +717,7 @@ class _LanguageChip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
-        padding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected
               ? AppColors.accent.withValues(alpha: 0.15)
@@ -755,8 +745,7 @@ class _LanguageChip extends StatelessWidget {
             Text(
               chip.label,
               style: TextStyle(
-                color:
-                    isSelected ? AppColors.accent : AppColors.textSecondary,
+                color: isSelected ? AppColors.accent : AppColors.textSecondary,
                 fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
                 fontFamily: 'Rajdhani',

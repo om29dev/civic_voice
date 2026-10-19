@@ -35,7 +35,7 @@ class _VoiceWaveformState extends State<VoiceWaveform>
       vsync: this,
       duration: const Duration(milliseconds: 100),
     );
-    // NOTE: Removed addListener(setState) — was calling setState 10x/sec
+    // NOTE: Removed addListener(setState) - was calling setState 10x/sec
     // causing full widget-tree rebuilds. AnimatedBuilder handles this efficiently.
 
     if (widget.isListening) {
@@ -135,7 +135,7 @@ class WaveformPainter extends CustomPainter {
         paint,
       );
 
-      // Glow effect when listening — no MaskFilter.blur (GPU-expensive)
+      // Glow effect when listening - no MaskFilter.blur (GPU-expensive)
       if (isListening) {
         final glowPaint = Paint()
           ..color = color.withValues(alpha: 0.25)

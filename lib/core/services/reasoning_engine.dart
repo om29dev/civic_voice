@@ -329,7 +329,7 @@ class ReasoningEngine {
     }
   }
 
-  // Phase 5: Form Guidance — Intelligent contextual assistance
+  // Phase 5: Form Guidance - Intelligent contextual assistance
   Future<String> generateFormGuidance({
     required String userInput,
     required Map<String, dynamic> formContext,
@@ -341,7 +341,8 @@ class ReasoningEngine {
       'serviceId': formContext['serviceId']?.toString() ?? '',
       'currentFieldLabel': formContext['currentFieldLabel']?.toString() ?? '',
       'allFields': formContext['allFields']?.toString() ?? '',
-      'currentFieldValue': formContext['currentFieldValue']?.toString() ?? 'empty',
+      'currentFieldValue':
+          formContext['currentFieldValue']?.toString() ?? 'empty',
       'languageCode': languageCode,
     });
 
@@ -357,7 +358,8 @@ class ReasoningEngine {
           .write('<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n');
 
       final finalPrompt = promptBuffer.toString();
-      debugPrint('ReasoningEngine: Requesting Form Guidance from Nova Micro...');
+      debugPrint(
+          'ReasoningEngine: Requesting Form Guidance from Nova Micro...');
       return await AWSBedrockService.chatWithLlama3(finalPrompt);
     } catch (e) {
       debugPrint("Form Guidance Error: $e");
@@ -377,7 +379,8 @@ class ReasoningEngine {
       'schemeName': schemeContext['name']?.toString() ?? 'Scheme',
       'userProfile': json.encode(userProfile),
       'availableDocuments': availableDocuments.join(', '),
-      'eligibilityCriteria': schemeContext['eligibilityCriteria']?.toString() ?? '',
+      'eligibilityCriteria':
+          schemeContext['eligibilityCriteria']?.toString() ?? '',
       'requiredDocuments': schemeContext['requiredDocuments']?.toString() ?? '',
       'languageCode': languageCode,
     });
@@ -414,7 +417,8 @@ class ReasoningEngine {
   }
 
   Future<Map<String, dynamic>> verifyDocumentImage(String base64Image) async {
-    final verificationPrompt = await PromptLoader.getPrompt('document_verification');
+    final verificationPrompt =
+        await PromptLoader.getPrompt('document_verification');
 
     try {
       debugPrint(

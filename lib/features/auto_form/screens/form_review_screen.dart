@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// FORM REVIEW SCREEN — Review filled form data before submission
+// FORM REVIEW SCREEN - Review filled form data before submission
 // With 4-language voice readout of all filled data
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -96,7 +96,7 @@ class _FormReviewScreenState extends State<FormReviewScreen> {
                         child: _buildFieldRow(
                           context,
                           label: field.getLabel(langCode),
-                          value: hasValue ? value : '—',
+                          value: hasValue ? value : '-',
                           hasValue: hasValue,
                           source: hasValue ? src : null,
                           isSensitive: field.sensitive,

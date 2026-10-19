@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// DOCUMENT AI SERVICE — Gemini Vision API for document data extraction
+// DOCUMENT AI SERVICE - Gemini Vision API for document data extraction
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import 'package:flutter/foundation.dart';

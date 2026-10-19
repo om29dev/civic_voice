@@ -272,7 +272,7 @@ class _LoginTabState extends State<_LoginTab> {
 
     if (!mounted) return;
 
-    // Do NOT call context.go() here — AuthProvider.notifyListeners() already
+    // Do NOT call context.go() here - AuthProvider.notifyListeners() already
     // triggers the GoRouter redirect which navigates away automatically.
     // Calling context.go() on top causes a double-navigation that crashes
     // with '_elements.contains(element) is not true'.
@@ -331,7 +331,7 @@ class _LoginTabState extends State<_LoginTab> {
   }
 
   void _shake() {
-    // Trigger red shimmer error — handled by Form validators
+    // Trigger red shimmer error - handled by Form validators
   }
 
   void _showError(String msg) {
@@ -414,7 +414,7 @@ class _LoginTabState extends State<_LoginTab> {
             _GoogleButton(onTap: _loginGoogle, isLoading: auth.isLoading),
 
             const SizedBox(height: 20),
-            const _Divider(label: '— or login with email —'),
+            const _Divider(label: '- or login with email -'),
             const SizedBox(height: 16),
 
             // ── Email ────────────────────────────────────────────────
@@ -477,7 +477,7 @@ class _LoginTabState extends State<_LoginTab> {
             ),
 
             const SizedBox(height: 20),
-            const _Divider(label: '— or use mobile OTP —'),
+            const _Divider(label: '- or use mobile OTP -'),
             const SizedBox(height: 12),
 
             // ── OTP Section ───────────────────────────────────────────
@@ -840,7 +840,7 @@ class _RegisterTabState extends State<_RegisterTab> {
 
     if (success) {
       // Navigation handled automatically by GoRouter redirect via notifyListeners()
-      // Do NOT call context.go() — causes double-navigation crash.
+      // Do NOT call context.go() - causes double-navigation crash.
     } else {
       if (auth.error == 'CONFIRM_SIGNUP_REQUIRED') {
         _showOTPVerificationDialog(
@@ -938,7 +938,7 @@ class _RegisterTabState extends State<_RegisterTab> {
 
                           if (loginSuccess) {
                             // Navigation handled automatically by GoRouter redirect via notifyListeners()
-                            // Do NOT call context.go() — causes double-navigation crash.
+                            // Do NOT call context.go() - causes double-navigation crash.
                           } else {
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(

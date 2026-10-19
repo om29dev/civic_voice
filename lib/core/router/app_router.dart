@@ -38,7 +38,7 @@ import '../../features/auto_form/models/auto_form_model.dart';
 import '../../providers/document_vault_provider.dart';
 import '../../widgets/navigation/cvi_bottom_nav.dart';
 
-/// Route name constants — use these instead of raw strings.
+/// Route name constants - use these instead of raw strings.
 abstract class Routes {
   static const splash = '/';
   static const onboarding = '/onboarding';
@@ -108,7 +108,7 @@ class AppRouter {
         final isOnOnboarding = loc == Routes.onboarding;
         final isOnSplash = loc == Routes.splash;
 
-        // seenOnboard is cached in AuthProvider during _init() — no await needed.
+        // seenOnboard is cached in AuthProvider during _init() - no await needed.
         final seenOnboard = auth.seenOnboard;
 
         // 2. Not Authenticated → Send to Auth or Onboarding

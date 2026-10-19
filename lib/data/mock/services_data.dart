@@ -51,7 +51,7 @@ class MockServicesData {
     eligibilityCriteria: [
       'Indian resident of any age',
       'Individuals who have lived in India for at least 182 days in the 12 months preceding the date of application',
-      'No minimum age requirement — infants can also be enrolled',
+      'No minimum age requirement - infants can also be enrolled',
     ],
     requiredDocuments: [
       DocumentItem(
@@ -361,7 +361,7 @@ class MockServicesData {
         description: '3 recent color passport photographs',
       ),
       DocumentItem(
-        name: 'Form 1 — Medical Certificate',
+        name: 'Form 1 - Medical Certificate',
         description:
             'Medical fitness certificate from a registered medical practitioner',
       ),
@@ -530,7 +530,7 @@ class MockServicesData {
           'பிறப்பு சான்றிதழ் என்பது ஒருவரின் பிறப்பு, தேதி, இடம் மற்றும் பெற்றோர் விவரங்களை பதிவு செய்யும் அதிகாரப்பூர்வ ஆவணமாகும். பள்ளி சேர்க்கை, கடவுச்சீட்டு மற்றும் பிற அரசு சேவைகளுக்கு இது அடிப்படை அடையாள ஆவணமாகும்.',
     },
     eligibilityCriteria: [
-      'All Indian citizens — any age (registration can be done at any time)',
+      'All Indian citizens - any age (registration can be done at any time)',
       'Births must be registered within 21 days to avoid late fees',
       'Delayed registration (after 1 year) requires a magistrate order',
     ],
@@ -627,7 +627,7 @@ class MockServicesData {
     },
     eligibilityCriteria: [
       'Indian family below income threshold (Priority Household/Antyodaya category)',
-      'Annual family income below ₹1 lakh (urban) / ₹60,000 (rural) — varies by state',
+      'Annual family income below ₹1 lakh (urban) / ₹60,000 (rural) - varies by state',
       'Should not already be a beneficiary under another ration card in any state',
       'Family must have a fixed residence address',
     ],
@@ -717,13 +717,13 @@ class MockServicesData {
     },
     description: {
       'en':
-          'The National Social Assistance Programme (NSAP) — Indira Gandhi National Old Age Pension Scheme (IGNOAPS) provides monthly pension to elderly citizens aged 60+ from Below Poverty Line (BPL) families.',
+          'The National Social Assistance Programme (NSAP) - Indira Gandhi National Old Age Pension Scheme (IGNOAPS) provides monthly pension to elderly citizens aged 60+ from Below Poverty Line (BPL) families.',
       'hi':
-          'राष्ट्रीय सामाजिक सहायता कार्यक्रम (NSAP) — इंदिरा गांधी राष्ट्रीय वृद्धावस्था पेंशन योजना (IGNOAPS) गरीबी रेखा से नीचे (BPL) परिवारों के 60 वर्ष से अधिक आयु के बुजुर्ग नागरिकों को मासिक पेंशन प्रदान करती है।',
+          'राष्ट्रीय सामाजिक सहायता कार्यक्रम (NSAP) - इंदिरा गांधी राष्ट्रीय वृद्धावस्था पेंशन योजना (IGNOAPS) गरीबी रेखा से नीचे (BPL) परिवारों के 60 वर्ष से अधिक आयु के बुजुर्ग नागरिकों को मासिक पेंशन प्रदान करती है।',
       'mr':
-          'राष्ट्रीय सामाजिक सहाय्य कार्यक्रम (NSAP) — इंदिरा गांधी राष्ट्रीय वृद्धापकाळ निवृत्तीवेतन योजना (IGNOAPS) दारिद्र्यरेषेखालील (BPL) कुटुंबातील 60 वर्षांवरील वृद्ध नागरिकांना मासिक निवृत्तीवेतन देते.',
+          'राष्ट्रीय सामाजिक सहाय्य कार्यक्रम (NSAP) - इंदिरा गांधी राष्ट्रीय वृद्धापकाळ निवृत्तीवेतन योजना (IGNOAPS) दारिद्र्यरेषेखालील (BPL) कुटुंबातील 60 वर्षांवरील वृद्ध नागरिकांना मासिक निवृत्तीवेतन देते.',
       'ta':
-          'தேசிய சமூக உதவித் திட்டம் (NSAP) — இந்திரா காந்தி தேசிய முதியோர் ஓய்வூதியத் திட்டம் (IGNOAPS) வறுமைக் கோட்டிற்கு கீழே (BPL) உள்ள குடும்பங்களில் 60 வயதுக்கு மேற்பட்ட முதியோர்களுக்கு மாதாந்திர ஓய்வூதியம் வழங்குகிறது.',
+          'தேசிய சமூக உதவித் திட்டம் (NSAP) - இந்திரா காந்தி தேசிய முதியோர் ஓய்வூதியத் திட்டம் (IGNOAPS) வறுமைக் கோட்டிற்கு கீழே (BPL) உள்ள குடும்பங்களில் 60 வயதுக்கு மேற்பட்ட முதியோர்களுக்கு மாதாந்திர ஓய்வூதியம் வழங்குகிறது.',
     },
     eligibilityCriteria: [
       'Age 60 years or above (80+ receives higher pension under NOAPS)',

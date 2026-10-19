@@ -1,4 +1,4 @@
-# Civic Voice — CVI
+# Civic Voice - CVI
 
 <div align="center">
 
@@ -12,50 +12,65 @@
 
 > **"Bridging the gap between citizens and the services that matter most."**
 
-Civic Voice is a modern, premium Flutter application designed to empower every citizen of Bharat by providing a centralized, voice-first platform for navigating government services, discovering welfare schemes, and receiving AI-powered guidance — all in their language.
+Civic Voice is a modern Flutter application designed to empower every citizen of Bharat by providing a centralized, voice-first platform for navigating government services, discovering welfare schemes, and receiving AI-powered guidance, all in their language.
 
 </div>
 
 ---
 
-## 🌟 Overview
+## Overview
 
-Navigating government services in India is often complex, inaccessible, and overwhelming. **Civic Voice** changes that. By combining a meticulously crafted UI, a conversational AI assistant (CVI), bilingual support, and a robust AWS cloud backend, Civic Voice delivers an unprecedented, dignified digital experience to every citizen — from metros to villages.
+Navigating government services in India is often complex, inaccessible, and overwhelming. **Civic Voice** changes that. By combining a clear user interface, a conversational AI assistant (CVI), multilingual support, and a robust AWS cloud backend, Civic Voice delivers an accessible digital experience to every citizen, from metros to villages.
 
 ---
 
-## ✨ Key Features
+## Screenshots
 
-### 🎙️ CVI — Your AI Civic Assistant
-A completely custom, intelligent voice and text assistant powered by **Amazon Bedrock (Meta Llama 3)**. Ask questions about government schemes, eligibility, documentation, and procedures in both **English and Hindi** — and receive accurate, contextual answers in seconds.
+| Splash and Welcome | Citizen Dashboard | Services and AI Features | CVI Voice Assistant | Smart AI Form Auto-Fill |
+| :---: | :---: | :---: | :---: | :---: |
+| <img src="docs/screenshots/01_splash_screen.jpg" width="190" alt="Splash and Welcome Screen" /> | <img src="docs/screenshots/02_home_dashboard.png" width="190" alt="Citizen Dashboard Screen" /> | <img src="docs/screenshots/03_features_services.png" width="190" alt="Services and AI Features Screen" /> | <img src="docs/screenshots/04_voice_assistant.png" width="190" alt="CVI Voice Assistant Screen" /> | <img src="docs/screenshots/05_smart_ai_form.png" width="190" alt="Smart AI Form Auto-Fill Screen" /> |
+| Voice-first onboarding with Bharat theme | Personalized metrics, queries count, and quick actions | AI Scanner, Scheme Finder, and popular public services | Multilingual voice assistance (EN, HI, MR, TA) | Auto-filling Form 49A using verified Aadhaar data |
 
-### 🗂️ Government Services Hub
-A comprehensive, searchable directory of public services — **Aadhaar, PAN, Passport, Ration Card, Driving License, and more** — complete with step-by-step guides, required documents, timelines, fee structures, and official application links.
+- **Splash and Welcome**: Voice-first onboarding screen ("Jago Bharat Jago") designed for citizens across Bharat.
+- **Citizen Dashboard**: Live metrics, service activity tracking, and quick actions for grievances, schemes, and applications.
+- **Services and AI Features**: Centralized catalog of government schemes, AI document scanner, scheme finder, and offline guides.
+- **CVI Voice Assistant**: Multilingual voice conversational interface powered by Amazon Bedrock with support for English, Hindi, Marathi, and Tamil.
+- **Smart AI Form Auto-Fill**: Automated form completion (e.g., PAN Form 49A) using verified documents from the citizen vault.
 
-### 🔍 AI Eligibility Checker
+---
+
+## Key Features
+
+### CVI - Your AI Civic Assistant
+A completely custom, intelligent voice and text assistant powered by **Amazon Bedrock (Meta Llama 3)**. Ask questions about government schemes, eligibility, documentation, and procedures in both **English and Hindi**, and receive accurate, contextual answers in seconds.
+
+### Government Services Hub
+A comprehensive, searchable directory of public services: **Aadhaar, PAN, Passport, Ration Card, Driving License, and more**, complete with step-by-step guides, required documents, timelines, fee structures, and official application links.
+
+### AI Eligibility Checker
 An intelligent, multi-step flow that analyses your profile data and tells you exactly which government schemes you qualify for, with a **Civic Confidence Gauge** scoring your eligibility in real-time.
 
-### 📄 Smart Document Vault
+### Smart Document Vault
 A biometric-secured, encrypted personal vault to safely store, manage, and retrieve your critical documents (Aadhaar, PAN, certificates). Features **AI-powered scanning** and automatic inference of document fields.
 
-### 🤖 Auto-Form Assistant
+### Auto-Form Assistant
 A guided, voice-enabled form-filling flow that pre-populates government application forms using data from your Document Vault and Citizen Profile, then launches a **Smart Browser** for seamless in-app guided submission.
 
-### 🏅 Citizen Profile & Gamification
+### Citizen Profile and Gamification
 A centralized digital citizen profile to manage personal information and family members, track application statuses, and earn **achievements and badges** as you complete civic tasks.
 
-### 📍 Office Locator
+### Office Locator
 Locate the nearest government offices with GPS-powered maps and direct navigation links, making in-person visits effortless.
 
-### 🔔 Smart Notifications & Reminders
+### Smart Notifications and Reminders
 Stay on top of application deadlines, scheme expiry dates, and important announcements with intelligent, scheduled local notifications.
 
-### 🌐 Offline-First Guidance
+### Offline-First Guidance
 A curated offline knowledge base ensures core service information and emergency guidance remain accessible even without an internet connection.
 
 ---
 
-## 🛠️ Technology Stack & Cloud Backend
+## Technology Stack and Cloud Backend
 
 | Layer | Technology | Purpose |
 |---|---|---|
@@ -72,7 +87,7 @@ A curated offline knowledge base ensures core service information and emergency 
 
 ---
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 Civic Voice follows a **Feature-First architectural pattern** on the Flutter client, backed by AWS infrastructure in Mumbai (`ap-south-1`).
 
@@ -80,20 +95,21 @@ Civic Voice follows a **Feature-First architectural pattern** on the Flutter cli
 civic_voice/
 ├── lib/
 │   ├── core/                  # Theme, routing, services, AI reasoning engine
-│   ├── features/              # Modular feature screens (auth, dashboard, services, voice…)
+│   ├── features/              # Modular feature screens (auth, dashboard, services, voice)
 │   ├── models/                # Generated Amplify models & data structures
-│   ├── providers/             # State management controllers (Auth, Language, Voice…)
+│   ├── providers/             # State management controllers (Auth, Language, Voice)
 │   ├── services/              # Business logic abstraction layers
 │   ├── widgets/               # Reusable, branded UI components
 │   └── amplifyconfiguration.dart # AWS Amplify client configuration
 ├── assets/                    # Lottie animations, images, icons, data (CSV)
-├── docs/                      # Detailed architectural documentation
+├── docs/                      # Architectural documentation and screenshots
+│   └── screenshots/           # Application screenshots for documentation
 └── amplify/                   # AWS Amplify backend cloud definition
 ```
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -103,7 +119,7 @@ civic_voice/
 - [Amplify CLI](https://docs.amplify.aws/cli/start/install/) (`npm install -g @aws-amplify/cli`)
 - AWS CLI configured with credentials in `ap-south-1`
 
-### Setup & Run
+### Setup and Run
 
 1. **Clone repository:**
    ```bash
@@ -134,10 +150,10 @@ civic_voice/
 
 ---
 
-## 📄 License
+## License
 
 Distributed under the MIT License. See `LICENSE` for details.
 
 <div align="center">
-  <i>Built with ❤️ for Bharat — empowering every citizen, one voice at a time.</i>
+  <i>Built for Bharat: empowering every citizen, one voice at a time.</i>
 </div>

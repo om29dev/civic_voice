@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// CVI DOCUMENT MODEL — AI Auto Form Filler System
+// CVI DOCUMENT MODEL - AI Auto Form Filler System
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Types of Indian government documents supported by CVI.
@@ -154,7 +154,7 @@ class CVIDocument {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// UNIFIED EXTRACTED DATA — All fields from all documents merged
+// UNIFIED EXTRACTED DATA - All fields from all documents merged
 // ═══════════════════════════════════════════════════════════════════════════════
 
 class ExtractedUserData {

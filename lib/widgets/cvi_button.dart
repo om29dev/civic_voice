@@ -182,7 +182,7 @@ class _CviButtonState extends State<CviButton>
   }
 }
 
-/// Legacy NeonButton — mapped to CviButton primary for backward compatibility.
+/// Legacy NeonButton - mapped to CviButton primary for backward compatibility.
 class NeonButton extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;

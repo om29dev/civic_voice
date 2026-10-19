@@ -44,7 +44,7 @@ class _WavingFlagWidgetState extends State<WavingFlagWidget>
           ),
         ),
 
-        // Gradient overlay — keeps content readable
+        // Gradient overlay - keeps content readable
         Positioned.fill(
           child: Container(
             decoration: BoxDecoration(
@@ -52,9 +52,11 @@ class _WavingFlagWidgetState extends State<WavingFlagWidget>
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  const Color(0xFFFF6B1A).withValues(alpha: 0.15), // Saffron tint top
-                  const Color(0xFF0C0A08).withValues(alpha: 0.7),   // Dark middle
-                  const Color(0xFF138808).withValues(alpha: 0.15), // Emerald tint bottom
+                  const Color(0xFFFF6B1A)
+                      .withValues(alpha: 0.15), // Saffron tint top
+                  const Color(0xFF0C0A08).withValues(alpha: 0.7), // Dark middle
+                  const Color(0xFF138808)
+                      .withValues(alpha: 0.15), // Emerald tint bottom
                 ],
               ),
             ),

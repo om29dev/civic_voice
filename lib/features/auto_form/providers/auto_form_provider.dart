@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// AUTO FORM PROVIDER — Animated AI Form Auto-Fill State Management
+// AUTO FORM PROVIDER - Animated AI Form Auto-Fill State Management
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import 'dart:async';
@@ -93,7 +93,7 @@ class AutoFormProvider extends ChangeNotifier {
   // ─── Auto-Fill from Document Vault (FormAutoFillMapper) ─────────────────────
 
   /// Pulls data from AWS Amplify extracted data and maps to form fields.
-  /// This is the FormAutoFillMapper layer — converts extracted data → field values.
+  /// This is the FormAutoFillMapper layer - converts extracted data → field values.
   Future<void> autoFillFromVault() async {
     if (_template == null) return;
 

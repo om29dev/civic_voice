@@ -7,7 +7,7 @@ class ParticleBackground extends StatefulWidget {
   final Color particleColor;
   final double minSpeed;
   final double maxSpeed;
-  // connectParticles disabled by default — O(n²) loop causes ANR
+  // connectParticles disabled by default - O(n²) loop causes ANR
   final bool connectParticles;
 
   const ParticleBackground({
@@ -49,7 +49,7 @@ class _ParticleBackgroundState extends State<ParticleBackground>
         size: random.nextDouble() * 3 + 1,
       ),
     );
-    // NOTE: Removed _controller.addListener(setState) — was calling setState
+    // NOTE: Removed _controller.addListener(setState) - was calling setState
     // 60x/sec causing full widget-tree rebuilds on every frame (main ANR cause).
     // AnimatedBuilder in build() handles repaints efficiently without setState.
   }
@@ -127,7 +127,7 @@ class ParticlePainter extends CustomPainter {
       ..color = particleColor.withValues(alpha: 0.6)
       ..style = PaintingStyle.fill;
 
-    // connectParticles disabled by default — O(n²) loop caused ANR
+    // connectParticles disabled by default - O(n²) loop caused ANR
     // Each frame: n*(n-1)/2 = 435 sqrt() calls at 30 particles → main thread stall
     if (connectParticles) {
       final linePaint = Paint()
@@ -154,7 +154,7 @@ class ParticlePainter extends CustomPainter {
       }
     }
 
-    // Draw particles — no blur (MaskFilter.blur is GPU-expensive)
+    // Draw particles - no blur (MaskFilter.blur is GPU-expensive)
     for (var particle in particles) {
       final center = Offset(particle.x * size.width, particle.y * size.height);
       canvas.drawCircle(center, particle.size, paint);

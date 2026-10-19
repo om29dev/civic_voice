@@ -70,16 +70,16 @@ enum ServiceCategory {
 
 extension ServiceCategoryEx on ServiceCategory {
   String get label => switch (this) {
-        ServiceCategory.identity    => 'Identity',
-        ServiceCategory.finance     => 'Finance',
-        ServiceCategory.welfare     => 'Welfare',
-        ServiceCategory.transport   => 'Transport',
-        ServiceCategory.property    => 'Property',
-        ServiceCategory.health      => 'Health',
-        ServiceCategory.education   => 'Education',
-        ServiceCategory.business    => 'Business',
+        ServiceCategory.identity => 'Identity',
+        ServiceCategory.finance => 'Finance',
+        ServiceCategory.welfare => 'Welfare',
+        ServiceCategory.transport => 'Transport',
+        ServiceCategory.property => 'Property',
+        ServiceCategory.health => 'Health',
+        ServiceCategory.education => 'Education',
+        ServiceCategory.business => 'Business',
         ServiceCategory.agriculture => 'Agriculture',
-        ServiceCategory.employment  => 'Employment',
+        ServiceCategory.employment => 'Employment',
       };
 
   String get value => name;
@@ -131,8 +131,7 @@ class ServiceModel {
   });
 
   /// Returns the localized name for [langCode], falling back to English.
-  String localizedName(String langCode) =>
-      name[langCode] ?? name['en'] ?? '';
+  String localizedName(String langCode) => name[langCode] ?? name['en'] ?? '';
 
   /// Returns the localized description for [langCode], falling back to English.
   String localizedDescription(String langCode) =>
@@ -244,7 +243,7 @@ class GovernmentService {
     this.steps = const [],
   });
 
-  /// Stub — returns empty list; real eligibility is handled by ServicesProvider.
+  /// Stub - returns empty list; real eligibility is handled by ServicesProvider.
   List<({String question})> get eligibilityRules => const [];
 }
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Tricolor bar widget — Indian flag saffron | white | green.
+/// Tricolor bar widget - Indian flag saffron | white | green.
 /// Used as section separators and bottom-of-screen accent.
 class TricolorBar extends StatelessWidget {
   final double height;
@@ -43,7 +43,7 @@ class TricolorBar extends StatelessWidget {
   }
 }
 
-/// Three‐dot tricolor micro divider — use between text sections.
+/// Three‐dot tricolor micro divider - use between text sections.
 class TricolorDivider extends StatelessWidget {
   final double dotSize;
   final double spacing;

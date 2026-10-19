@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// DOCUMENT VAULT SERVICE — AWS Amplify (S3 + DynamoDB) backed document storage
+// DOCUMENT VAULT SERVICE - AWS Amplify (S3 + DynamoDB) backed document storage
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import 'dart:convert';
@@ -15,8 +15,7 @@ import '../../models/cvi_document_model.dart';
 
 class DocumentVaultService {
   static Future<String> _protectedPath(String storageKey) async {
-    final session =
-        await Amplify.Auth.fetchAuthSession() as CognitoAuthSession;
+    final session = await Amplify.Auth.fetchAuthSession() as CognitoAuthSession;
     if (!session.isSignedIn) {
       throw StateError(
         'Authentication required to access documents.',
@@ -28,7 +27,7 @@ class DocumentVaultService {
   }
 
   // ────────────────────────────────────────────────────────────────────────────
-  // UPLOAD DOCUMENT — compress → upload to S3 → AI extract → save metadata
+  // UPLOAD DOCUMENT - compress → upload to S3 → AI extract → save metadata
   // ────────────────────────────────────────────────────────────────────────────
 
   static Future<Map<String, dynamic>> uploadDocument({

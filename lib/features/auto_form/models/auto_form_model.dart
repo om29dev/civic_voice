@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// AUTO FORM MODEL — Smart AI Form Auto-Filling System
+// AUTO FORM MODEL - Smart AI Form Auto-Filling System
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// A single field in a smart government form.
@@ -125,7 +125,7 @@ class SmartFormTemplate {
   }
 }
 
-/// Result of auto-fill mapping — tracks which fields were filled and their sources.
+/// Result of auto-fill mapping - tracks which fields were filled and their sources.
 class AutoFillResult {
   final Map<String, String?> filledValues;
   final Map<String, String> dataSources; // fieldId → source doc name
@@ -141,6 +141,5 @@ class AutoFillResult {
     required this.totalCount,
   });
 
-  double get fillPercentage =>
-      totalCount > 0 ? filledCount / totalCount : 0.0;
+  double get fillPercentage => totalCount > 0 ? filledCount / totalCount : 0.0;
 }

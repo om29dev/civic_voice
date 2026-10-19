@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// GUIDED SUBMISSION SCREEN — WebView with step-by-step guided portal assistant
+// GUIDED SUBMISSION SCREEN - WebView with step-by-step guided portal assistant
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import 'dart:convert';

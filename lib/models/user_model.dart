@@ -43,48 +43,48 @@ enum IndianState {
 
 extension IndianStateEx on IndianState {
   String get label => switch (this) {
-        IndianState.andhraPradesh         => 'Andhra Pradesh',
-        IndianState.arunachalPradesh      => 'Arunachal Pradesh',
-        IndianState.assam                 => 'Assam',
-        IndianState.bihar                 => 'Bihar',
-        IndianState.chhattisgarh          => 'Chhattisgarh',
-        IndianState.goa                   => 'Goa',
-        IndianState.gujarat               => 'Gujarat',
-        IndianState.haryana               => 'Haryana',
-        IndianState.himachalPradesh       => 'Himachal Pradesh',
-        IndianState.jharkhand             => 'Jharkhand',
-        IndianState.karnataka             => 'Karnataka',
-        IndianState.kerala                => 'Kerala',
-        IndianState.madhyaPradesh         => 'Madhya Pradesh',
-        IndianState.maharashtra           => 'Maharashtra',
-        IndianState.manipur               => 'Manipur',
-        IndianState.meghalaya             => 'Meghalaya',
-        IndianState.mizoram               => 'Mizoram',
-        IndianState.nagaland              => 'Nagaland',
-        IndianState.odisha                => 'Odisha',
-        IndianState.punjab                => 'Punjab',
-        IndianState.rajasthan             => 'Rajasthan',
-        IndianState.sikkim                => 'Sikkim',
-        IndianState.tamilNadu             => 'Tamil Nadu',
-        IndianState.telangana             => 'Telangana',
-        IndianState.tripura               => 'Tripura',
-        IndianState.uttarPradesh          => 'Uttar Pradesh',
-        IndianState.uttarakhand           => 'Uttarakhand',
-        IndianState.westBengal            => 'West Bengal',
-        IndianState.andamanNicobar        => 'Andaman & Nicobar Islands',
-        IndianState.chandigarh            => 'Chandigarh',
-        IndianState.dadraHaveliDamanDiu   => 'Dadra & Nagar Haveli and Daman & Diu',
-        IndianState.delhi                 => 'Delhi',
-        IndianState.jammuKashmir          => 'Jammu & Kashmir',
-        IndianState.ladakh                => 'Ladakh',
-        IndianState.lakshadweep           => 'Lakshadweep',
-        IndianState.puducherry            => 'Puducherry',
+        IndianState.andhraPradesh => 'Andhra Pradesh',
+        IndianState.arunachalPradesh => 'Arunachal Pradesh',
+        IndianState.assam => 'Assam',
+        IndianState.bihar => 'Bihar',
+        IndianState.chhattisgarh => 'Chhattisgarh',
+        IndianState.goa => 'Goa',
+        IndianState.gujarat => 'Gujarat',
+        IndianState.haryana => 'Haryana',
+        IndianState.himachalPradesh => 'Himachal Pradesh',
+        IndianState.jharkhand => 'Jharkhand',
+        IndianState.karnataka => 'Karnataka',
+        IndianState.kerala => 'Kerala',
+        IndianState.madhyaPradesh => 'Madhya Pradesh',
+        IndianState.maharashtra => 'Maharashtra',
+        IndianState.manipur => 'Manipur',
+        IndianState.meghalaya => 'Meghalaya',
+        IndianState.mizoram => 'Mizoram',
+        IndianState.nagaland => 'Nagaland',
+        IndianState.odisha => 'Odisha',
+        IndianState.punjab => 'Punjab',
+        IndianState.rajasthan => 'Rajasthan',
+        IndianState.sikkim => 'Sikkim',
+        IndianState.tamilNadu => 'Tamil Nadu',
+        IndianState.telangana => 'Telangana',
+        IndianState.tripura => 'Tripura',
+        IndianState.uttarPradesh => 'Uttar Pradesh',
+        IndianState.uttarakhand => 'Uttarakhand',
+        IndianState.westBengal => 'West Bengal',
+        IndianState.andamanNicobar => 'Andaman & Nicobar Islands',
+        IndianState.chandigarh => 'Chandigarh',
+        IndianState.dadraHaveliDamanDiu =>
+          'Dadra & Nagar Haveli and Daman & Diu',
+        IndianState.delhi => 'Delhi',
+        IndianState.jammuKashmir => 'Jammu & Kashmir',
+        IndianState.ladakh => 'Ladakh',
+        IndianState.lakshadweep => 'Lakshadweep',
+        IndianState.puducherry => 'Puducherry',
       };
 
   String get value => name;
 
-  static IndianState fromString(String value) =>
-      IndianState.values.firstWhere(
+  static IndianState fromString(String value) => IndianState.values.firstWhere(
         (e) => e.name == value,
         orElse: () => IndianState.delhi,
       );
@@ -108,7 +108,7 @@ class UserModel {
   /// True for unauthenticated/browse-only users.
   final bool isGuest;
 
-  /// Optional Aadhaar number (stored masked — last 4 digits only).
+  /// Optional Aadhaar number (stored masked - last 4 digits only).
   final String? aadhaarLastFour;
 
   /// List of service IDs bookmarked by this user.
@@ -149,9 +149,9 @@ class UserModel {
     return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
   }
 
-  bool get hasEmail  => email != null && email!.isNotEmpty;
+  bool get hasEmail => email != null && email!.isNotEmpty;
   bool get hasMobile => mobile != null && mobile!.isNotEmpty;
-  bool get hasState  => state != null;
+  bool get hasState => state != null;
 
   Map<String, dynamic> toJson() => {
         'id': id,

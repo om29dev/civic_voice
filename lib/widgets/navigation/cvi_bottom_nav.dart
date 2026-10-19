@@ -127,7 +127,7 @@ class _CVIBottomNavState extends State<CVIBottomNav>
   Widget build(BuildContext context) {
     return SafeArea(
         child: Container(
-      // Outer container — full nav bar
+      // Outer container - full nav bar
       height: 80,
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       decoration: BoxDecoration(
@@ -294,7 +294,7 @@ class _CVIBottomNavState extends State<CVIBottomNav>
 
                           const SizedBox(height: 4),
 
-                          // Label — English
+                          // Label - English
                           AnimatedDefaultTextStyle(
                             duration: const Duration(milliseconds: 200),
                             style: TextStyle(

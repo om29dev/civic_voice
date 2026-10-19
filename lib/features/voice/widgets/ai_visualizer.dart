@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../providers/voice_provider.dart';
 import '../../../core/constants/app_colors.dart';
 
-/// Sci-fi AI core visualizer — four-state animated rings + orb.
+/// Sci-fi AI core visualizer - four-state animated rings + orb.
 /// Rebuilt on every frame via AnimationController; uses CustomPainter.
 class AIVisualizer extends StatefulWidget {
   final VoiceState voiceState;

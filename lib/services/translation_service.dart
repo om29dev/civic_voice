@@ -6,12 +6,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Endpoint: https://translate.googleapis.com/translate_a/single?client=gtx
 ///
 /// All strings are joined with a sentinel separator, sent in ONE HTTP call,
-/// then split back — keeping API calls to a minimum.
+/// then split back - keeping API calls to a minimum.
 class TranslationService {
   TranslationService._();
 
-  static const _baseUrl =
-      'https://translate.googleapis.com/translate_a/single';
+  static const _baseUrl = 'https://translate.googleapis.com/translate_a/single';
 
   /// Separator used to join/split strings in a single batch request.
   /// Must not appear in any UI string.
@@ -59,7 +58,7 @@ class TranslationService {
     String targetLang,
   ) async {
     if (targetLang == 'en') {
-      // No translation needed — return source as-is
+      // No translation needed - return source as-is
       return Map.from(batch);
     }
 
@@ -78,9 +77,9 @@ class TranslationService {
         'q': joined,
       });
 
-      final response = await http
-          .get(uri, headers: {'User-Agent': 'Mozilla/5.0'})
-          .timeout(const Duration(seconds: 10));
+      final response = await http.get(uri, headers: {
+        'User-Agent': 'Mozilla/5.0'
+      }).timeout(const Duration(seconds: 10));
 
       if (response.statusCode != 200) {
         // On error: return original English texts
@@ -92,9 +91,8 @@ class TranslationService {
       // The response is: [ [ ["translated","original",...], ... ], ... ]
       // All sentence chunks are in json[0]
       final chunks = json[0] as List<dynamic>;
-      final rawTranslated = chunks
-          .map((c) => (c as List<dynamic>)[0].toString())
-          .join('');
+      final rawTranslated =
+          chunks.map((c) => (c as List<dynamic>)[0].toString()).join('');
 
       // Split back by sentinel (translation may slightly alter it, so be flexible)
       final translatedParts = _splitTranslated(rawTranslated, texts.length);
@@ -140,9 +138,8 @@ class TranslationService {
     final cached = await loadCache(targetLang);
     if (cached != null && cached.isNotEmpty) {
       // Check that cache has all keys (app may have added new strings)
-      final missingKeys = englishStrings.keys
-          .where((k) => !cached.containsKey(k))
-          .toList();
+      final missingKeys =
+          englishStrings.keys.where((k) => !cached.containsKey(k)).toList();
       if (missingKeys.isEmpty) return cached;
 
       // Translate only missing keys and merge

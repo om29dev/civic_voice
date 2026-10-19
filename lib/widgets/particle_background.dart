@@ -24,7 +24,7 @@ class _Particle {
 }
 
 /// Animated particle background using a CustomPainter.
-/// 30 slowly drifting particles — reduced from 60 for performance.
+/// 30 slowly drifting particles - reduced from 60 for performance.
 /// Wrapped in RepaintBoundary for isolation from parent widget tree.
 class ParticleBackground extends StatefulWidget {
   final Widget? child;
@@ -138,11 +138,11 @@ class _ParticlePainter extends CustomPainter {
           (p.opacity + 0.08 * sin(p.pulsePhase)).clamp(0.02, 0.55);
       final pulsedRadius = p.radius + 0.4 * sin(p.pulsePhase + pi / 4);
 
-      // Core dot only — no blur (MaskFilter.blur is GPU-expensive)
+      // Core dot only - no blur (MaskFilter.blur is GPU-expensive)
       corePaint.color = p.color.withValues(alpha: pulsedOpacity);
       canvas.drawCircle(Offset(p.x, p.y), pulsedRadius, corePaint);
     }
-    // NOTE: Connection lines removed — O(n²) loop was a major ANR cause
+    // NOTE: Connection lines removed - O(n²) loop was a major ANR cause
   }
 
   @override

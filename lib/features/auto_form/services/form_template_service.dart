@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// FORM TEMPLATE SERVICE — JSON-based dynamic form template engine
+// FORM TEMPLATE SERVICE - JSON-based dynamic form template engine
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import 'dart:convert';

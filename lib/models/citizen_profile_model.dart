@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-/// Comprehensive citizen profile model — the single source of truth
+/// Comprehensive citizen profile model - the single source of truth
 /// for all user demographic and identity data, persisted to DynamoDB.
 @immutable
 class CitizenProfileModel {
@@ -33,7 +33,7 @@ class CitizenProfileModel {
   final List<String> appliedSchemes;
 
   // ── NEW: Document IDs (masked) ─────────────────────────────────────────────
-  final String? aadhaarLastFour; // Only last 4 digits — e.g. "5678"
+  final String? aadhaarLastFour; // Only last 4 digits - e.g. "5678"
   final String? panMasked; // e.g. "ABCDE****F"
   final String? rationCardNumber; // masked last 4
 

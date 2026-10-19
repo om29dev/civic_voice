@@ -5,7 +5,7 @@ import '../../providers/services_provider.dart';
 
 // ═════════════════════════════════════════════════════════════════════════════
 // APP INITIALIZER
-// Orchestrates startup — run once before runApp.
+// Orchestrates startup - run once before runApp.
 // ═════════════════════════════════════════════════════════════════════════════
 
 class AppInitializer {
@@ -41,7 +41,7 @@ class AppInitializer {
     // ── 4. Sync TTS with saved language ───────────────────────────────────
     await voiceProvider?.setLanguage(savedLang);
 
-    // ServicesProvider loads on construction — no need to call loadServices() again.
+    // ServicesProvider loads on construction - no need to call loadServices() again.
   }
 
   /// Mark onboarding as complete.

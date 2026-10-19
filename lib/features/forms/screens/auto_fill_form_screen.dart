@@ -1,4 +1,4 @@
-// AUTO FILL FORM SCREEN — AWS-backed AI auto-filled government forms
+// AUTO FILL FORM SCREEN - AWS-backed AI auto-filled government forms
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -637,7 +637,7 @@ class _AutoFillFormScreenState extends State<AutoFillFormScreen> {
                                 ),
                               ),
                               Text(
-                                hasValue ? value : '—',
+                                hasValue ? value : '-',
                                 style: GoogleFonts.outfit(
                                   color: hasValue
                                       ? Colors.white
@@ -982,7 +982,7 @@ class _FormFieldCard extends StatelessWidget {
           if (!hasValue && field.isRequired) ...[
             const SizedBox(height: 4),
             Text(
-              'Not found in documents — enter manually',
+              'Not found in documents - enter manually',
               style: GoogleFonts.outfit(
                 color: const Color(0xFFE65100),
                 fontSize: 10,

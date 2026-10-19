@@ -21,7 +21,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/router/app_router.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// VOICE SCREEN — Bharat Silicon Design
+// VOICE SCREEN - Bharat Silicon Design
 // ═══════════════════════════════════════════════════════════════════════════════
 
 class VoiceScreen extends StatefulWidget {
@@ -456,12 +456,12 @@ class _ConversationArea extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!conv.hasMessages && !conv.isLoading) {
-      // Idle state — greeting + mic
+      // Idle state - greeting + mic
       return Consumer<ConversationProvider>(
         builder: (context, conv, _) => SingleChildScrollView(
           child: Column(
             children: [
-              // Greeting section — isolated repaint boundary
+              // Greeting section - isolated repaint boundary
               RepaintBoundary(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
@@ -507,7 +507,7 @@ class _ConversationArea extends StatelessWidget {
                           .fadeIn(delay: 200.ms)
                           .slideY(begin: 0.05, end: 0),
                       const SizedBox(height: 12),
-                      // Suggestion chips — no per-chip animations
+                      // Suggestion chips - no per-chip animations
                       RepaintBoundary(
                         child: SingleChildScrollView(
                           scrollDirection: Axis.horizontal,

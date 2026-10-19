@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Service icon tile — colored square with icon, used in service grids/lists.
+/// Service icon tile - colored square with icon, used in service grids/lists.
 /// 56px by default, 16px border radius, service color at:
 ///   12% opacity for background, 100% for icon, 25% for border.
 class ServiceIconTile extends StatelessWidget {

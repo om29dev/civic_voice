@@ -493,7 +493,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
           if (lang.translationError != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
-              child: Text('Translation failed — showing English',
+              child: Text('Translation failed - showing English',
                   style: GoogleFonts.poppins(
                       fontSize: 11, color: AppColors.semanticError)),
             ),
@@ -626,7 +626,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen>
             final Uri emailLaunchUri = Uri(
                 scheme: 'mailto',
                 path: 'support@civicvoice.in',
-                queryParameters: {'subject': 'Bug Report — CVI App'});
+                queryParameters: {'subject': 'Bug Report - CVI App'});
             if (await canLaunchUrl(emailLaunchUri)) {
               await launchUrl(emailLaunchUri);
             }
