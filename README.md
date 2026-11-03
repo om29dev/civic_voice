@@ -152,7 +152,7 @@ civic_voice/
 
 ## License
 
-Distributed under the MIT License. See [View License] for details.
+Distributed under the MIT License. See [View License](LICENSE.md) for details.
 
 <div align="center">
   <i>❤️ Built for Bharat: empowering every citizen, one voice at a time.</i>
