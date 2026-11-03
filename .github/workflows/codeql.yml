@@ -24,7 +24,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ java-kotlin, actions ]
+        include:
+          - language: actions
+            build-mode: none
+          - language: java-kotlin
+            build-mode: manual
 
     steps:
       - name: Checkout repository
@@ -44,6 +48,17 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Cache Gradle packages
+        if: matrix.language == 'java-kotlin'
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('android/gradle/wrapper/gradle-wrapper.properties', 'android/**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
       - name: Prepare Flutter and Android dependencies
         if: matrix.language == 'java-kotlin'
         run: flutter pub get
@@ -52,9 +67,11 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
 
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+      - name: Build Android for CodeQL
+        if: matrix.build-mode == 'manual'
+        run: flutter build apk --debug
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
