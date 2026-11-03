@@ -119,3 +119,7 @@ aws-exports.js
 awsconfiguration.json
 amplifyconfiguration.json
 
+
+# Scheme Datasets (large files / user datasets)
+cleaned_myscheme_dataset.csv
+assets/data/cleaned_myscheme_dataset.csv

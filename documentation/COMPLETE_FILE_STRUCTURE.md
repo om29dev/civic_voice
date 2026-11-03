@@ -340,8 +340,7 @@ Bootstrap file. Runs `AwsAmplifyService.initialize()`, starts `CsvSchemeService`
 | `amplify/backend/storage/s363cedb16/cli-inputs.json` | S3 bucket configuration |
 | `amplify/backend/backend-config.json` | Backend resource registry |
 | `amplify/team-provider-info.json` | Environment provider info |
-| `src/amplifyconfiguration.json` | Runtime Amplify config (UserPool IDs, AppSync endpoint, S3 bucket) |
-| `lib/amplifyconfiguration.dart` | Dart wrapper around `src/amplifyconfiguration.json` |
+| `lib/amplifyconfiguration.dart` | Runtime AWS Amplify configuration for Flutter client |
 
 ---
 

@@ -1,0 +1,108 @@
+name: Deploy Amplify Backend
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'amplify/backend/**'
+      - 'amplify/team-provider-info.json'
+      - 'amplify/cli.json'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Amplify backend environment to deploy'
+        required: true
+        type: string
+        default: 'dev'
+
+concurrency:
+  group: amplify-deployment
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-backend:
+    name: Deploy Cloud Backend (Amplify Push)
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_SDK_LOAD_CONFIG: "1"
+      AMPLIFY_CLI_FORCE_COLOR: "0"
+      CI: "true"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+        continue-on-error: true
+
+      - name: Install Amplify CLI
+        run: npm install -g @aws-amplify/cli
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ap-south-1
+
+      - name: Configure AWS profile for Amplify CLI
+        run: |
+          mkdir -p ~/.aws
+          cat <<EOF > ~/.aws/credentials
+          [default]
+          aws_access_key_id = ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key = ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          EOF
+          if [ -n "${{ secrets.AWS_SESSION_TOKEN }}" ]; then
+            echo "aws_session_token = ${{ secrets.AWS_SESSION_TOKEN }}" >> ~/.aws/credentials
+          fi
+
+          cat <<EOF > ~/.aws/config
+          [default]
+          region = ap-south-1
+          output = json
+          EOF
+
+      - name: Configure headless Amplify project environment
+        run: |
+          TARGET_ENV="${{ inputs.environment }}"
+          if [ -z "$TARGET_ENV" ]; then
+            TARGET_ENV="dev"
+          fi
+
+          mkdir -p amplify/.config
+
+          cat <<EOF > amplify/.config/local-env-info.json
+          {
+            "projectPath": "$PWD",
+            "defaultEditor": "none",
+            "envName": "$TARGET_ENV"
+          }
+          EOF
+
+          cat <<EOF > amplify/.config/local-aws-info.json
+          {
+            "$TARGET_ENV": {
+              "configLevel": "project",
+              "useProfile": true,
+              "profileName": "default"
+            }
+          }
+          EOF
+
+      - name: Inspect Amplify backend status
+        run: amplify status
+
+      - name: Deploy backend resources (amplify push)
+        run: amplify push --yes
+

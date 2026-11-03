@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 // Note: We'll use the standard webview_flutter which supports file selection on Android/iOS natively if configured,
-// but for "Antigravity" style automation, we'll use JS Injection to guide the user or auto-select.
+// but for Browser style automation, we'll use JS Injection to guide the user or auto-select.
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/constants/app_colors.dart';

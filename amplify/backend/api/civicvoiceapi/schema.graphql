@@ -47,3 +47,21 @@ type CitizenProfile @model @auth(rules: [{allow: owner}]) {
   is_disabled: Boolean
   disability_type: String
 }
+
+type CivicScheme @model @auth(rules: [
+  { allow: private, operations: [read, create, update, delete] }
+]) {
+  id: ID!
+  title: String!
+  shortTitle: String
+  description: String!
+  category: String!
+  level: String
+  schemeFor: String
+  beneficiaryState: String
+  nodalMinistry: String
+  tags: [String]
+  eligibilityCriteria: [String]
+  applicationProcess: String
+  closeDate: String
+}

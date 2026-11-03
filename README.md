@@ -150,11 +150,21 @@ civic_voice/
 
 ---
 
+## Community and Contributing
+
+We welcome contributions from the community. Please review the following guidelines before participating:
+
+- [Contributing Guidelines](CONTRIBUTING.md): Setup instructions, coding standards, and PR workflows.
+- [Security Policy](SECURITY.md): Vulnerability reporting procedures and security architecture.
+- [Code of Conduct](CODE_OF_CONDUCT.md): Community standards and pledge.
+
+---
+
 ## License
 
 Distributed under the MIT License.
 [View License](LICENSE) for details.
 
 <div align="center">
-  <i>❤️ Built for Bharat: empowering every citizen, one voice at a time.</i>
+  <i>Built for Bharat: empowering every citizen, one voice at a time.</i>
 </div>

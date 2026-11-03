@@ -1,11 +1,12 @@
 import 'package:flutter/foundation.dart';
 import '../models/scheme_discovery_model.dart';
-// Future AWS Integration Point: Amazon OpenSearch Service for blazing-fast full-text and vector search of schemes.
+import '../core/services/dynamodb_scheme_discovery_service.dart';
 
 class SchemeDiscoveryProvider with ChangeNotifier {
   List<SchemeDiscoveryModel> _allSchemes = [];
   List<SchemeDiscoveryModel> _filteredSchemes = [];
-  
+
+  List<SchemeDiscoveryModel> get allSchemes => _allSchemes;
   List<SchemeDiscoveryModel> get filteredSchemes => _filteredSchemes;
 
   bool _isLoading = false;
@@ -14,72 +15,112 @@ class SchemeDiscoveryProvider with ChangeNotifier {
   String _currentCategoryFilter = 'All';
   String get currentCategoryFilter => _currentCategoryFilter;
 
-  final List<String> categories = ['All', 'Agriculture', 'Education', 'Healthcare', 'Housing', 'Business'];
+  String _currentSearchQuery = '';
+  String get currentSearchQuery => _currentSearchQuery;
+
+  List<String> _categories = [
+    'All',
+    'Agriculture, Rural & Environment',
+    'Banking, Financial Services and Insurance',
+    'Business & Entrepreneurship',
+    'Education & Learning',
+    'Health & Wellness',
+    'Housing & Shelter',
+    'Public Safety, Law & Justice',
+    'Science, IT & Communications',
+    'Skills & Employment',
+    'Social welfare & Empowerment',
+    'Sports & Culture',
+    'Transport & Infrastructure',
+    'Travel & Tourism',
+    'Utility & Sanitation',
+    'Women and Child',
+  ];
+
+  List<String> get categories => _categories;
+
+  int get totalCount => _allSchemes.length;
 
   SchemeDiscoveryProvider() {
-    _loadMockSchemes();
+    loadSchemes();
   }
 
-  Future<void> _loadMockSchemes() async {
+  Future<void> loadSchemes({bool forceReload = false}) async {
     _isLoading = true;
     notifyListeners();
 
-    await Future.delayed(const Duration(milliseconds: 800)); // Network simulation
-    _allSchemes = [
-      SchemeDiscoveryModel(
-        id: '1', title: 'PM Kisan Samman Nidhi', category: 'Agriculture', 
-        description: 'Financial support of ₹6000 per year to farmers.', 
-        eligibilityCriteria: ['Must own agricultural land'], applicationProcess: 'Apply online via PM Kisan portal.'
-      ),
-      SchemeDiscoveryModel(
-        id: '2', title: 'Sukanya Samriddhi Yojana', category: 'Education', 
-        description: 'Savings scheme for the girl child.', 
-        eligibilityCriteria: ['Girl child below 10 years'], applicationProcess: 'Open account in Post Office or Banks.'
-      ),
-      SchemeDiscoveryModel(
-        id: '3', title: 'Ayushman Bharat', category: 'Healthcare', 
-        description: 'Health cover of ₹5 lakhs per family per year.', 
-        eligibilityCriteria: ['SECC 2011 listed families'], applicationProcess: 'Verify eligibility and get e-card at hospital.'
-      ),
-      SchemeDiscoveryModel(
-        id: '4', title: 'PMAY-G', category: 'Housing', 
-        description: 'Financial assistance to build pucca houses in rural areas.', 
-        eligibilityCriteria: ['Houseless or living in kacha houses'], applicationProcess: 'Apply via GP or local administration.'
-      ),
-      SchemeDiscoveryModel(
-        id: '5', title: 'MUDRA Yojana', category: 'Business', 
-        description: 'Loans up to ₹10 Lakhs for non-corporate micro-enterprises.', 
-        eligibilityCriteria: ['Indian Citizen with business plan'], applicationProcess: 'Apply via Banks/NBFCs.'
-      ),
-    ];
-    _filteredSchemes = _allSchemes;
-    _isLoading = false;
-    notifyListeners();
+    try {
+      final schemes = await DynamoDbSchemeDiscoveryService.loadSchemes(
+        forceReload: forceReload,
+      );
+
+      _allSchemes = schemes;
+
+      if (_allSchemes.isNotEmpty) {
+        final uniqueCats = <String>{};
+        for (final s in _allSchemes) {
+          if (s.category.trim().isNotEmpty && s.category != 'General') {
+            uniqueCats.add(s.category.trim());
+          }
+        }
+
+        if (uniqueCats.isNotEmpty) {
+          final sorted = uniqueCats.toList()..sort();
+          _categories = ['All', ...sorted];
+        }
+      }
+
+      _applyFilters();
+    } catch (e) {
+      debugPrint('SchemeDiscoveryProvider load error: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   void searchSchemes(String query) {
-    if (query.isEmpty) {
-      filterByCategory(_currentCategoryFilter);
-      return;
-    }
-    
-    _filteredSchemes = _allSchemes.where((s) {
-      final matchesQuery = s.title.toLowerCase().contains(query.toLowerCase()) || 
-                           s.description.toLowerCase().contains(query.toLowerCase());
-      final matchesCategory = _currentCategoryFilter == 'All' || s.category == _currentCategoryFilter;
-      return matchesQuery && matchesCategory;
-    }).toList();
-    
+    _currentSearchQuery = query.trim().toLowerCase();
+    _applyFilters();
     notifyListeners();
   }
 
   void filterByCategory(String category) {
     _currentCategoryFilter = category;
-    if (category == 'All') {
-      _filteredSchemes = _allSchemes;
-    } else {
-      _filteredSchemes = _allSchemes.where((s) => s.category == category).toList();
-    }
+    _applyFilters();
     notifyListeners();
+  }
+
+  void _applyFilters() {
+    List<SchemeDiscoveryModel> list = _allSchemes;
+
+    // Category filter
+    if (_currentCategoryFilter != 'All') {
+      final targetCat = _currentCategoryFilter.toLowerCase();
+      list = list.where((s) {
+        final schemeCat = s.category.toLowerCase();
+        return schemeCat == targetCat ||
+            schemeCat.contains(targetCat) ||
+            targetCat.contains(schemeCat);
+      }).toList();
+    }
+
+    // Keyword search filter
+    if (_currentSearchQuery.isNotEmpty) {
+      final q = _currentSearchQuery;
+      list = list.where((s) {
+        if (s.title.toLowerCase().contains(q)) return true;
+        if (s.shortTitle.toLowerCase().contains(q)) return true;
+        if (s.description.toLowerCase().contains(q)) return true;
+        if (s.category.toLowerCase().contains(q)) return true;
+        if (s.nodalMinistry.toLowerCase().contains(q)) return true;
+        if (s.schemeFor.toLowerCase().contains(q)) return true;
+        if (s.beneficiaryState.toLowerCase().contains(q)) return true;
+        if (s.tags.any((t) => t.toLowerCase().contains(q))) return true;
+        return false;
+      }).toList();
+    }
+
+    _filteredSchemes = list;
   }
 }

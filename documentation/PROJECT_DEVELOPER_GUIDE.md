@@ -45,7 +45,7 @@ amplify push
 amplify pull
 ```
 
-The `src/amplifyconfiguration.json` contains public-facing AWS identifiers (pool IDs, endpoint URLs) — these are safe to commit.
+The `lib/amplifyconfiguration.dart` contains public-facing AWS identifiers.
 
 ---
 
@@ -302,7 +302,7 @@ flutter test test/security_and_efficiency_test.dart
 - Source control
 
 **Safe to commit**:
-- `src/amplifyconfiguration.json` — Cognito Pool IDs, AppSync endpoint, S3 bucket name (these are public identifiers, not secrets)
+- `lib/amplifyconfiguration.dart` - Cognito Pool IDs, AppSync endpoint, S3 bucket name (these are public identifiers, not secrets)
 - `amplify/team-provider-info.json` — public team config
 
 **Managed by AWS**:

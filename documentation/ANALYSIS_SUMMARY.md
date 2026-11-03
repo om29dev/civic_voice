@@ -1,7 +1,5 @@
 # Civic Voice — Complete Analysis Summary
 
-> Generated: 2026-11-03 | Analyzed by: Antigravity Senior Architect
-
 ---
 
 ## Totals

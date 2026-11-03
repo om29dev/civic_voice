@@ -21,18 +21,20 @@
 
 import 'package:amplify_core/amplify_core.dart' as amplify_core;
 import 'CitizenProfile.dart';
+import 'CivicScheme.dart';
 import 'User.dart';
 import 'UserDocument.dart';
 
 export 'CitizenProfile.dart';
+export 'CivicScheme.dart';
 export 'User.dart';
 export 'UserDocument.dart';
 
 class ModelProvider implements amplify_core.ModelProviderInterface {
   @override
-  String version = "0ad445f3846697dff9a145a21546d648";
+  String version = "5884f9f528288e7eba280f48ff813480";
   @override
-  List<amplify_core.ModelSchema> modelSchemas = [CitizenProfile.schema, User.schema, UserDocument.schema];
+  List<amplify_core.ModelSchema> modelSchemas = [CitizenProfile.schema, CivicScheme.schema, User.schema, UserDocument.schema];
   @override
   List<amplify_core.ModelSchema> customTypeSchemas = [];
   static final ModelProvider _instance = ModelProvider();
@@ -43,6 +45,8 @@ class ModelProvider implements amplify_core.ModelProviderInterface {
     switch(modelName) {
       case "CitizenProfile":
         return CitizenProfile.classType;
+      case "CivicScheme":
+        return CivicScheme.classType;
       case "User":
         return User.classType;
       case "UserDocument":
