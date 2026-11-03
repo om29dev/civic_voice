@@ -65,7 +65,9 @@ jobs:
 
       - name: Install Android NDK
         if: matrix.language == 'java-kotlin'
-        run: echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "ndk;28.2.13676358"
+        run: |
+          yes | sdkmanager --licenses > /dev/null 2>&1 || true
+          sdkmanager --install "ndk;28.2.13676358" || true
 
       - name: Prepare Flutter and Android dependencies
         if: matrix.language == 'java-kotlin'
