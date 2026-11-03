@@ -27,14 +27,14 @@ dependencies:
   # Animations & UI
   lottie: ^3.1.0
   flutter_animate: ^4.5.0
-  animate_do: ^4.2.0
+  animate_do: ^5.1.0
   animated_text_kit: ^4.2.2
-  shimmer: ^3.0.0
+  shimmer: ^4.0.0
   confetti: ^0.8.0
   flutter_markdown: ^0.7.6
 
   # Visual Effects
-  glassmorphism: ^3.0.0
+  glassmorphism: ^4.0.0
 
   # Design & Icons
   google_fonts: ^8.0.2
