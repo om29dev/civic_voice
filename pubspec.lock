@@ -1261,6 +1261,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.0"
+  pedantic:
+    dependency: transitive
+    description:
+      name: pedantic
+      sha256: "67fc27ed9639506c856c840ccce7594d0bdcd91bc8d53d6e52359449a1d50602"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.11.1"
   permission_handler:
     dependency: "direct main"
     description:
@@ -1558,10 +1566,10 @@ packages:
     dependency: "direct main"
     description:
       name: speech_to_text
-      sha256: f2fabd017b5cb07f4e06d496b2d4b957e39534bc848f92b1e6acac80a10f4967
+      sha256: c07557664974afa061f221d0d4186935bea4220728ea9446702825e8b988db04
       url: "https://pub.dev"
     source: hosted
-    version: "7.5.0"
+    version: "7.3.0"
   speech_to_text_platform_interface:
     dependency: transitive
     description:
