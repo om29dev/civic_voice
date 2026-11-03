@@ -65,7 +65,7 @@ dependencies:
   countup: ^0.1.3
   csv: ^7.2.0
 
-  timezone: any
+  timezone: 0.11.2
 
   # Security (Document Vault)
   flutter_secure_storage: ^10.0.0
