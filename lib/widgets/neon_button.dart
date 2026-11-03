@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../core/constants/app_colors.dart';
+import 't_text.dart';
 
 /// A premium neon CTA button with gradient fill, scale press animation,
 /// shimmer loading state, and an outlined variant.
@@ -184,7 +185,7 @@ class _NeonButtonState extends State<NeonButton>
           Icon(widget.icon, color: textColor, size: 20),
           const SizedBox(width: 10),
         ],
-        Text(widget.label, style: style),
+        TText(widget.label, style: style),
       ],
     );
   }

@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/service_model.dart';
 import '../data/mock/services_data.dart';
-import '../data/csv_schemes_loader.dart';
+import '../core/services/dynamodb_scheme_discovery_service.dart';
 
 /// Manages government service data, selection, progress, and recent views.
 class ServicesProvider extends ChangeNotifier {
@@ -59,14 +59,14 @@ class ServicesProvider extends ChangeNotifier {
       // Load static curated mocks
       final mocks = MockServicesData.all;
 
-      // Load dynamic from CSV
-      final csvData = await CsvSchemesLoader.load();
+      // Load dynamic schemes from DynamoDB service
+      final dynamoData = await DynamoDbSchemeDiscoveryService.loadServiceModels();
 
       // Merge, giving priority to mocks if there are ID collisions
       final existingIds = mocks.map((m) => m.id).toSet();
-      final filteredCsv = csvData.where((s) => !existingIds.contains(s.id));
+      final filteredDynamo = dynamoData.where((s) => !existingIds.contains(s.id));
 
-      _allServices = [...mocks, ...filteredCsv];
+      _allServices = [...mocks, ...filteredDynamo];
 
       _applyFilters();
 

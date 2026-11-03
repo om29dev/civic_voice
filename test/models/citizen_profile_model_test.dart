@@ -19,7 +19,7 @@ void main() {
     });
 
     test('computedAge falls back to stored age when dateOfBirth is null', () {
-      const profile = CitizenProfileModel(
+      final profile = CitizenProfileModel(
         id: 'user_2',
         fullName: 'Priya Sharma',
         mobile: '9876543211',
@@ -96,7 +96,7 @@ void main() {
     });
 
     test('copyWith creates modified clone while keeping original fields intact', () {
-      const original = CitizenProfileModel(
+      final original = CitizenProfileModel(
         id: 'user_6',
         fullName: 'Original Name',
         mobile: '9876543215',

@@ -3,21 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../providers/language_provider.dart';
 
-/// Drop-in replacement for [Text] that auto-translates via Google Translate.
-///
-/// Usage:
-///   // Before:
-///   Text('Quick Actions', style: ...)
-///   // After:
-///   TText('Quick Actions', style: ...)
-///
-/// How it works:
-///   1. If current language is English, renders [text] directly.
-///   2. If a translation is already cached, renders it instantly.
-///   3. Otherwise, renders English while LanguageProvider fetches translation in the background.
-///   4. Rebuilds automatically when translation completes (via LanguageProvider.notifyListeners).
-///
-/// The widget itself is stateless - all state lives in LanguageProvider's cache.
 class TText extends StatelessWidget {
   final String text;
   final TextStyle? style;
@@ -40,8 +25,13 @@ class TText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final lang = context.watch<LanguageProvider>();
-    final translated = lang.translateSync(text);
+    LanguageProvider? lang;
+    try {
+      lang = context.watch<LanguageProvider>();
+    } catch (_) {
+      lang = null;
+    }
+    final translated = lang?.translateSync(text) ?? text;
 
     return Text(
       translated,

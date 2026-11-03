@@ -9,6 +9,7 @@ import '../../../core/router/app_router.dart';
 import '../../../models/service_model.dart';
 import '../../../providers/analytics_provider.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../providers/citizen_profile_provider.dart';
 import '../../../providers/conversation_provider.dart';
 import '../../../widgets/t_text.dart';
 import '../../../providers/services_provider.dart';
@@ -16,10 +17,6 @@ import '../../../providers/user_provider.dart';
 import '../../../providers/notification_provider.dart';
 import '../../../widgets/flag/waving_flag_widget.dart';
 import '../../../providers/language_provider.dart';
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// MAIN DASHBOARD SCREEN (DATA-RICH)
-// ═══════════════════════════════════════════════════════════════════════════════
 
 class MainDashboardScreen extends StatefulWidget {
   const MainDashboardScreen({super.key});
@@ -83,7 +80,6 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.only(bottom: 120),
             children: [
-              // Tricolor bar at very top
               const SizedBox(
                 height: 3,
                 child: Row(children: [
@@ -118,11 +114,22 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
     );
   }
 
-  // ─── Section 1: Hero Greeting ───────────────────────────────────────────────
   Widget _buildHeroGreeting() {
     final auth = context.watch<AuthProvider>();
-    final userName = auth.currentUser?.name ?? 'Citizen';
-    final userInitials = auth.currentUser?.initials ?? 'C';
+    final citizenProfile = context.watch<CitizenProfileProvider>().profile;
+    final rawProfileName = citizenProfile?.fullName.trim() ?? '';
+    final userName = (rawProfileName.isNotEmpty && rawProfileName != 'Citizen')
+        ? rawProfileName
+        : (auth.currentUser?.name ?? 'Citizen');
+    final userInitials = userName.isNotEmpty
+        ? userName
+            .trim()
+            .split(RegExp(r'\s+'))
+            .where((p) => p.isNotEmpty)
+            .take(2)
+            .map((p) => p[0].toUpperCase())
+            .join()
+        : (auth.currentUser?.initials ?? 'C');
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -164,7 +171,6 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
               ],
             ),
           ),
-          // Notifications Bell
           Consumer<NotificationProvider>(
             builder: (context, np, _) => GestureDetector(
               onTap: () => context.push(Routes.notifications),
@@ -198,7 +204,6 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
               ),
             ),
           ).animate().scale(delay: 350.ms, curve: Curves.easeOutBack),
-          // User Avatar
           GestureDetector(
             onTap: () => context.go(Routes.profile),
             child: Container(
@@ -223,7 +228,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
                 child: Text(
                   userInitials,
                   style: GoogleFonts.poppins(
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.w700,
                       color: Colors.white),
                 ),
@@ -235,7 +240,6 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
     );
   }
 
-  // ─── Section 2: Stats Row ───────────────────────────────────────────────────
   Widget _buildStatsRow() {
     return Consumer2<AnalyticsProvider, UserProvider>(
       builder: (context, analytics, userProv, child) {
@@ -251,7 +255,6 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
                   children: [
                     _StatCard(
                         label: 'Queries Today',
-                        hindiLabel: 'आज की बातें',
                         value: '${analytics.queriesCount}',
                         icon: Icons.forum_rounded,
                         color: AppColors.saffron,
@@ -259,7 +262,6 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
                     const SizedBox(height: 12),
                     _StatCard(
                         label: 'Active Apps',
-                        hindiLabel: 'सक्रिय आवेदन',
                         value: '$activeApps',
                         icon: Icons.pending_actions_rounded,
                         color: const Color(0xFF138808),
@@ -273,7 +275,6 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
                   children: [
                     _StatCard(
                         label: 'Services Explored',
-                        hindiLabel: 'देखी गई सेवाएं',
                         value: '${analytics.servicesExploredCount}',
                         icon: Icons.travel_explore_rounded,
                         color: AppColors.gold,
@@ -281,7 +282,6 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
                     const SizedBox(height: 12),
                     _StatCard(
                         label: 'Saved Docs',
-                        hindiLabel: 'सहेजे दस्तावेज़',
                         value: '$savedDocs',
                         icon: Icons.folder_special_rounded,
                         color: const Color(0x4DFFFFFF),
@@ -296,7 +296,6 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
     );
   }
 
-  // ─── Section 3: Quick Actions ───────────────────────────────────────────────
   Widget _buildQuickActions() {
     final actions = [
       (
@@ -368,47 +367,40 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
     );
   }
 
-  // ─── Section 3.5: Smart Features ──────────────────────────────────────────────
   Widget _buildSmartFeatures() {
     final features = [
       (
         'Voice Complaint',
-        'शिकायत दर्ज',
         Icons.record_voice_over_rounded,
         AppColors.accentBlue,
         Routes.voiceComplaint
       ),
       (
         'AI Scanner',
-        'दस्तावेज़ स्कैन',
         Icons.document_scanner_rounded,
         AppColors.accentTeal,
         Routes.documentScanner
       ),
       (
         'Scheme Finder',
-        'योजना खोजें',
         Icons.search_rounded,
         AppColors.gold,
         Routes.schemeDiscovery
       ),
       (
         'App Tracker',
-        'स्थिति',
         Icons.track_changes_rounded,
         AppColors.emeraldLight,
         Routes.appTracker
       ),
       (
         'Offline Guide',
-        'ऑफ़लाइन',
         Icons.download_done_rounded,
         AppColors.accentPurple,
         Routes.offlineGuidance
       ),
       (
         'Profile Recs',
-        'प्रोफाइल',
         Icons.person_search_rounded,
         AppColors.accentAmber,
         Routes.citizenProfile
@@ -438,13 +430,14 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
             final f = features[index];
             return GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: () => context.push(f.$5),
+              onTap: () => context.push(f.$4),
               child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E1814),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: f.$4.withValues(alpha: 0.3),
+                    color: f.$3.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
@@ -454,32 +447,23 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: f.$4.withValues(alpha: 0.12),
+                        color: f.$3.withValues(alpha: 0.12),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(f.$3, color: f.$4, size: 24),
+                      child: Icon(f.$2, color: f.$3, size: 24),
                     ),
                     const SizedBox(height: 8),
                     TText(
                       f.$1,
                       textAlign: TextAlign.center,
-                      maxLines: 1,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.poppins(
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
                         color: AppColors.textPrimary,
                       ),
                     ),
-                    if (context.watch<LanguageProvider>().languageCode == 'hi')
-                      Text(
-                        f.$2,
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        style: GoogleFonts.notoSansDevanagari(
-                          fontSize: 8,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
                   ],
                 ),
               ),
@@ -493,7 +477,6 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
     );
   }
 
-  // ─── Section 4: Popular Services Grid ───────────────────────────────────────
   Widget _buildPopularServices() {
     final services = context.watch<ServicesProvider>().allServices;
     final popular = services
@@ -548,20 +531,34 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
     );
   }
 
-  // ─── Section 5: Gov Schemes Banner ──────────────────────────────────────────
   Widget _buildGovSchemesBanner() {
     final schemes = <(String, String, String)>[
-      ('PM Kisan Samman Nidhi', '₹6,000/year to farmers', 'Ongoing'),
-      ('Ayushman Bharat', 'Free ₹5L health cover', '31 Mar'),
+      ('PM Kisan Samman Nidhi', 'INR 6,000/year to farmers', 'Ongoing'),
+      ('Ayushman Bharat', 'Free INR 5L health cover', '31 Mar'),
       ('Pradhan Mantri Awas Yojana', 'Housing for All', 'Ongoing'),
     ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: _SectionHeading('Government Schemes'),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const _SectionHeading('Government Schemes'),
+              GestureDetector(
+                onTap: () => context.push(Routes.schemeDiscovery),
+                child: TText(
+                  'Explore All',
+                  style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.saffron),
+                ),
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 16),
         SizedBox(
@@ -586,7 +583,6 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
     );
   }
 
-  // ─── Section 6: Recent Activity Timeline ────────────────────────────────────
   Widget _buildRecentActivity() {
     return Consumer<ConversationProvider>(
       builder: (context, conv, child) {
@@ -697,25 +693,20 @@ class _MainDashboardScreenState extends State<MainDashboardScreen>
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// SUBCOMPONENTS
-// ═══════════════════════════════════════════════════════════════════════════════
-
 class _StatCard extends StatelessWidget {
   final String label;
-  final String hindiLabel;
   final String value;
   final IconData icon;
   final Color color;
   final int delay;
 
-  const _StatCard(
-      {required this.label,
-      required this.hindiLabel,
-      required this.value,
-      required this.icon,
-      required this.color,
-      required this.delay});
+  const _StatCard({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+    required this.delay,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -736,7 +727,6 @@ class _StatCard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Colored top border
             SizedBox(
               height: 3,
               child: Container(
@@ -770,17 +760,14 @@ class _StatCard extends StatelessWidget {
                                 fontWeight: FontWeight.w800,
                                 color: AppColors.textPrimary,
                                 height: 1.0)),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 4),
                         TText(label,
                             style: GoogleFonts.poppins(
-                                fontSize: 10,
+                                fontSize: 11,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.textMuted),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis),
-                        Text(hindiLabel,
-                            style: GoogleFonts.notoSansDevanagari(
-                                fontSize: 9, color: AppColors.textMuted)),
                       ],
                     ),
                   )
@@ -871,9 +858,9 @@ class _PopularServiceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final serviceColor = _categoryColors[service.category] ?? AppColors.gold;
-    // Stable view count per card index (not random on every rebuild)
     final views = [2340, 5120, 1890, 4300, 3210, 1560][index % 6];
-    final hindiName = service.localizedName('hi');
+    final langCode = context.watch<LanguageProvider>().languageCode;
+    final localizedName = service.localizedName(langCode);
 
     return GestureDetector(
       onTap: () {
@@ -896,7 +883,6 @@ class _PopularServiceCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top - icon box + arrow
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -927,23 +913,15 @@ class _PopularServiceCard extends StatelessWidget {
                 ],
               ),
               const Spacer(),
-              // Bottom - name, hindi, views
               Flexible(
-                child: Text(
-                  context.watch<LanguageProvider>().languageCode == 'hi'
-                      ? (hindiName.isNotEmpty
-                          ? hindiName
-                          : service.localizedName('en'))
+                child: TText(
+                  localizedName.isNotEmpty
+                      ? localizedName
                       : service.localizedName('en'),
-                  style: context.watch<LanguageProvider>().languageCode == 'hi'
-                      ? GoogleFonts.notoSansDevanagari(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textPrimary)
-                      : GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary),
+                  style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -960,7 +938,7 @@ class _PopularServiceCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 4),
-                  Text(
+                  TText(
                     '$views views',
                     style:
                         GoogleFonts.poppins(fontSize: 9, color: AppColors.gold),
@@ -992,85 +970,88 @@ class _SchemeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        width: 260,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF1A1208), Color(0xFF0C1A0A)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+    return GestureDetector(
+      onTap: () => context.push(Routes.schemeDiscovery),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          width: 260,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF1A1208), Color(0xFF0C1A0A)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0xFF2A3D1E), width: 1),
           ),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFF2A3D1E), width: 1),
-        ),
-        child: Row(
-          children: [
-            // Left green accent bar
-            Container(width: 3, color: const Color(0xFF0A7A3E)),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0A7A3E),
-                            borderRadius: BorderRadius.circular(6),
+          child: Row(
+            children: [
+              Container(width: 3, color: const Color(0xFF0A7A3E)),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0A7A3E),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: TText('Gov Scheme',
+                                style: GoogleFonts.poppins(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white)),
                           ),
-                          child: Text('Gov Scheme',
-                              style: GoogleFonts.poppins(
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white)),
-                        ),
-                        const Icon(Icons.verified_rounded,
-                            color: Color(0xFF0A7A3E), size: 14),
-                      ],
-                    ),
-                    TText(name,
-                        style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Flexible(
-                          child: Text(benefit,
-                              style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.gold),
-                              overflow: TextOverflow.ellipsis),
-                        ),
-                        if (deadline != 'Ongoing')
-                          Text('Ends: $deadline',
-                              style: GoogleFonts.poppins(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.accentRed))
-                        else
-                          Text(deadline,
-                              style: GoogleFonts.poppins(
-                                  fontSize: 10, color: AppColors.emeraldLight)),
-                      ],
-                    ),
-                  ],
+                          const Icon(Icons.verified_rounded,
+                              color: Color(0xFF0A7A3E), size: 14),
+                        ],
+                      ),
+                      TText(name,
+                          style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Flexible(
+                            child: TText(benefit,
+                                style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.gold),
+                                overflow: TextOverflow.ellipsis),
+                          ),
+                          if (deadline != 'Ongoing')
+                            TText('Ends: $deadline',
+                                style: GoogleFonts.poppins(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.accentRed))
+                          else
+                            TText(deadline,
+                                style: GoogleFonts.poppins(
+                                    fontSize: 10,
+                                    color: AppColors.emeraldLight)),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     )
@@ -1079,61 +1060,6 @@ class _SchemeCard extends StatelessWidget {
         .slideX(begin: 0.1, end: 0);
   }
 }
-
-class _FloatingMicButton extends StatefulWidget {
-  @override
-  State<_FloatingMicButton> createState() => _FloatingMicButtonState();
-}
-
-class _FloatingMicButtonState extends State<_FloatingMicButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _pulseCtrl;
-
-  @override
-  void initState() {
-    super.initState();
-    _pulseCtrl =
-        AnimationController(vsync: this, duration: const Duration(seconds: 2))
-          ..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _pulseCtrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _pulseCtrl,
-      builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.saffron
-                    .withValues(alpha: 0.3 + 0.3 * _pulseCtrl.value),
-                blurRadius: 20 + 10 * _pulseCtrl.value,
-                spreadRadius: 2 + 4 * _pulseCtrl.value,
-              ),
-            ],
-          ),
-          child: FloatingActionButton(
-            onPressed: () => context.push(Routes.voice),
-            backgroundColor: AppColors.saffron,
-            child: const Icon(Icons.mic_rounded, size: 28, color: Colors.white),
-          ),
-        );
-      },
-    );
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// SECTION HEADING
-// ═══════════════════════════════════════════════════════════════════════════════
 
 class _SectionHeading extends StatelessWidget {
   final String title;
@@ -1144,7 +1070,7 @@ class _SectionHeading extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title,
+        TText(title,
             style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,

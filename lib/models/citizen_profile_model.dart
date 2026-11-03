@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
+import '../core/constants/profile_constants.dart';
 
 /// Comprehensive citizen profile model - the single source of truth
-/// for all user demographic and identity data, persisted to DynamoDB.
+/// for all user demographic and identity data, persisted to DynamoDB and local storage.
 @immutable
 class CitizenProfileModel {
   final String id;
@@ -10,38 +11,37 @@ class CitizenProfileModel {
   final String email;
   final String state;
 
-  // ── NEW: Location ──────────────────────────────────────────────────────────
+  // Location
   final String? district;
   final String? pincode;
 
-  // ── NEW: Demographics ──────────────────────────────────────────────────────
+  // Demographics
   final DateTime? dateOfBirth;
-  final String? gender; // Male / Female / Other / Prefer not to say
-  final String? maritalStatus; // Single / Married / Widowed / Divorced
+  final String? gender;
+  final String? maritalStatus;
 
-  // ── NEW: Financial & Social ────────────────────────────────────────────────
-  final String?
-      occupation; // Salaried / Self-Employed / Farmer / Student / Unemployed / Other
-  final String? annualIncomeRange; // <1L / 1L-3L / 3L-5L / 5L-10L / >10L
-  final String? casteCategory; // General / OBC / SC / ST / NT-DNT
+  // Financial & Social
+  final String? occupation;
+  final String? annualIncomeRange;
+  final String? casteCategory;
 
-  // ── LEGACY: kept for backwards-compat ────────────────────────────────────
+  // Numeric fields kept in sync with dateOfBirth and annualIncomeRange
   final double income;
   final int age;
   final bool isKycVerified;
   final List<String> linkedDocuments;
   final List<String> appliedSchemes;
 
-  // ── NEW: Document IDs (masked) ─────────────────────────────────────────────
-  final String? aadhaarLastFour; // Only last 4 digits - e.g. "5678"
-  final String? panMasked; // e.g. "ABCDE****F"
-  final String? rationCardNumber; // masked last 4
+  // Document IDs (masked)
+  final String? aadhaarLastFour;
+  final String? panMasked;
+  final String? rationCardNumber;
 
-  // ── NEW: Disability ─────────────────────────────────────────────────────────
+  // Disability
   final bool isDisabled;
   final String? disabilityType;
 
-  const CitizenProfileModel({
+  CitizenProfileModel({
     required this.id,
     required this.fullName,
     required this.mobile,
@@ -53,10 +53,10 @@ class CitizenProfileModel {
     this.gender,
     this.maritalStatus,
     this.occupation,
-    this.annualIncomeRange,
+    String? annualIncomeRange,
     this.casteCategory,
-    this.age = 0,
-    this.income = 0.0,
+    int age = 0,
+    double income = 0.0,
     this.isKycVerified = false,
     this.linkedDocuments = const [],
     this.appliedSchemes = const [],
@@ -65,69 +65,105 @@ class CitizenProfileModel {
     this.rationCardNumber,
     this.isDisabled = false,
     this.disabilityType,
-  });
+  })  : age = _resolveAge(dateOfBirth, age),
+        annualIncomeRange = _resolveIncomeRange(annualIncomeRange, income),
+        income = _resolveIncomeValue(annualIncomeRange, income);
 
-  // ── Derived getters ─────────────────────────────────────────────────────────
-
-  /// Age derived from dateOfBirth; falls back to stored `age` field.
-  int get computedAge {
-    if (dateOfBirth != null) {
+  static int _resolveAge(DateTime? dob, int fallbackAge) {
+    if (dob != null) {
       final now = DateTime.now();
-      int a = now.year - dateOfBirth!.year;
-      if (now.month < dateOfBirth!.month ||
-          (now.month == dateOfBirth!.month && now.day < dateOfBirth!.day)) {
+      int a = now.year - dob.year;
+      if (now.month < dob.month ||
+          (now.month == dob.month && now.day < dob.day)) {
         a--;
       }
-      return a;
+      return a > 0 ? a : fallbackAge;
     }
-    return age;
+    return fallbackAge;
   }
 
-  /// Profile completion 0–100 based on 10 key fields.
+  static String? _resolveIncomeRange(String? range, double numericIncome) {
+    if (range != null && range.trim().isNotEmpty) {
+      return ProfileConstants.normalizeIncomeRange(
+        range,
+        fallbackNumeric: numericIncome,
+      );
+    }
+    if (numericIncome > 0) {
+      return ProfileConstants.incomeRangeFromValue(numericIncome);
+    }
+    return range;
+  }
+
+  static double _resolveIncomeValue(String? range, double numericIncome) {
+    if (numericIncome > 0 && (range == null || range.trim().isEmpty)) {
+      return numericIncome;
+    }
+    if (range != null && range.trim().isNotEmpty) {
+      return ProfileConstants.incomeValueFromRange(range);
+    }
+    return numericIncome;
+  }
+
+  // Derived getters
+
+  /// Age derived from dateOfBirth; falls back to stored `age` field.
+  int get computedAge => _resolveAge(dateOfBirth, age);
+
+  /// Normalized income range for UI dropdowns and chips.
+  String get effectiveIncomeRange => ProfileConstants.normalizeIncomeRange(
+        annualIncomeRange,
+        fallbackNumeric: income,
+      );
+
+  /// Profile completion 0-100 based on 10 key fields.
   int get profileCompletionPercent {
     int filled = 0;
     const total = 10;
-    // Basic (always available for real users, skip guest fields)
     if (fullName.isNotEmpty) filled++;
     if (mobile.isNotEmpty || email.isNotEmpty) filled++;
-    // Demographics
-    if (dateOfBirth != null) filled++;
+    if (dateOfBirth != null || age > 0) filled++;
     if (gender != null && gender!.isNotEmpty) filled++;
     if (maritalStatus != null && maritalStatus!.isNotEmpty) filled++;
-    // Location
     if (state.isNotEmpty && state != 'Not Set') filled++;
     if (district != null && district!.isNotEmpty) filled++;
-    // Financial
     if (occupation != null && occupation!.isNotEmpty) filled++;
-    if (annualIncomeRange != null && annualIncomeRange!.isNotEmpty) filled++;
-    // Identity
+    if ((annualIncomeRange != null && annualIncomeRange!.isNotEmpty) ||
+        income > 0) {
+      filled++;
+    }
     if (aadhaarLastFour != null && aadhaarLastFour!.isNotEmpty) filled++;
     return ((filled / total) * 100).round();
   }
 
   bool get isProfileIncomplete => profileCompletionPercent < 70;
 
-  // ── Serialization ───────────────────────────────────────────────────────────
+  // Serialization
 
   factory CitizenProfileModel.fromJson(Map<String, dynamic> json) {
+    final parsedDob = json['date_of_birth'] != null
+        ? DateTime.tryParse(json['date_of_birth'].toString())
+        : null;
+    final parsedAge = (json['age'] as num?)?.toInt() ?? 0;
+    final parsedIncome = (json['income'] as num?)?.toDouble() ?? 0.0;
+    final parsedRange = json['annual_income_range'] as String?;
+
     return CitizenProfileModel(
       id: json['id'] as String? ?? '',
       fullName: json['full_name'] as String? ?? '',
       mobile: json['mobile'] as String? ?? '',
       email: json['email'] as String? ?? '',
-      state: json['state'] as String? ?? '',
+      state: json['state'] as String? ?? 'Maharashtra',
       district: json['district'] as String?,
       pincode: json['pincode'] as String?,
-      dateOfBirth: json['date_of_birth'] != null
-          ? DateTime.tryParse(json['date_of_birth'] as String)
-          : null,
+      dateOfBirth: parsedDob,
       gender: json['gender'] as String?,
       maritalStatus: json['marital_status'] as String?,
       occupation: json['occupation'] as String?,
-      annualIncomeRange: json['annual_income_range'] as String?,
+      annualIncomeRange: parsedRange,
       casteCategory: json['caste_category'] as String?,
-      age: json['age'] as int? ?? 0,
-      income: (json['income'] as num?)?.toDouble() ?? 0.0,
+      age: parsedAge,
+      income: parsedIncome,
       isKycVerified: json['is_kyc_verified'] as bool? ?? false,
       linkedDocuments:
           List<String>.from(json['linked_documents'] as List? ?? []),
@@ -155,7 +191,7 @@ class CitizenProfileModel {
       'occupation': occupation,
       'annual_income_range': annualIncomeRange,
       'caste_category': casteCategory,
-      'age': age,
+      'age': computedAge,
       'income': income,
       'is_kyc_verified': isKycVerified,
       'linked_documents': linkedDocuments,
@@ -193,6 +229,33 @@ class CitizenProfileModel {
     bool? isDisabled,
     String? disabilityType,
   }) {
+    final nextDob = dateOfBirth ??
+        (age != null && age > 0 && this.dateOfBirth != null
+            ? DateTime(
+                DateTime.now().year - age,
+                this.dateOfBirth!.month,
+                this.dateOfBirth!.day,
+              )
+            : this.dateOfBirth);
+
+    final nextAge = dateOfBirth != null
+        ? _resolveAge(dateOfBirth, age ?? this.age)
+        : (age ?? this.age);
+
+    final String? nextRange;
+    final double nextIncome;
+    if (annualIncomeRange != null) {
+      nextRange = ProfileConstants.normalizeIncomeRange(annualIncomeRange);
+      nextIncome =
+          income ?? ProfileConstants.incomeValueFromRange(nextRange);
+    } else if (income != null) {
+      nextIncome = income;
+      nextRange = ProfileConstants.incomeRangeFromValue(income);
+    } else {
+      nextRange = this.annualIncomeRange;
+      nextIncome = this.income;
+    }
+
     return CitizenProfileModel(
       id: id ?? this.id,
       fullName: fullName ?? this.fullName,
@@ -201,14 +264,14 @@ class CitizenProfileModel {
       state: state ?? this.state,
       district: district ?? this.district,
       pincode: pincode ?? this.pincode,
-      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+      dateOfBirth: nextDob,
       gender: gender ?? this.gender,
       maritalStatus: maritalStatus ?? this.maritalStatus,
       occupation: occupation ?? this.occupation,
-      annualIncomeRange: annualIncomeRange ?? this.annualIncomeRange,
+      annualIncomeRange: nextRange,
       casteCategory: casteCategory ?? this.casteCategory,
-      age: age ?? this.age,
-      income: income ?? this.income,
+      age: nextAge,
+      income: nextIncome,
       isKycVerified: isKycVerified ?? this.isKycVerified,
       linkedDocuments: linkedDocuments ?? this.linkedDocuments,
       appliedSchemes: appliedSchemes ?? this.appliedSchemes,

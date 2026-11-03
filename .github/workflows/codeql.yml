@@ -1,3 +1,4 @@
+
 name: CodeQL Analysis
 
 on:
@@ -54,7 +55,7 @@ jobs:
 
       - name: Cache Gradle packages
         if: matrix.language == 'java-kotlin'
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.gradle/caches
@@ -73,18 +74,17 @@ jobs:
         if: matrix.language == 'java-kotlin'
         run: flutter pub get
 
+      - name: Run Flutter Static Analysis and Tests
+        if: matrix.language == 'java-kotlin'
+        run: |
+          flutter analyze
+          flutter test
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
-
-      - name: Build Java and Kotlin for CodeQL
-        if: matrix.build-mode == 'manual'
-        run: |
-          flutter build apk --config-only
-          cd android
-          ./gradlew compileDebugSources -x lint -x test --no-daemon
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
