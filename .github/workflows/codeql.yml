@@ -54,7 +54,7 @@ jobs:
 
       - name: Cache Gradle packages
         if: matrix.language == 'java-kotlin'
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.gradle/caches
@@ -65,7 +65,7 @@ jobs:
 
       - name: Cache Android NDK
         if: matrix.language == 'java-kotlin'
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: /usr/local/lib/android/sdk/ndk
           key: ${{ runner.os }}-android-ndk-27
