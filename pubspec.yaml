@@ -38,7 +38,7 @@ dependencies:
 
   # Design & Icons
   google_fonts: ^8.0.2
-  font_awesome_flutter: ^10.5.0
+  font_awesome_flutter: ^11.0.0
 
   # Charts & Data Viz
   fl_chart: ^1.1.1
