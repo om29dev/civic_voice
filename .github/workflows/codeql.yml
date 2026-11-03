@@ -63,14 +63,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Cache Android NDK
+      - name: Install Android NDK
         if: matrix.language == 'java-kotlin'
-        uses: actions/cache@v4
-        with:
-          path: /usr/local/lib/android/sdk/ndk
-          key: ${{ runner.os }}-android-ndk-27
-          restore-keys: |
-            ${{ runner.os }}-android-ndk-
+        run: echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "ndk;28.2.13676358"
 
       - name: Prepare Flutter and Android dependencies
         if: matrix.language == 'java-kotlin'

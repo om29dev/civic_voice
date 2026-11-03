@@ -107,6 +107,19 @@ jobs:
           }
           EOF
 
+      - name: Pull cloud backend state
+        run: |
+          TARGET_ENV="${{ inputs.environment }}"
+          if [ -z "$TARGET_ENV" ]; then
+            TARGET_ENV="dev"
+          fi
+          amplify pull \
+            --appId d2o5i1x3ygcmoz \
+            --envName "$TARGET_ENV" \
+            --frontend '{"frontend":"flutter","framework":"flutter","config":{"ResDir":"lib/"}}' \
+            --providers '{"awscloudformation":{"configProfileName":"default"}}' \
+            --yes
+
       - name: Inspect Amplify backend status
         run: amplify status
 

@@ -49,6 +49,8 @@ coverage/
 **/android/app/.cxx/
 **/android/app/build/
 **/android/.gradle/
+**/android/.kotlin/
+.kotlin/
 **/android/local.properties
 **/android/**/build/
 
