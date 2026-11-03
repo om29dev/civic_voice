@@ -113,11 +113,12 @@ jobs:
           if [ -z "$TARGET_ENV" ]; then
             TARGET_ENV="dev"
           fi
+          PROVIDERS="{\"awscloudformation\":{\"configLevel\":\"project\",\"useProfile\":true,\"profileName\":\"default\"}}"
           amplify pull \
             --appId d2o5i1x3ygcmoz \
             --envName "$TARGET_ENV" \
             --frontend '{"frontend":"flutter","framework":"flutter","config":{"ResDir":"lib/"}}' \
-            --providers '{"awscloudformation":{"configProfileName":"default"}}' \
+            --providers "$PROVIDERS" \
             --yes
 
       - name: Inspect Amplify backend status
