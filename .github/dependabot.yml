@@ -4,44 +4,62 @@ updates:
   - package-ecosystem: "pub"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "monday"
       time: "04:00"
       timezone: "Asia/Kolkata"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 1
     labels:
       - "dependencies"
     commit-message:
       prefix: "deps"
       include: "scope"
+    groups:
+      pub-dependencies:
+        patterns:
+          - "*"
 
   # Android Gradle build dependencies
   - package-ecosystem: "gradle"
     directory: "/android"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "monday"
       time: "04:30"
       timezone: "Asia/Kolkata"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 1
     labels:
       - "dependencies"
     commit-message:
       prefix: "deps-android"
       include: "scope"
+    ignore:
+      - dependency-name: "gradle"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "com.android.application"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "com.android.library"
+        update-types: ["version-update:semver-major"]
+    groups:
+      gradle-dependencies:
+        patterns:
+          - "*"
 
   # GitHub Actions workflow updates
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "monday"
       time: "05:00"
       timezone: "Asia/Kolkata"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 1
     labels:
       - "dependencies"
     commit-message:
       prefix: "deps-actions"
       include: "scope"
-
+    groups:
+      actions-dependencies:
+        patterns:
+          - "*"
