@@ -47,6 +47,13 @@ jobs:
       - name: Install Amplify CLI
         run: npm install -g @aws-amplify/cli
 
+      - name: Validate AWS Credentials Configuration
+        run: |
+          if [ -z "${{ secrets.AWS_ACCESS_KEY_ID }}" ] || [ -z "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ]; then
+            echo "::error title=Missing AWS Credentials::Repository secrets AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are not configured. Please add them under repository Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
