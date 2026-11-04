@@ -5,7 +5,7 @@ import '../core/constants/app_strings.dart';
 import '../services/translation_service.dart';
 
 /// Manages the UI language.
-/// Uses Google Translate (free, no API key) via [TranslationService].
+/// Uses Google Translate via [TranslationService].
 /// Provides [translateSync] for [TText] widgets and [t(key)] for keyed lookups.
 class LanguageProvider extends ChangeNotifier {
   static const _prefKey = 'cvi_language';
@@ -22,7 +22,7 @@ class LanguageProvider extends ChangeNotifier {
   final Set<String> _pendingStrings = {};
   bool _pendingScheduled = false;
 
-  // ── Getters ───────────────────────────────────────────────────────────────
+  // Getters
 
   String get currentLanguage => _currentLanguage;
   String get currentCode => _currentLanguage;
@@ -59,17 +59,14 @@ class LanguageProvider extends ChangeNotifier {
     {'code': 'ta', 'name': 'Tamil', 'native': 'தமிழ்'},
   ];
 
-  // ── Constructor ───────────────────────────────────────────────────────────
-
   LanguageProvider() {
     _initCache();
     _init();
   }
 
   void _initCache() {
-    // Pre-populate cache with known English strings
     for (final e in AppStrings.englishStrings.entries) {
-      _cache[e.value] = e.value; // English → English
+      _cache[e.value] = e.value;
     }
   }
 
@@ -78,11 +75,20 @@ class LanguageProvider extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       final saved = prefs.getString(_prefKey);
       if (saved != null && _isSupported(saved) && saved != 'en') {
-        // Try loading from disk cache first (no network call)
         final diskCache = await TranslationService.loadCache(saved);
         if (diskCache != null && diskCache.isNotEmpty) {
           _currentLanguage = saved;
-          _cache = diskCache;
+          _cache = Map<String, String>.from(diskCache);
+          notifyListeners();
+          // Ensure any newly added AppStrings are also translated in background
+          final allEnglish = Map.fromEntries(
+            AppStrings.englishStrings.values.map((v) => MapEntry(v, v)),
+          );
+          final updated = await TranslationService.translateAll(
+            allEnglish,
+            saved,
+          );
+          _cache.addAll(updated);
           notifyListeners();
         } else {
           await switchLanguage(saved);
@@ -94,33 +100,36 @@ class LanguageProvider extends ChangeNotifier {
   bool _isSupported(String code) =>
       supportedLanguages.any((l) => l['code'] == code);
 
-  // ── Core Translation API ──────────────────────────────────────────────────
+  // Core Translation API
 
-  /// Synchronous translation for [TText] widgets.
+  /// Synchronous translation for [TText] widgets and form labels.
   /// Returns cached translation instantly. If not cached, returns [englishText]
-  /// and schedules a background translate that will call notifyListeners() when done.
+  /// and schedules a background translate that calls notifyListeners() when done.
   String translateSync(String englishText) {
-    if (_currentLanguage == 'en' || englishText.isEmpty) return englishText;
+    final trimmed = englishText.trim();
+    if (_currentLanguage == 'en' || trimmed.isEmpty) return englishText;
 
-    final cached = _cache[englishText];
-    if (cached != null) return cached;
+    final exactCached = _cache[englishText];
+    if (exactCached != null && exactCached.isNotEmpty) return exactCached;
 
-    // Not cached yet - schedule background translation
+    final trimmedCached = _cache[trimmed];
+    if (trimmedCached != null && trimmedCached.isNotEmpty) return trimmedCached;
+
     _schedulePendingTranslation(englishText);
-    return englishText; // show English temporarily
+    return englishText;
   }
 
-  /// Schedule a batch of unseen strings for background translation.
+  /// Schedule a batch of unseen strings for background translation and persist them.
   void _schedulePendingTranslation(String text) {
     _pendingStrings.add(text);
     if (_pendingScheduled) return;
     _pendingScheduled = true;
 
-    // Debounce: wait for the next frame to batch all pending strings
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       _pendingScheduled = false;
       if (_pendingStrings.isEmpty || _currentLanguage == 'en') return;
 
+      final targetLang = _currentLanguage;
       final batch = Map.fromEntries(
         _pendingStrings.map((t) => MapEntry(t, t)),
       );
@@ -129,39 +138,39 @@ class LanguageProvider extends ChangeNotifier {
       try {
         final translated = await TranslationService.translateBatch(
           batch,
-          _currentLanguage,
+          targetLang,
         );
-        _cache.addAll(translated);
-        notifyListeners(); // rebuild TText widgets with translated text
+        if (_currentLanguage == targetLang) {
+          _cache.addAll(translated);
+          await TranslationService.saveCache(targetLang, _cache);
+          notifyListeners();
+        }
       } catch (_) {}
     });
   }
 
   /// Key-based translation using AppStrings keys.
-  /// Example: `lang.t('nav_home')` → 'होम'
   String t(String key) {
     final english = AppStrings.englishStrings[key];
-    if (english == null) return key;
+    if (english == null) return translateSync(key);
     return translateSync(english);
   }
 
-  // Deprecated aliases kept for legacy callers
   String getLocalizedText(Map<String, String> m) =>
       m[_currentLanguage] ?? m['en'] ?? '';
   String translate(String key) => t(key);
 
-  // ── Language Switch ───────────────────────────────────────────────────────
+  // Language Switch
 
   /// Switch to [langCode]. Fetches/loads translations, then rebuilds all TText widgets.
   Future<void> switchLanguage(String langCode) async {
     if (!_isSupported(langCode)) return;
-    if (_currentLanguage == langCode) return;
+    if (_currentLanguage == langCode && _cache.isNotEmpty) return;
 
     _currentLanguage = langCode;
     _translationError = null;
 
     if (langCode == 'en') {
-      // Reset cache to English → English mappings
       _cache = {};
       for (final e in AppStrings.englishStrings.entries) {
         _cache[e.value] = e.value;
@@ -175,7 +184,6 @@ class LanguageProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Translate ALL known English strings at once
       final allEnglish = Map.fromEntries(
         AppStrings.englishStrings.values.map((v) => MapEntry(v, v)),
       );
@@ -183,11 +191,10 @@ class LanguageProvider extends ChangeNotifier {
         allEnglish,
         langCode,
       );
-      _cache = translations;
+      _cache = Map<String, String>.from(translations);
       await _saveLangPref(langCode);
     } catch (e) {
       _translationError = 'Translation failed';
-      // Keep English
       _cache = {for (final v in AppStrings.englishStrings.values) v: v};
     } finally {
       _isTranslating = false;
@@ -204,15 +211,21 @@ class LanguageProvider extends ChangeNotifier {
     } catch (_) {}
   }
 
-  // ── Dynamic text translation (for Voice/AI responses) ─────────────────────
-
   /// Asynchronously translate arbitrary text (e.g., AI responses, service names).
   Future<String> translateText(String text, {String? targetLang}) async {
     final lang = targetLang ?? _currentLanguage;
     if (text.trim().isEmpty || lang == 'en') return text;
+    if (_cache.containsKey(text) && lang == _currentLanguage) {
+      return _cache[text]!;
+    }
     try {
       final result = await TranslationService.translateBatch({'_': text}, lang);
-      return result['_'] ?? text;
+      final translated = result['_'] ?? text;
+      if (lang == _currentLanguage) {
+        _cache[text] = translated;
+        await TranslationService.saveCache(lang, {text: translated});
+      }
+      return translated;
     } catch (_) {
       return text;
     }

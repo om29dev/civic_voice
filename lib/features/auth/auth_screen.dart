@@ -5,18 +5,17 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/profile_constants.dart';
 import '../../core/utils/helpers.dart';
 import '../../models/user_model.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/citizen_profile_provider.dart';
 import '../../providers/language_provider.dart';
+import '../../providers/user_provider.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/neon_button.dart';
 import '../../widgets/particle_background.dart';
-
-// ═════════════════════════════════════════════════════════════════════════════
-// ROOT SCREEN
-// ═════════════════════════════════════════════════════════════════════════════
+import '../../widgets/t_text.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -51,15 +50,12 @@ class _AuthScreenState extends State<AuthScreen>
       body: ParticleBackground(
         child: Column(
           children: [
-            // ── Header logo area ──────────────────────────────────────────
             const SafeArea(
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 24),
                 child: _AuthHeader(),
               ),
             ),
-
-            // ── Glass card panel ──────────────────────────────────────────
             Expanded(
               child: Container(
                 decoration: const BoxDecoration(
@@ -71,7 +67,6 @@ class _AuthScreenState extends State<AuthScreen>
                 ),
                 child: Column(
                   children: [
-                    // Drag handle
                     Padding(
                       padding: const EdgeInsets.only(top: 12, bottom: 4),
                       child: Container(
@@ -83,11 +78,7 @@ class _AuthScreenState extends State<AuthScreen>
                         ),
                       ),
                     ),
-
-                    // Tab bar
                     _AnimatedTabBar(controller: _tabCtrl),
-
-                    // Tab content
                     Expanded(
                       child: TabBarView(
                         controller: _tabCtrl,
@@ -105,7 +96,235 @@ class _AuthScreenState extends State<AuthScreen>
   }
 }
 
-// ─── Header ──────────────────────────────────────────────────────────────────
+Future<void> _hydrateSessionProfiles({
+  required AuthProvider auth,
+  required CitizenProfileProvider citizenProfileProvider,
+  required UserProvider userProvider,
+  String? overrideName,
+  String? overrideEmail,
+  String? overrideMobile,
+  String? overrideState,
+  String? overrideLanguage,
+}) async {
+  final current = auth.currentUser;
+  if (current == null || auth.userId == null) return;
+
+  final fullName = (overrideName != null && overrideName.trim().isNotEmpty)
+      ? overrideName.trim()
+      : current.name;
+  final email = (overrideEmail != null && overrideEmail.trim().isNotEmpty)
+      ? overrideEmail.trim()
+      : (current.email ?? '');
+  final mobile = (overrideMobile != null && overrideMobile.trim().isNotEmpty)
+      ? overrideMobile.trim()
+      : (current.mobile ?? '');
+  final stateName = (overrideState != null && overrideState.trim().isNotEmpty)
+      ? ProfileConstants.normalizeState(overrideState)
+      : ProfileConstants.normalizeState(current.state?.label);
+
+  await citizenProfileProvider.bootstrapFromAuth(
+    id: current.id,
+    fullName: fullName,
+    email: email,
+    mobile: mobile,
+    state: stateName,
+  );
+
+  userProvider.login(
+    name: fullName,
+    email: email,
+    phone: mobile,
+    location: stateName,
+  );
+  if (citizenProfileProvider.profile != null) {
+    userProvider.syncFromCitizenProfile(citizenProfileProvider.profile!);
+  }
+  unawaited(userProvider.fetchUserProfile(current.id));
+}
+
+void _showEmailVerificationDialog({
+  required BuildContext hostContext,
+  required String email,
+  required String password,
+  required AuthProvider auth,
+  required CitizenProfileProvider citizenProfileProvider,
+  required UserProvider userProvider,
+  String? registeredName,
+  String? registeredMobile,
+  String? registeredState,
+  String? registeredLanguage,
+}) {
+  final otpCtrl = TextEditingController();
+  bool isVerifying = false;
+  bool isResending = false;
+
+  showDialog(
+    context: hostContext,
+    barrierDismissible: false,
+    builder: (dialogContext) => StatefulBuilder(
+      builder: (context, setDialogState) {
+        return AlertDialog(
+          backgroundColor: AppColors.backgroundLight,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const TText(
+            'Verify Email',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontFamily: 'Rajdhani',
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TText(
+                'Enter the 6-digit verification code sent to $email:',
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _NeonTextField(
+                controller: otpCtrl,
+                label: 'Verification Code',
+                icon: Icons.password_rounded,
+                keyboardType: TextInputType.number,
+                maxLength: 6,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: (isVerifying || isResending)
+                      ? null
+                      : () async {
+                          setDialogState(() => isResending = true);
+                          final resent = await auth.resendSignUpCode(email);
+                          if (!dialogContext.mounted) return;
+                          setDialogState(() => isResending = false);
+                          ScaffoldMessenger.of(dialogContext).showSnackBar(
+                            SnackBar(
+                              content: TText(
+                                resent
+                                    ? 'Verification code resent to $email'
+                                    : (auth.error ?? 'Failed to resend code'),
+                              ),
+                              backgroundColor:
+                                  resent ? AppColors.success : AppColors.error,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        },
+                  icon: isResending
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.accent,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.refresh_rounded,
+                          size: 16,
+                          color: AppColors.accent,
+                        ),
+                  label: const TText(
+                    'Resend Code',
+                    style: TextStyle(color: AppColors.accent, fontSize: 13),
+                  ),
+                ),
+              ),
+              if (isVerifying) ...[
+                const SizedBox(height: 12),
+                const Center(
+                  child: CircularProgressIndicator(color: AppColors.accent),
+                ),
+              ],
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed:
+                  isVerifying ? null : () => Navigator.pop(dialogContext),
+              child: const TText(
+                'Cancel',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+            ),
+            TextButton(
+              onPressed: isVerifying
+                  ? null
+                  : () async {
+                      final code = otpCtrl.text.trim();
+                      if (code.isEmpty) return;
+
+                      setDialogState(() => isVerifying = true);
+                      final success = await auth.confirmSignUp(email, code);
+
+                      if (!hostContext.mounted) return;
+
+                      if (success) {
+                        if (dialogContext.mounted) {
+                          Navigator.pop(dialogContext);
+                        }
+
+                        final loginSuccess =
+                            await auth.loginWithEmail(email, password);
+
+                        if (loginSuccess && auth.userId != null) {
+                          await _hydrateSessionProfiles(
+                            auth: auth,
+                            citizenProfileProvider: citizenProfileProvider,
+                            userProvider: userProvider,
+                            overrideName: registeredName,
+                            overrideEmail: email,
+                            overrideMobile: registeredMobile,
+                            overrideState: registeredState,
+                            overrideLanguage: registeredLanguage,
+                          );
+                        } else if (hostContext.mounted) {
+                          ScaffoldMessenger.of(hostContext).showSnackBar(
+                            const SnackBar(
+                              content: TText(
+                                'Email verified! You can now log in.',
+                              ),
+                              backgroundColor: AppColors.success,
+                            ),
+                          );
+                        }
+                      } else {
+                        setDialogState(() => isVerifying = false);
+                        if (dialogContext.mounted) {
+                          ScaffoldMessenger.of(dialogContext).showSnackBar(
+                            SnackBar(
+                              content:
+                                  Text(auth.error ?? 'Verification failed'),
+                              backgroundColor: AppColors.error,
+                            ),
+                          );
+                        }
+                      }
+                    },
+              child: const TText(
+                'Verify & Login',
+                style: TextStyle(
+                  color: AppColors.accent,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    ),
+  );
+}
 
 class _AuthHeader extends StatelessWidget {
   const _AuthHeader();
@@ -116,7 +335,6 @@ class _AuthHeader extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Glow icon
           Container(
             width: 60,
             height: 60,
@@ -131,12 +349,16 @@ class _AuthHeader extends StatelessWidget {
                 ),
               ],
             ),
-            child: const Icon(Icons.record_voice_over_rounded,
-                color: AppColors.accent, size: 28),
+            child: const Icon(
+              Icons.record_voice_over_rounded,
+              color: AppColors.accent,
+              size: 28,
+            ),
           ).animate().fadeIn(duration: 500.ms).scale(
-              begin: const Offset(0.8, 0.8),
-              duration: 600.ms,
-              curve: Curves.elasticOut),
+                begin: const Offset(0.8, 0.8),
+                duration: 600.ms,
+                curve: Curves.elasticOut,
+              ),
           const SizedBox(height: 12),
           const Text(
             'CIVIC VOICE',
@@ -148,7 +370,7 @@ class _AuthHeader extends StatelessWidget {
               letterSpacing: 4,
             ),
           ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
-          const Text(
+          const TText(
             'Your gateway to government services',
             style: TextStyle(
               fontSize: 12,
@@ -162,14 +384,13 @@ class _AuthHeader extends StatelessWidget {
   }
 }
 
-// ─── Animated Tab Bar ────────────────────────────────────────────────────────
-
 class _AnimatedTabBar extends StatelessWidget {
   final TabController controller;
   const _AnimatedTabBar({required this.controller});
 
   @override
   Widget build(BuildContext context) {
+    final lang = context.watch<LanguageProvider>();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       child: Container(
@@ -211,7 +432,10 @@ class _AnimatedTabBar extends StatelessWidget {
           ),
           indicatorSize: TabBarIndicatorSize.tab,
           dividerColor: Colors.transparent,
-          tabs: const [Tab(text: 'Login'), Tab(text: 'Register')],
+          tabs: [
+            Tab(text: lang.translateSync('Login')),
+            Tab(text: lang.translateSync('Register')),
+          ],
         ),
       ),
     );
@@ -257,45 +481,211 @@ class _LoginTabState extends State<_LoginTab> {
 
   Future<void> _loginWithEmail() async {
     if (!_formKey.currentState!.validate()) {
-      _shake();
       return;
     }
     final auth = context.read<AuthProvider>();
-    final userProvider = context.read<UserProvider>(); // Cache before await
+    final citizenProfileProvider = context.read<CitizenProfileProvider>();
+    final userProvider = context.read<UserProvider>();
+    final email = _emailCtrl.text.trim();
+    final password = _passCtrl.text;
 
-    final success =
-        await auth.loginWithEmail(_emailCtrl.text.trim(), _passCtrl.text);
+    final success = await auth.loginWithEmail(email, password);
 
     if (success && auth.userId != null) {
-      userProvider.fetchUserProfile(auth.userId!);
+      await _hydrateSessionProfiles(
+        auth: auth,
+        citizenProfileProvider: citizenProfileProvider,
+        userProvider: userProvider,
+        overrideEmail: email,
+      );
+      return;
     }
 
     if (!mounted) return;
 
-    // Do NOT call context.go() here - AuthProvider.notifyListeners() already
-    // triggers the GoRouter redirect which navigates away automatically.
-    // Calling context.go() on top causes a double-navigation that crashes
-    // with '_elements.contains(element) is not true'.
-    if (!success && auth.error != null) {
+    if (auth.error == 'CONFIRM_SIGNUP_REQUIRED') {
+      _showEmailVerificationDialog(
+        hostContext: context,
+        email: email,
+        password: password,
+        auth: auth,
+        citizenProfileProvider: citizenProfileProvider,
+        userProvider: userProvider,
+      );
+    } else if (auth.error != null) {
       _showError(auth.error!);
     }
   }
 
   Future<void> _loginGoogle() async {
     final auth = context.read<AuthProvider>();
-    await auth.loginWithGoogle();
-    if (!mounted) return;
-    if (auth.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(auth.error!),
-          backgroundColor: AppColors.error,
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
+    final citizenProfileProvider = context.read<CitizenProfileProvider>();
+    final userProvider = context.read<UserProvider>();
+
+    final success = await auth.loginWithGoogle();
+    if (success && auth.userId != null) {
+      await _hydrateSessionProfiles(
+        auth: auth,
+        citizenProfileProvider: citizenProfileProvider,
+        userProvider: userProvider,
       );
+      return;
     }
+
+    if (!mounted) return;
+
+    if (auth.error == 'GOOGLE_ACCOUNT_FALLBACK_REQUIRED') {
+      _showGoogleAccountFallbackDialog(
+        auth: auth,
+        citizenProfileProvider: citizenProfileProvider,
+        userProvider: userProvider,
+      );
+      return;
+    }
+
+    if (auth.error != null) {
+      _showError(auth.error!);
+    }
+  }
+
+  void _showGoogleAccountFallbackDialog({
+    required AuthProvider auth,
+    required CitizenProfileProvider citizenProfileProvider,
+    required UserProvider userProvider,
+  }) {
+    final googleEmailCtrl = TextEditingController(text: _emailCtrl.text.trim());
+    final googleNameCtrl = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    bool isSubmitting = false;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            backgroundColor: AppColors.backgroundLight,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF4285F4).withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Text(
+                    'G',
+                    style: TextStyle(
+                      color: Color(0xFF4285F4),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: TText(
+                    'Continue with Google',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontFamily: 'Rajdhani',
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            content: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const TText(
+                    'Enter your Google account details to sign in and sync your citizen profile:',
+                    style:
+                        TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                  ),
+                  const SizedBox(height: 16),
+                  _NeonTextField(
+                    controller: googleNameCtrl,
+                    label: 'Full Name',
+                    icon: Icons.person_outline_rounded,
+                    textCapitalization: TextCapitalization.words,
+                    validator: (v) => (v == null || v.trim().isEmpty)
+                        ? 'Name is required'
+                        : null,
+                  ),
+                  const SizedBox(height: 12),
+                  _NeonTextField(
+                    controller: googleEmailCtrl,
+                    label: 'Google Email Address',
+                    icon: Icons.email_outlined,
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) {
+                        return 'Email is required';
+                      }
+                      if (!isValidEmail(v.trim())) {
+                        return 'Enter a valid email address';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed:
+                    isSubmitting ? null : () => Navigator.pop(dialogContext),
+                child: const TText(
+                  'Cancel',
+                  style: TextStyle(color: AppColors.textSecondary),
+                ),
+              ),
+              TextButton(
+                onPressed: isSubmitting
+                    ? null
+                    : () async {
+                        if (!formKey.currentState!.validate()) return;
+                        setDialogState(() => isSubmitting = true);
+                        final email = googleEmailCtrl.text.trim();
+                        final name = googleNameCtrl.text.trim();
+
+                        Navigator.pop(dialogContext);
+                        final ok = await auth.loginWithGoogle(
+                          fallbackEmail: email,
+                          fallbackName: name,
+                        );
+                        if (ok && auth.userId != null) {
+                          await _hydrateSessionProfiles(
+                            auth: auth,
+                            citizenProfileProvider: citizenProfileProvider,
+                            userProvider: userProvider,
+                            overrideName: name,
+                            overrideEmail: email,
+                          );
+                        } else if (mounted && auth.error != null) {
+                          _showError(auth.error!);
+                        }
+                      },
+                child: const TText(
+                  'Continue',
+                  style: TextStyle(
+                    color: AppColors.accent,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 
   Future<void> _sendOTP() async {
@@ -304,13 +694,31 @@ class _LoginTabState extends State<_LoginTab> {
       _showError('Enter a valid 10-digit mobile number.');
       return;
     }
-    // Mock: always succeeds for now; replace with auth.sendOTP('+91$mobile')
-    setState(() => _otpSent = true);
+    final auth = context.read<AuthProvider>();
+    final sent = await auth.sendOTP(mobile);
+    if (!mounted) return;
+
+    if (!sent) {
+      if (auth.error != null) _showError(auth.error!);
+      return;
+    }
+
+    setState(() {
+      _otpSent = true;
+      for (final c in _otpCtrls) {
+        c.clear();
+      }
+    });
+
+    final code = auth.activeOtpCode ?? '';
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('OTP sent to +91 $mobile (mock: use any 6 digits)'),
+        content: Text(
+          'OTP sent to +91 $mobile. Verification Code: $code',
+        ),
         backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 6),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
@@ -319,25 +727,47 @@ class _LoginTabState extends State<_LoginTab> {
     });
   }
 
+  void _autoFillOtp(String code) {
+    if (code.length != 6) return;
+    for (int i = 0; i < 6; i++) {
+      _otpCtrls[i].text = code[i];
+    }
+    setState(() {});
+  }
+
   Future<void> _verifyOTP() async {
     final otp = _otpCtrls.map((c) => c.text).join();
     if (otp.length < 6) {
       _showError('Enter all 6 OTP digits.');
       return;
     }
-    // Mock: Any 6-digit OTP creates/logs in as guest for demo
-    await context.read<AuthProvider>().continueAsGuest();
-    // Navigation handled automatically by GoRouter redirect via notifyListeners()
-  }
+    final auth = context.read<AuthProvider>();
+    final citizenProfileProvider = context.read<CitizenProfileProvider>();
+    final userProvider = context.read<UserProvider>();
+    final mobile = _mobileCtrl.text.trim();
 
-  void _shake() {
-    // Trigger red shimmer error - handled by Form validators
+    final verified = await auth.verifyOTP(mobile, otp);
+    if (!mounted) return;
+
+    if (!verified) {
+      _showError(auth.error ?? 'Incorrect OTP code. Please try again.');
+      return;
+    }
+
+    if (auth.userId != null) {
+      await _hydrateSessionProfiles(
+        auth: auth,
+        citizenProfileProvider: citizenProfileProvider,
+        userProvider: userProvider,
+        overrideMobile: mobile,
+      );
+    }
   }
 
   void _showError(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(msg),
+        content: TText(msg),
         backgroundColor: AppColors.error,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -346,55 +776,297 @@ class _LoginTabState extends State<_LoginTab> {
   }
 
   void _showForgotDialog() {
-    final ctrl = TextEditingController();
+    final emailCtrl = TextEditingController(text: _emailCtrl.text.trim());
+    final codeCtrl = TextEditingController();
+    final newPassCtrl = TextEditingController();
+    final confirmPassCtrl = TextEditingController();
+    final step1Key = GlobalKey<FormState>();
+    final step2Key = GlobalKey<FormState>();
+
+    int step = 1;
+    bool isSubmitting = false;
+    bool obscureNew = true;
+    bool obscureConfirm = true;
+    String? dialogError;
+
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: AppColors.backgroundLight,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Reset Password',
-            style: TextStyle(
+      barrierDismissible: false,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final auth = this.context.read<AuthProvider>();
+
+          return AlertDialog(
+            backgroundColor: AppColors.backgroundLight,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: TText(
+              step == 1 ? 'Reset Password' : 'Enter Reset Code',
+              style: const TextStyle(
                 color: AppColors.textPrimary,
                 fontFamily: 'Rajdhani',
                 fontSize: 20,
-                fontWeight: FontWeight.w700)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Enter your email and we\'ll send a reset link.',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                fontWeight: FontWeight.w700,
+              ),
             ),
-            const SizedBox(height: 16),
-            _NeonTextField(
-              controller: ctrl,
-              label: 'Email',
-              icon: Icons.email_outlined,
-              keyboardType: TextInputType.emailAddress,
+            content: SingleChildScrollView(
+              child: step == 1
+                  ? Form(
+                      key: step1Key,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const TText(
+                            'Enter your registered email address to receive a 6-digit password reset code.',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 13,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          _NeonTextField(
+                            controller: emailCtrl,
+                            label: 'Email address',
+                            icon: Icons.email_outlined,
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (v) {
+                              if (v == null || v.trim().isEmpty) {
+                                return 'Email is required';
+                              }
+                              if (!isValidEmail(v.trim())) {
+                                return 'Enter a valid email';
+                              }
+                              return null;
+                            },
+                          ),
+                          if (dialogError != null) ...[
+                            const SizedBox(height: 12),
+                            TText(
+                              dialogError!,
+                              style: const TextStyle(
+                                color: AppColors.error,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    )
+                  : Form(
+                      key: step2Key,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          TText(
+                            'We sent a 6-digit verification code to ${emailCtrl.text.trim()}. Enter it below with your new password.',
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 13,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          _NeonTextField(
+                            controller: codeCtrl,
+                            label: '6-Digit Verification Code',
+                            icon: Icons.pin_outlined,
+                            keyboardType: TextInputType.number,
+                            maxLength: 6,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly
+                            ],
+                            validator: (v) =>
+                                (v == null || v.trim().length < 6)
+                                    ? 'Enter the 6-digit code'
+                                    : null,
+                          ),
+                          const SizedBox(height: 12),
+                          _NeonTextField(
+                            controller: newPassCtrl,
+                            label: 'New Password',
+                            icon: Icons.lock_outline_rounded,
+                            obscure: obscureNew,
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                obscureNew
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                                color: AppColors.textSecondary,
+                                size: 20,
+                              ),
+                              onPressed: () => setDialogState(
+                                () => obscureNew = !obscureNew,
+                              ),
+                            ),
+                            validator: (v) {
+                              if (v == null || v.isEmpty) {
+                                return 'New password is required';
+                              }
+                              if (v.length < 8) {
+                                return 'Minimum 8 characters required';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          _NeonTextField(
+                            controller: confirmPassCtrl,
+                            label: 'Confirm New Password',
+                            icon: Icons.lock_reset_rounded,
+                            obscure: obscureConfirm,
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                obscureConfirm
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                                color: AppColors.textSecondary,
+                                size: 20,
+                              ),
+                              onPressed: () => setDialogState(
+                                () => obscureConfirm = !obscureConfirm,
+                              ),
+                            ),
+                            validator: (v) {
+                              if (v != newPassCtrl.text) {
+                                return 'Passwords do not match';
+                              }
+                              return null;
+                            },
+                          ),
+                          if (dialogError != null) ...[
+                            const SizedBox(height: 12),
+                            TText(
+                              dialogError!,
+                              style: const TextStyle(
+                                color: AppColors.error,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel',
-                style: TextStyle(color: AppColors.textSecondary)),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Reset link sent to ${ctrl.text}'),
-                  backgroundColor: AppColors.success,
-                  behavior: SnackBarBehavior.floating,
+            actions: [
+              TextButton(
+                onPressed:
+                    isSubmitting ? null : () => Navigator.pop(dialogContext),
+                child: const TText(
+                  'Cancel',
+                  style: TextStyle(color: AppColors.textSecondary),
                 ),
-              );
-            },
-            child: const Text('Send Link',
-                style: TextStyle(color: AppColors.accent)),
-          ),
-        ],
+              ),
+              if (step == 2)
+                TextButton(
+                  onPressed: isSubmitting
+                      ? null
+                      : () async {
+                          setDialogState(() {
+                            isSubmitting = true;
+                            dialogError = null;
+                          });
+                          final ok = await auth.resetPassword(
+                            emailCtrl.text.trim(),
+                          );
+                          if (!dialogContext.mounted) return;
+                          setDialogState(() {
+                            isSubmitting = false;
+                            if (!ok) {
+                              dialogError =
+                                  auth.error ?? 'Could not resend code';
+                            }
+                          });
+                        },
+                  child: const TText(
+                    'Resend Code',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
+                ),
+              TextButton(
+                onPressed: isSubmitting
+                    ? null
+                    : () async {
+                        if (step == 1) {
+                          if (!step1Key.currentState!.validate()) return;
+                          setDialogState(() {
+                            isSubmitting = true;
+                            dialogError = null;
+                          });
+                          final sent = await auth.resetPassword(
+                            emailCtrl.text.trim(),
+                          );
+                          if (!dialogContext.mounted) return;
+                          setDialogState(() {
+                            isSubmitting = false;
+                            if (sent) {
+                              step = 2;
+                            } else {
+                              dialogError = auth.error ??
+                                  'Failed to send password reset code.';
+                            }
+                          });
+                        } else {
+                          if (!step2Key.currentState!.validate()) return;
+                          setDialogState(() {
+                            isSubmitting = true;
+                            dialogError = null;
+                          });
+                          final resetOk = await auth.confirmResetPassword(
+                            email: emailCtrl.text.trim(),
+                            newPassword: newPassCtrl.text,
+                            confirmationCode: codeCtrl.text.trim(),
+                          );
+                          if (!dialogContext.mounted) return;
+                          setDialogState(() => isSubmitting = false);
+
+                          if (resetOk) {
+                            final updatedEmail = emailCtrl.text.trim();
+                            final updatedPass = newPassCtrl.text;
+                            Navigator.pop(dialogContext);
+                            if (mounted) {
+                              setState(() {
+                                _emailCtrl.text = updatedEmail;
+                                _passCtrl.text = updatedPass;
+                              });
+                              ScaffoldMessenger.of(this.context).showSnackBar(
+                                const SnackBar(
+                                  content: TText(
+                                    'Password reset successful! You can now log in.',
+                                  ),
+                                  backgroundColor: AppColors.success,
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            }
+                          } else {
+                            setDialogState(() {
+                              dialogError = auth.error ??
+                                  'Could not reset password. Check your code.';
+                            });
+                          }
+                        }
+                      },
+                child: isSubmitting
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.accent,
+                        ),
+                      )
+                    : TText(
+                        step == 1 ? 'Send Code' : 'Update Password',
+                        style: const TextStyle(
+                          color: AppColors.accent,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -410,14 +1082,10 @@ class _LoginTabState extends State<_LoginTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ── Google button ────────────────────────────────────────
             _GoogleButton(onTap: _loginGoogle, isLoading: auth.isLoading),
-
             const SizedBox(height: 20),
             const _Divider(label: '- or login with email -'),
             const SizedBox(height: 16),
-
-            // ── Email ────────────────────────────────────────────────
             _NeonTextField(
               controller: _emailCtrl,
               label: 'Email address',
@@ -430,8 +1098,6 @@ class _LoginTabState extends State<_LoginTab> {
               },
             ),
             const SizedBox(height: 14),
-
-            // ── Password ─────────────────────────────────────────────
             _NeonTextField(
               controller: _passCtrl,
               label: 'Password',
@@ -452,38 +1118,33 @@ class _LoginTabState extends State<_LoginTab> {
                 return null;
               },
             ),
-
-            // ── Forgot password ───────────────────────────────────────
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: _showForgotDialog,
-                child: const Text(
+                child: const TText(
                   'Forgot Password?',
                   style: TextStyle(
-                      color: AppColors.accent,
-                      fontSize: 13,
-                      fontFamily: 'Rajdhani'),
+                    color: AppColors.accent,
+                    fontSize: 13,
+                    fontFamily: 'Rajdhani',
+                  ),
                 ),
               ),
             ),
-
-            // ── Login Button ──────────────────────────────────────────
             NeonButton(
               label: 'Login',
               icon: Icons.login_rounded,
               isLoading: auth.isLoading,
               onTap: auth.isLoading ? null : _loginWithEmail,
             ),
-
             const SizedBox(height: 20),
             const _Divider(label: '- or use mobile OTP -'),
             const SizedBox(height: 12),
-
-            // ── OTP Section ───────────────────────────────────────────
             _OTPSection(
               showOTP: _showOTP,
               otpSent: _otpSent,
+              activeOtpCode: auth.activeOtpCode,
               mobileCtrl: _mobileCtrl,
               otpCtrls: _otpCtrls,
               otpFocusNodes: _otpFocusNodes,
@@ -499,16 +1160,13 @@ class _LoginTabState extends State<_LoginTab> {
               }),
               onSendOTP: _sendOTP,
               onVerifyOTP: _verifyOTP,
+              onAutoFillOTP: _autoFillOtp,
               isLoading: auth.isLoading,
             ),
-
             const SizedBox(height: 24),
-
-            // ── Guest ─────────────────────────────────────────────────
             _GuestSection(
               onGuest: () async {
                 await context.read<AuthProvider>().continueAsGuest();
-                // Navigation handled automatically by GoRouter redirect via notifyListeners()
               },
               isLoading: auth.isLoading,
             ),
@@ -518,8 +1176,6 @@ class _LoginTabState extends State<_LoginTab> {
     );
   }
 }
-
-// ─── Google Button ────────────────────────────────────────────────────────────
 
 class _GoogleButton extends StatelessWidget {
   final VoidCallback onTap;
@@ -535,7 +1191,6 @@ class _GoogleButton extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Google G icon via colored text
           RichText(
             text: const TextSpan(
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
@@ -545,7 +1200,7 @@ class _GoogleButton extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          const Text(
+          const TText(
             'Continue with Google',
             style: TextStyle(
               color: AppColors.textPrimary,
@@ -561,28 +1216,30 @@ class _GoogleButton extends StatelessWidget {
   }
 }
 
-// ─── OTP Section ─────────────────────────────────────────────────────────────
-
 class _OTPSection extends StatelessWidget {
   final bool showOTP;
   final bool otpSent;
+  final String? activeOtpCode;
   final TextEditingController mobileCtrl;
   final List<TextEditingController> otpCtrls;
   final List<FocusNode> otpFocusNodes;
   final VoidCallback onToggle;
   final VoidCallback onSendOTP;
   final VoidCallback onVerifyOTP;
+  final ValueChanged<String> onAutoFillOTP;
   final bool isLoading;
 
   const _OTPSection({
     required this.showOTP,
     required this.otpSent,
+    required this.activeOtpCode,
     required this.mobileCtrl,
     required this.otpCtrls,
     required this.otpFocusNodes,
     required this.onToggle,
     required this.onSendOTP,
     required this.onVerifyOTP,
+    required this.onAutoFillOTP,
     required this.isLoading,
   });
 
@@ -591,7 +1248,6 @@ class _OTPSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Toggle button
         TextButton.icon(
           onPressed: onToggle,
           icon: Icon(
@@ -599,7 +1255,7 @@ class _OTPSection extends StatelessWidget {
             color: AppColors.accent,
             size: 18,
           ),
-          label: Text(
+          label: TText(
             showOTP ? 'Hide OTP Login' : 'Login with Mobile OTP',
             style: const TextStyle(
               color: AppColors.accent,
@@ -612,8 +1268,6 @@ class _OTPSection extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 8),
           ),
         ),
-
-        // Expandable OTP region
         AnimatedSize(
           duration: const Duration(milliseconds: 350),
           curve: Curves.easeOutCubic,
@@ -622,7 +1276,6 @@ class _OTPSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const SizedBox(height: 12),
-                    // Mobile field
                     _NeonTextField(
                       controller: mobileCtrl,
                       label: 'Mobile Number',
@@ -641,21 +1294,82 @@ class _OTPSection extends StatelessWidget {
                         isLoading: isLoading,
                         onTap: onSendOTP,
                       ),
-
-                    // OTP boxes
                     if (otpSent) ...[
-                      const SizedBox(height: 16),
-                      const Text(
+                      if (activeOtpCode != null &&
+                          activeOtpCode!.length == 6) ...[
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.accent.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: AppColors.accent.withValues(alpha: 0.4),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.sms_outlined,
+                                color: AppColors.accent,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const TText(
+                                      'Civic Voice SMS Gateway Code',
+                                      style: TextStyle(
+                                        color: AppColors.textSecondary,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                    Text(
+                                      activeOtpCode!,
+                                      style: const TextStyle(
+                                        color: AppColors.accent,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w700,
+                                        fontFamily: 'SpaceMono',
+                                        letterSpacing: 3,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () => onAutoFillOTP(activeOtpCode!),
+                                child: const TText(
+                                  'Auto-fill',
+                                  style: TextStyle(
+                                    color: AppColors.accent,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                      const TText(
                         'Enter 6-digit OTP',
                         style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 13,
-                            fontFamily: 'Rajdhani'),
+                          color: AppColors.textSecondary,
+                          fontSize: 13,
+                          fontFamily: 'Rajdhani',
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 12),
                       _OTPBoxes(
-                          controllers: otpCtrls, focusNodes: otpFocusNodes),
+                        controllers: otpCtrls,
+                        focusNodes: otpFocusNodes,
+                      ),
                       const SizedBox(height: 16),
                       NeonButton(
                         label: 'Verify OTP',
@@ -663,6 +1377,25 @@ class _OTPSection extends StatelessWidget {
                         height: 46,
                         isLoading: isLoading,
                         onTap: onVerifyOTP,
+                      ),
+                      const SizedBox(height: 6),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton.icon(
+                          onPressed: isLoading ? null : onSendOTP,
+                          icon: const Icon(
+                            Icons.refresh_rounded,
+                            size: 16,
+                            color: AppColors.accent,
+                          ),
+                          label: const TText(
+                            'Resend OTP',
+                            style: TextStyle(
+                              color: AppColors.accent,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                     const SizedBox(height: 8),
@@ -674,8 +1407,6 @@ class _OTPSection extends StatelessWidget {
     );
   }
 }
-
-// ─── 6-box OTP Input ──────────────────────────────────────────────────────────
 
 class _OTPBoxes extends StatelessWidget {
   final List<TextEditingController> controllers;
@@ -733,8 +1464,6 @@ class _OTPBoxes extends StatelessWidget {
   }
 }
 
-// ─── Guest Section ────────────────────────────────────────────────────────────
-
 class _GuestSection extends StatelessWidget {
   final VoidCallback onGuest;
   final bool isLoading;
@@ -747,16 +1476,19 @@ class _GuestSection extends StatelessWidget {
         const Divider(color: AppColors.border, thickness: 1),
         const SizedBox(height: 12),
         NeonButton.outlined(
-          label: 'Continue as Guest  →',
+          label: 'Continue as Guest',
           icon: Icons.person_outline_rounded,
           onTap: isLoading ? null : onGuest,
           height: 48,
         ),
         const SizedBox(height: 8),
-        const Text(
-          'Limited features · No data saved',
+        const TText(
+          'Limited features - No data saved',
           style: TextStyle(
-              color: AppColors.textDisabled, fontSize: 11, letterSpacing: 0.3),
+            color: AppColors.textDisabled,
+            fontSize: 11,
+            letterSpacing: 0.3,
+          ),
           textAlign: TextAlign.center,
         ),
       ],
@@ -785,12 +1517,11 @@ class _RegisterTabState extends State<_RegisterTab> {
   bool _passVisible = false;
   bool _confirmVisible = false;
   String _selectedLang = 'en';
-  IndianState? _selectedState;
+  String _selectedState = 'Maharashtra';
 
   @override
   void initState() {
     super.initState();
-    // Mirror LanguageProvider selection
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {
@@ -812,169 +1543,66 @@ class _RegisterTabState extends State<_RegisterTab> {
 
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) {
-      // Shake the form
       return;
     }
     final auth = context.read<AuthProvider>();
-    final userProvider = context.read<UserProvider>(); // Cache before await
+    final citizenProfileProvider = context.read<CitizenProfileProvider>();
+    final userProvider = context.read<UserProvider>();
+
+    final name = _nameCtrl.text.trim();
+    final email = _emailCtrl.text.trim();
+    final mobile = _mobileCtrl.text.trim();
+    final password = _passCtrl.text;
 
     final success = await auth.signup(
-      _nameCtrl.text.trim(),
-      _emailCtrl.text.trim(),
-      _passCtrl.text,
-      phone: _mobileCtrl.text.trim(),
+      name,
+      email,
+      password,
+      phone: mobile,
+      state: _selectedState,
       language: _selectedLang,
     );
 
     if (success && auth.userId != null) {
-      userProvider.login(
-        name: _nameCtrl.text.trim(),
-        email: _emailCtrl.text.trim(),
-        phone: _mobileCtrl.text.trim(),
+      await _hydrateSessionProfiles(
+        auth: auth,
+        citizenProfileProvider: citizenProfileProvider,
+        userProvider: userProvider,
+        overrideName: name,
+        overrideEmail: email,
+        overrideMobile: mobile,
+        overrideState: _selectedState,
+        overrideLanguage: _selectedLang,
       );
-      // Also try fetching if there's a DB trigger that creates the profile
-      userProvider.fetchUserProfile(auth.userId!);
+      return;
     }
 
     if (!mounted) return;
 
-    if (success) {
-      // Navigation handled automatically by GoRouter redirect via notifyListeners()
-      // Do NOT call context.go() - causes double-navigation crash.
-    } else {
-      if (auth.error == 'CONFIRM_SIGNUP_REQUIRED') {
-        _showOTPVerificationDialog(
-            _emailCtrl.text.trim(), _passCtrl.text, auth, userProvider);
-      } else if (auth.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(auth.error!),
-            backgroundColor: AppColors.error,
-            behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-        );
-      }
+    if (auth.error == 'CONFIRM_SIGNUP_REQUIRED') {
+      _showEmailVerificationDialog(
+        hostContext: context,
+        email: email,
+        password: password,
+        auth: auth,
+        citizenProfileProvider: citizenProfileProvider,
+        userProvider: userProvider,
+        registeredName: name,
+        registeredMobile: mobile,
+        registeredState: _selectedState,
+        registeredLanguage: _selectedLang,
+      );
+    } else if (auth.error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: TText(auth.error!),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
     }
-  }
-
-  void _showOTPVerificationDialog(String email, String password,
-      AuthProvider auth, UserProvider userProvider) {
-    final otpCtrl = TextEditingController();
-    bool isVerifying = false;
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setDialogState) {
-          return AlertDialog(
-            backgroundColor: AppColors.backgroundLight,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: const Text('Verify Email',
-                style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontFamily: 'Rajdhani',
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700)),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'We sent a verification code to your email. Please enter it below:',
-                  style:
-                      TextStyle(color: AppColors.textSecondary, fontSize: 13),
-                ),
-                const SizedBox(height: 16),
-                _NeonTextField(
-                  controller: otpCtrl,
-                  label: 'Verification Code',
-                  icon: Icons.password_rounded,
-                  keyboardType: TextInputType.number,
-                ),
-                if (isVerifying) ...[
-                  const SizedBox(height: 16),
-                  const CircularProgressIndicator(color: AppColors.accent),
-                ]
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed:
-                    isVerifying ? null : () => Navigator.pop(dialogContext),
-                child: const Text('Cancel',
-                    style: TextStyle(color: AppColors.textSecondary)),
-              ),
-              TextButton(
-                onPressed: isVerifying
-                    ? null
-                    : () async {
-                        final code = otpCtrl.text.trim();
-                        if (code.isEmpty) return;
-
-                        setDialogState(() => isVerifying = true);
-
-                        final success = await auth.confirmSignUp(email, code);
-
-                        if (!mounted) return;
-
-                        if (success) {
-                          // Dismiss dialog safely BEFORE triggering any router redirects
-                          if (dialogContext.mounted) {
-                            Navigator.pop(dialogContext);
-                          }
-
-                          // Auto login
-                          final loginSuccess =
-                              await auth.loginWithEmail(email, password);
-
-                          if (loginSuccess && auth.userId != null) {
-                            userProvider.fetchUserProfile(auth.userId!);
-                          }
-
-                          if (!mounted) return;
-
-                          if (loginSuccess) {
-                            // Navigation handled automatically by GoRouter redirect via notifyListeners()
-                            // Do NOT call context.go() - causes double-navigation crash.
-                          } else {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Verified! Please log in.'),
-                                  backgroundColor: AppColors.success,
-                                ),
-                              );
-                              // Switch to login tab
-                              // ignore: use_build_context_synchronously
-                              context
-                                  .findAncestorStateOfType<_AuthScreenState>()
-                                  ?.setState(() {});
-                            }
-                          }
-                        } else {
-                          setDialogState(() => isVerifying = false);
-                          if (dialogContext.mounted) {
-                            ScaffoldMessenger.of(dialogContext).showSnackBar(
-                              SnackBar(
-                                content:
-                                    Text(auth.error ?? 'Verification failed'),
-                                backgroundColor: AppColors.error,
-                              ),
-                            );
-                          }
-                        }
-                      },
-                child: const Text('Verify & Login',
-                    style: TextStyle(color: AppColors.accent)),
-              ),
-            ],
-          );
-        },
-      ),
-    );
   }
 
   @override
@@ -988,7 +1616,6 @@ class _RegisterTabState extends State<_RegisterTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Full Name
             _NeonTextField(
               controller: _nameCtrl,
               label: 'Full Name',
@@ -998,8 +1625,6 @@ class _RegisterTabState extends State<_RegisterTab> {
                   (v == null || v.trim().isEmpty) ? 'Name is required' : null,
             ),
             const SizedBox(height: 14),
-
-            // Email
             _NeonTextField(
               controller: _emailCtrl,
               label: 'Email address',
@@ -1012,8 +1637,6 @@ class _RegisterTabState extends State<_RegisterTab> {
               },
             ),
             const SizedBox(height: 14),
-
-            // Mobile
             _NeonTextField(
               controller: _mobileCtrl,
               label: 'Mobile Number',
@@ -1031,8 +1654,6 @@ class _RegisterTabState extends State<_RegisterTab> {
               },
             ),
             const SizedBox(height: 14),
-
-            // Password
             _NeonTextField(
               controller: _passCtrl,
               label: 'Password',
@@ -1057,8 +1678,6 @@ class _RegisterTabState extends State<_RegisterTab> {
               },
             ),
             const SizedBox(height: 14),
-
-            // Confirm Password
             _NeonTextField(
               controller: _confirmPassCtrl,
               label: 'Confirm Password',
@@ -1084,9 +1703,7 @@ class _RegisterTabState extends State<_RegisterTab> {
               },
             ),
             const SizedBox(height: 20),
-
-            // Language
-            const Text(
+            const TText(
               'Preferred Language',
               style: TextStyle(
                 color: AppColors.textSecondary,
@@ -1104,15 +1721,25 @@ class _RegisterTabState extends State<_RegisterTab> {
               },
             ),
             const SizedBox(height: 20),
-
-            // State dropdown
+            const TText(
+              'State / Union Territory',
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 13,
+                fontFamily: 'Rajdhani',
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 10),
             _StateDropdown(
               selected: _selectedState,
-              onChanged: (s) => setState(() => _selectedState = s),
+              onChanged: (s) {
+                if (s != null) {
+                  setState(() => _selectedState = s);
+                }
+              },
             ),
             const SizedBox(height: 24),
-
-            // Register button
             NeonButton(
               label: 'Create Account',
               icon: Icons.app_registration_rounded,
@@ -1126,17 +1753,15 @@ class _RegisterTabState extends State<_RegisterTab> {
   }
 }
 
-// ─── Language chip selector ───────────────────────────────────────────────────
-
 class _LangChipSelector extends StatelessWidget {
   final String selected;
   final ValueChanged<String> onChanged;
 
   static const _langs = [
-    ('en', '🇬🇧', 'EN'),
-    ('hi', '🇮🇳', 'HI'),
-    ('mr', '🇮🇳', 'MR'),
-    ('ta', '🇮🇳', 'TA'),
+    ('en', 'EN', 'English'),
+    ('hi', 'HI', 'Hindi'),
+    ('mr', 'MR', 'Marathi'),
+    ('ta', 'TA', 'Tamil'),
   ];
 
   const _LangChipSelector({required this.selected, required this.onChanged});
@@ -1145,7 +1770,7 @@ class _LangChipSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: _langs.map((l) {
-        final (code, flag, label) = l;
+        final (code, badge, label) = l;
         final isSelected = selected == code;
         return Expanded(
           child: GestureDetector(
@@ -1167,9 +1792,18 @@ class _LangChipSelector extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(flag, style: const TextStyle(fontSize: 16)),
-                  const SizedBox(height: 2),
                   Text(
+                    badge,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color:
+                          isSelected ? AppColors.accent : AppColors.textPrimary,
+                      fontFamily: 'SpaceMono',
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  TText(
                     label,
                     style: TextStyle(
                       color: isSelected
@@ -1190,16 +1824,16 @@ class _LangChipSelector extends StatelessWidget {
   }
 }
 
-// ─── State Dropdown ───────────────────────────────────────────────────────────
-
 class _StateDropdown extends StatelessWidget {
-  final IndianState? selected;
-  final ValueChanged<IndianState?> onChanged;
+  final String selected;
+  final ValueChanged<String?> onChanged;
 
   const _StateDropdown({required this.selected, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
+    final lang = context.watch<LanguageProvider>();
+    final normalizedSelected = ProfileConstants.normalizeState(selected);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
@@ -1208,25 +1842,24 @@ class _StateDropdown extends StatelessWidget {
         border: Border.all(color: AppColors.border),
       ),
       child: DropdownButtonHideUnderline(
-        child: DropdownButton<IndianState>(
-          value: selected,
-          hint: const Text(
-            'Select your state / UT',
-            style: TextStyle(color: AppColors.textDisabled, fontSize: 14),
-          ),
+        child: DropdownButton<String>(
+          value: normalizedSelected,
           isExpanded: true,
           dropdownColor: AppColors.backgroundLight,
-          icon: const Icon(Icons.keyboard_arrow_down_rounded,
-              color: AppColors.textSecondary),
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: AppColors.textSecondary,
+          ),
           style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 14,
-              fontFamily: 'Rajdhani'),
-          items: IndianState.values.map((s) {
-            return DropdownMenuItem<IndianState>(
+            color: AppColors.textPrimary,
+            fontSize: 14,
+            fontFamily: 'Rajdhani',
+          ),
+          items: ProfileConstants.statesAndUTs.map((s) {
+            return DropdownMenuItem<String>(
               value: s,
               child: Text(
-                s.label,
+                lang.translateSync(s),
                 style: const TextStyle(color: AppColors.textPrimary),
               ),
             );
@@ -1238,11 +1871,6 @@ class _StateDropdown extends StatelessWidget {
   }
 }
 
-// ═════════════════════════════════════════════════════════════════════════════
-// SHARED COMPONENTS
-// ═════════════════════════════════════════════════════════════════════════════
-
-/// Neon-glow text field that animates its border on focus.
 class _NeonTextField extends StatefulWidget {
   final TextEditingController controller;
   final String label;
@@ -1310,6 +1938,7 @@ class _NeonTextFieldState extends State<_NeonTextField>
 
   @override
   Widget build(BuildContext context) {
+    final lang = context.watch<LanguageProvider>();
     return AnimatedBuilder(
       animation: _glowAnim,
       builder: (_, child) => Container(
@@ -1334,20 +1963,31 @@ class _NeonTextFieldState extends State<_NeonTextField>
         inputFormatters: widget.inputFormatters,
         textCapitalization: widget.textCapitalization,
         style: const TextStyle(
-            color: AppColors.textPrimary, fontSize: 15, fontFamily: 'Rajdhani'),
-        validator: widget.validator,
+          color: AppColors.textPrimary,
+          fontSize: 15,
+          fontFamily: 'Rajdhani',
+        ),
+        validator: widget.validator != null
+            ? (v) {
+                final err = widget.validator!(v);
+                return err != null ? lang.translateSync(err) : null;
+              }
+            : null,
         autovalidateMode: AutovalidateMode.onUserInteraction,
         decoration: InputDecoration(
-          labelText: widget.label,
+          labelText: lang.translateSync(widget.label),
           labelStyle: const TextStyle(
-              color: AppColors.textSecondary, fontFamily: 'Rajdhani'),
+            color: AppColors.textSecondary,
+            fontFamily: 'Rajdhani',
+          ),
           counterText: '',
           prefixIcon: Icon(widget.icon, color: AppColors.accent, size: 20),
           prefixText: widget.prefixText,
           prefixStyle: const TextStyle(
-              color: AppColors.textSecondary,
-              fontFamily: 'SpaceMono',
-              fontSize: 13),
+            color: AppColors.textSecondary,
+            fontFamily: 'SpaceMono',
+            fontSize: 13,
+          ),
           suffixIcon: widget.suffixIcon,
           filled: true,
           fillColor: AppColors.surface.withValues(alpha: 0.5),
@@ -1378,8 +2018,6 @@ class _NeonTextFieldState extends State<_NeonTextField>
   }
 }
 
-// ─── Divider with label ───────────────────────────────────────────────────────
-
 class _Divider extends StatelessWidget {
   final String label;
   const _Divider({required this.label});
@@ -1391,12 +2029,13 @@ class _Divider extends StatelessWidget {
         const Expanded(child: Divider(color: AppColors.border, thickness: 1)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Text(
+          child: TText(
             label,
             style: const TextStyle(
-                color: AppColors.textDisabled,
-                fontSize: 11,
-                letterSpacing: 0.3),
+              color: AppColors.textDisabled,
+              fontSize: 11,
+              letterSpacing: 0.3,
+            ),
           ),
         ),
         const Expanded(child: Divider(color: AppColors.border, thickness: 1)),

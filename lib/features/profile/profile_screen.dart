@@ -1,22 +1,19 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:math' as math;
+import 'package:provider/provider.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/router/app_router.dart';
 import '../../models/citizen_profile_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/citizen_profile_provider.dart';
-import '../../widgets/indian_card.dart';
 import '../../widgets/cvi_button.dart';
 import '../../widgets/decorative/jali_pattern.dart';
-
-// ═════════════════════════════════════════════════════════════════════════════
-// PROFILE SCREEN  - Cloud-synced citizen identity card
-// ═════════════════════════════════════════════════════════════════════════════
+import '../../widgets/indian_card.dart';
+import '../../widgets/t_text.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -29,7 +26,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // Trigger a cloud fetch on first load
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = context.read<CitizenProfileProvider>();
       if (provider.profile == null && !provider.isLoading) {
@@ -54,13 +50,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
-              // ── App Bar ──────────────────────────────────────────────────
               SliverAppBar(
                 backgroundColor: AppColors.bgDeep.withValues(alpha: 0.9),
                 elevation: 0,
                 pinned: true,
                 centerTitle: true,
-                title: Text(
+                title: TText(
                   'My Profile',
                   style: GoogleFonts.playfairDisplay(
                     fontSize: 26,
@@ -70,15 +65,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 actions: [
                   IconButton(
-                    icon: const Icon(Icons.settings_outlined,
-                        color: AppColors.textSecondary, size: 24),
+                    icon: const Icon(
+                      Icons.settings_outlined,
+                      color: AppColors.textSecondary,
+                      size: 24,
+                    ),
                     tooltip: 'Settings',
                     onPressed: () => context.push(Routes.settings),
                   ),
                   const SizedBox(width: 4),
                 ],
               ),
-
               if (isLoading && profile == null)
                 const SliverFillRemaining(
                   child: Center(
@@ -90,15 +87,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
-                      // ── Hero Header ─────────────────────────────────────
                       _ProfileHero(
                         profile: profile,
                         isGuest: isGuest,
                         onEditTap: () => context.push(Routes.profileEdit),
                       ),
                       const SizedBox(height: 20),
-
-                      // ── Completion Banner ────────────────────────────────
                       if (profile != null && profile.isProfileIncomplete)
                         _CompletionBanner(
                           percent: profile.profileCompletionPercent,
@@ -106,51 +100,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       if (profile != null && profile.isProfileIncomplete)
                         const SizedBox(height: 20),
-
-                      // ── Quick Actions ────────────────────────────────────
                       _QuickActions(),
                       const SizedBox(height: 28),
-
-                      // ── Personal Details ─────────────────────────────────
                       if (profile != null) ...[
-                        _CardSectionHeader(
-                            'Personal Details', Icons.person_outline_rounded),
+                        const _CardSectionHeader(
+                          'Personal Details',
+                          Icons.person_outline_rounded,
+                        ),
                         const SizedBox(height: 12),
                         _PersonalCard(profile: profile),
                         const SizedBox(height: 20),
-
-                        // ── Location ───────────────────────────────────────
-                        _CardSectionHeader(
-                            'Location', Icons.location_on_outlined),
+                        const _CardSectionHeader(
+                          'Location',
+                          Icons.location_on_outlined,
+                        ),
                         const SizedBox(height: 12),
                         _LocationCard(profile: profile),
                         const SizedBox(height: 20),
-
-                        // ── Financial & Social ─────────────────────────────
-                        _CardSectionHeader(
-                            'Financial & Social', Icons.currency_rupee_rounded),
+                        const _CardSectionHeader(
+                          'Financial & Social',
+                          Icons.currency_rupee_rounded,
+                        ),
                         const SizedBox(height: 12),
                         _FinancialCard(profile: profile),
                         const SizedBox(height: 20),
-
-                        // ── Document IDs ───────────────────────────────────
-                        _CardSectionHeader(
-                            'Government Documents', Icons.credit_card_rounded),
+                        const _CardSectionHeader(
+                          'Government Documents',
+                          Icons.credit_card_rounded,
+                        ),
                         const SizedBox(height: 12),
                         _DocumentsCard(profile: profile),
                         const SizedBox(height: 20),
-
-                        // ── Disability (conditional) ───────────────────────
                         if (profile.isDisabled) ...[
-                          _CardSectionHeader(
-                              'Disability Info', Icons.accessible_rounded),
+                          const _CardSectionHeader(
+                            'Disability Info',
+                            Icons.accessible_rounded,
+                          ),
                           const SizedBox(height: 12),
                           _DisabilityCard(profile: profile),
                           const SizedBox(height: 20),
                         ],
                       ],
-
-                      // ── Guest CTA ────────────────────────────────────────
                       if (isGuest) ...[
                         _GuestCta(),
                         const SizedBox(height: 20),
@@ -165,10 +155,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 }
-
-// ═════════════════════════════════════════════════════════════════════════════
-// HERO HEADER
-// ═════════════════════════════════════════════════════════════════════════════
 
 class _ProfileHero extends StatelessWidget {
   final CitizenProfileModel? profile;
@@ -202,11 +188,9 @@ class _ProfileHero extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          // Avatar + completion ring
           Stack(
             alignment: Alignment.center,
             children: [
-              // Completion ring
               SizedBox(
                 width: 100,
                 height: 100,
@@ -214,7 +198,6 @@ class _ProfileHero extends StatelessWidget {
                   painter: _RingPainter(percent: pct / 100),
                 ),
               ),
-              // Avatar
               Container(
                 width: 80,
                 height: 80,
@@ -228,22 +211,23 @@ class _ProfileHero extends StatelessWidget {
                   border: Border.all(color: const Color(0xFFD4930A), width: 2),
                   boxShadow: const [
                     BoxShadow(
-                        color: Color(0x66FF6B1A),
-                        blurRadius: 20,
-                        spreadRadius: 2),
+                      color: Color(0x66FF6B1A),
+                      blurRadius: 20,
+                      spreadRadius: 2,
+                    ),
                   ],
                 ),
                 child: Center(
                   child: Text(
                     initials,
                     style: GoogleFonts.playfairDisplay(
-                        color: Colors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold),
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
-              // Edit badge
               if (!isGuest)
                 Positioned(
                   right: 8,
@@ -258,29 +242,32 @@ class _ProfileHero extends StatelessWidget {
                         color: AppColors.bgDeep,
                         border: Border.all(color: AppColors.gold, width: 1.5),
                       ),
-                      child: const Icon(Icons.edit_rounded,
-                          color: AppColors.gold, size: 14),
+                      child: const Icon(
+                        Icons.edit_rounded,
+                        color: AppColors.gold,
+                        size: 14,
+                      ),
                     ),
                   ),
                 ),
             ],
           ).animate().scale(
-              begin: const Offset(0.8, 0.8),
-              end: const Offset(1, 1),
-              duration: 600.ms,
-              curve: Curves.elasticOut),
+                begin: const Offset(0.8, 0.8),
+                end: const Offset(1, 1),
+                duration: 600.ms,
+                curve: Curves.elasticOut,
+              ),
           const SizedBox(height: 16),
-
-          // Name
-          Text(name,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.playfairDisplay(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary)),
+          Text(
+            name,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.playfairDisplay(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
+          ),
           const SizedBox(height: 6),
-
-          // Contact chips
           Wrap(
             alignment: WrapAlignment.center,
             spacing: 8,
@@ -291,18 +278,15 @@ class _ProfileHero extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-
-          // Completion bar text
           if (!isGuest)
-            Text(
+            TText(
               '$pct% profile complete',
               style: GoogleFonts.spaceMono(
-                  color: pct >= 70 ? AppColors.emerald : AppColors.saffron,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold),
+                color: pct >= 70 ? AppColors.emerald : AppColors.saffron,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-
-          // Verified badges
           if (!isGuest && profile != null) ...[
             const SizedBox(height: 12),
             Wrap(
@@ -319,7 +303,6 @@ class _ProfileHero extends StatelessWidget {
               ],
             ),
           ],
-
           if (isGuest) ...[
             const SizedBox(height: 16),
             CviButton(
@@ -351,9 +334,13 @@ class _ProfileHero extends StatelessWidget {
         children: [
           Icon(icon, size: 13, color: AppColors.textMuted),
           const SizedBox(width: 5),
-          Text(label,
-              style: GoogleFonts.inter(
-                  color: AppColors.textSecondary, fontSize: 12)),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+            ),
+          ),
         ],
       ),
     );
@@ -372,16 +359,19 @@ class _ProfileHero extends StatelessWidget {
         children: [
           Icon(Icons.check_circle_rounded, color: color, size: 13),
           const SizedBox(width: 5),
-          Text(label,
-              style: GoogleFonts.inter(
-                  color: color, fontSize: 12, fontWeight: FontWeight.w600)),
+          TText(
+            label,
+            style: GoogleFonts.inter(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
   }
 }
-
-// ─── Ring Painter ─────────────────────────────────────────────────────────────
 
 class _RingPainter extends CustomPainter {
   final double percent;
@@ -391,7 +381,7 @@ class _RingPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2 - 4;
-    final stroke = 4.0;
+    const stroke = 4.0;
 
     final bgPaint = Paint()
       ..color = AppColors.surfaceBorder
@@ -418,10 +408,6 @@ class _RingPainter extends CustomPainter {
   bool shouldRepaint(_RingPainter old) => old.percent != percent;
 }
 
-// ═════════════════════════════════════════════════════════════════════════════
-// COMPLETION BANNER
-// ═════════════════════════════════════════════════════════════════════════════
-
 class _CompletionBanner extends StatelessWidget {
   final int percent;
   final VoidCallback onTap;
@@ -439,23 +425,31 @@ class _CompletionBanner extends StatelessWidget {
               color: AppColors.saffron.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.info_outline_rounded,
-                color: AppColors.saffron, size: 22),
+            child: const Icon(
+              Icons.info_outline_rounded,
+              color: AppColors.saffron,
+              size: 22,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Complete your profile',
-                    style: GoogleFonts.poppins(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14)),
-                Text(
+                TText(
+                  'Complete your profile',
+                  style: GoogleFonts.poppins(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+                TText(
                   'Only $percent% done. A complete profile helps you find the right schemes.',
                   style: GoogleFonts.inter(
-                      color: AppColors.textSecondary, fontSize: 12),
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
@@ -469,11 +463,14 @@ class _CompletionBanner extends StatelessWidget {
                 color: AppColors.saffron,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text('Fill',
-                  style: GoogleFonts.poppins(
-                      color: Colors.white,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600)),
+              child: TText(
+                'Fill',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
         ],
@@ -482,10 +479,6 @@ class _CompletionBanner extends StatelessWidget {
   }
 }
 
-// ═════════════════════════════════════════════════════════════════════════════
-// QUICK ACTIONS
-// ═════════════════════════════════════════════════════════════════════════════
-
 class _QuickActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -493,7 +486,7 @@ class _QuickActions extends StatelessWidget {
       children: [
         Expanded(
           child: _ActionTile(
-            emoji: '✏️',
+            icon: Icons.edit_outlined,
             label: 'Edit Profile',
             onTap: () => context.push(Routes.profileEdit),
           ),
@@ -501,7 +494,7 @@ class _QuickActions extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: _ActionTile(
-            emoji: '⚙️',
+            icon: Icons.settings_outlined,
             label: 'Settings',
             onTap: () => context.push(Routes.settings),
           ),
@@ -509,7 +502,7 @@ class _QuickActions extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: _ActionTile(
-            emoji: '📋',
+            icon: Icons.assignment_outlined,
             label: 'My Applications',
             onTap: () => context.push(Routes.myApplications),
           ),
@@ -520,11 +513,14 @@ class _QuickActions extends StatelessWidget {
 }
 
 class _ActionTile extends StatelessWidget {
-  final String emoji;
+  final IconData icon;
   final String label;
   final VoidCallback onTap;
-  const _ActionTile(
-      {required this.emoji, required this.label, required this.onTap});
+  const _ActionTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -536,24 +532,23 @@ class _ActionTile extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 24)),
+            Icon(icon, color: AppColors.saffron, size: 24),
             const SizedBox(height: 6),
-            Text(label,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                    color: AppColors.textSecondary,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500)),
+            TText(
+              label,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: AppColors.textSecondary,
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 }
-
-// ═════════════════════════════════════════════════════════════════════════════
-// SECTION HEADER
-// ═════════════════════════════════════════════════════════════════════════════
 
 class _CardSectionHeader extends StatelessWidget {
   final String title;
@@ -568,7 +563,9 @@ class _CardSectionHeader extends StatelessWidget {
           width: 4,
           height: 20,
           decoration: BoxDecoration(
-              color: AppColors.saffron, borderRadius: BorderRadius.circular(2)),
+            color: AppColors.saffron,
+            borderRadius: BorderRadius.circular(2),
+          ),
         ),
         const SizedBox(width: 10),
         Container(
@@ -580,19 +577,18 @@ class _CardSectionHeader extends StatelessWidget {
           child: Icon(icon, color: AppColors.gold, size: 15),
         ),
         const SizedBox(width: 10),
-        Text(title,
-            style: GoogleFonts.poppins(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w600,
-                fontSize: 15)),
+        TText(
+          title,
+          style: GoogleFonts.poppins(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w600,
+            fontSize: 15,
+          ),
+        ),
       ],
     );
   }
 }
-
-// ═════════════════════════════════════════════════════════════════════════════
-// DETAILS CARDS
-// ═════════════════════════════════════════════════════════════════════════════
 
 class _PersonalCard extends StatelessWidget {
   final CitizenProfileModel profile;
@@ -613,6 +609,8 @@ class _PersonalCard extends StatelessWidget {
               '${profile.dateOfBirth!.day}/${profile.dateOfBirth!.month}/${profile.dateOfBirth!.year}',
               Icons.cake_outlined,
             ),
+          ],
+          if (age > 0) ...[
             _divider(),
             _row('Age', '$age years', Icons.timelapse_rounded),
           ],
@@ -622,8 +620,11 @@ class _PersonalCard extends StatelessWidget {
           ],
           if (profile.maritalStatus != null) ...[
             _divider(),
-            _row('Marital Status', profile.maritalStatus!,
-                Icons.favorite_border_rounded),
+            _row(
+              'Marital Status',
+              profile.maritalStatus!,
+              Icons.favorite_border_rounded,
+            ),
           ],
         ],
       ),
@@ -665,8 +666,9 @@ class _FinancialCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final incomeLabel = profile.effectiveIncomeRange;
     final hasData = profile.occupation != null ||
-        profile.annualIncomeRange != null ||
+        incomeLabel.isNotEmpty ||
         profile.casteCategory != null;
 
     return IndianCard(
@@ -674,18 +676,26 @@ class _FinancialCard extends StatelessWidget {
       child: hasData
           ? Column(
               children: [
-                if (profile.occupation != null)
-                  _row('Occupation', profile.occupation!,
-                      Icons.work_outline_rounded),
-                if (profile.annualIncomeRange != null) ...[
+                if (profile.occupation != null) ...[
+                  _row(
+                    'Occupation',
+                    profile.occupation!,
+                    Icons.work_outline_rounded,
+                  ),
                   _divider(),
-                  _row('Annual Income', profile.annualIncomeRange!,
-                      Icons.currency_rupee_rounded),
                 ],
+                _row(
+                  'Annual Income',
+                  incomeLabel,
+                  Icons.currency_rupee_rounded,
+                ),
                 if (profile.casteCategory != null) ...[
                   _divider(),
-                  _row('Caste Category', profile.casteCategory!,
-                      Icons.groups_outlined),
+                  _row(
+                    'Caste Category',
+                    profile.casteCategory!,
+                    Icons.groups_outlined,
+                  ),
                 ],
               ],
             )
@@ -710,16 +720,24 @@ class _DocumentsCard extends StatelessWidget {
           ? Column(
               children: [
                 if (profile.aadhaarLastFour != null)
-                  _row('Aadhaar', 'XXXX XXXX ${profile.aadhaarLastFour}',
-                      Icons.fingerprint_rounded),
+                  _row(
+                    'Aadhaar',
+                    'XXXX XXXX ${profile.aadhaarLastFour}',
+                    Icons.fingerprint_rounded,
+                  ),
                 if (profile.panMasked != null) ...[
-                  _divider(),
+                  if (profile.aadhaarLastFour != null) _divider(),
                   _row('PAN', profile.panMasked!, Icons.credit_card_rounded),
                 ],
                 if (profile.rationCardNumber != null) ...[
-                  _divider(),
-                  _row('Ration Card', profile.rationCardNumber!,
-                      Icons.article_outlined),
+                  if (profile.aadhaarLastFour != null ||
+                      profile.panMasked != null)
+                    _divider(),
+                  _row(
+                    'Ration Card',
+                    profile.rationCardNumber!,
+                    Icons.article_outlined,
+                  ),
                 ],
               ],
             )
@@ -738,20 +756,25 @@ class _DisabilityCard extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          _row('PwD Status', 'Registered', Icons.accessible_rounded,
-              valueColor: AppColors.saffron),
+          _row(
+            'PwD Status',
+            'Registered',
+            Icons.accessible_rounded,
+            valueColor: AppColors.saffron,
+          ),
           if (profile.disabilityType != null) ...[
             _divider(),
-            _row('Disability Type', profile.disabilityType!,
-                Icons.medical_information_outlined),
+            _row(
+              'Disability Type',
+              profile.disabilityType!,
+              Icons.medical_information_outlined,
+            ),
           ],
         ],
       ),
     ).animate().fadeIn(delay: 300.ms);
   }
 }
-
-// ─── Guest CTA ────────────────────────────────────────────────────────────────
 
 class _GuestCta extends StatelessWidget {
   @override
@@ -760,19 +783,29 @@ class _GuestCta extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          const Icon(Icons.person_add_outlined,
-              color: AppColors.saffron, size: 40),
+          const Icon(
+            Icons.person_add_outlined,
+            color: AppColors.saffron,
+            size: 40,
+          ),
           const SizedBox(height: 12),
-          Text('Sign in to access your profile',
-              style: GoogleFonts.poppins(
-                  color: AppColors.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600)),
+          TText(
+            'Sign in to access your profile',
+            style: GoogleFonts.poppins(
+              color: AppColors.textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           const SizedBox(height: 6),
-          Text('Your demographic details help us show you relevant schemes.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                  color: AppColors.textSecondary, fontSize: 13)),
+          TText(
+            'Your demographic details help us show you relevant schemes.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              color: AppColors.textSecondary,
+              fontSize: 13,
+            ),
+          ),
           const SizedBox(height: 18),
           CviButton(
             text: 'Create Account',
@@ -790,8 +823,6 @@ class _GuestCta extends StatelessWidget {
   }
 }
 
-// ─── Shared helpers ───────────────────────────────────────────────────────────
-
 Widget _row(String label, String value, IconData icon, {Color? valueColor}) {
   return Row(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -802,17 +833,23 @@ Widget _row(String label, String value, IconData icon, {Color? valueColor}) {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label,
-                style: GoogleFonts.inter(
-                    color: AppColors.textMuted,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500)),
+            TText(
+              label,
+              style: GoogleFonts.inter(
+                color: AppColors.textMuted,
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
             const SizedBox(height: 2),
-            Text(value,
-                style: GoogleFonts.inter(
-                    color: valueColor ?? AppColors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500)),
+            TText(
+              value,
+              style: GoogleFonts.inter(
+                color: valueColor ?? AppColors.textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ],
         ),
       ),
@@ -821,19 +858,24 @@ Widget _row(String label, String value, IconData icon, {Color? valueColor}) {
 }
 
 Widget _divider() => const Padding(
-    padding: EdgeInsets.symmetric(vertical: 12),
-    child: Divider(color: AppColors.surfaceBorder, height: 1));
+      padding: EdgeInsets.symmetric(vertical: 12),
+      child: Divider(color: AppColors.surfaceBorder, height: 1),
+    );
 
 Widget _emptyState(String message) => Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          const Icon(Icons.add_circle_outline_rounded,
-              color: AppColors.textMuted, size: 18),
+          const Icon(
+            Icons.add_circle_outline_rounded,
+            color: AppColors.textMuted,
+            size: 18,
+          ),
           const SizedBox(width: 10),
-          Text(message,
-              style:
-                  GoogleFonts.inter(color: AppColors.textMuted, fontSize: 13)),
+          TText(
+            message,
+            style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 13),
+          ),
         ],
       ),
     );

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import '../models/document_model.dart';
 import '../models/application_model.dart';
 import '../models/family_member_model.dart';
+import '../models/citizen_profile_model.dart';
+import '../core/services/citizen_profile_service.dart';
 
 enum UserType { guest, registered, premium }
 
@@ -22,11 +24,14 @@ class UserProfile {
   final List<UserApplication> applications;
   final List<FamilyMember> familyMembers;
 
-  // Personalized demographic fields
+  // Personalized demographic fields synced with CitizenProfileModel
   final int? age;
   final double? annualIncome;
+  final String? annualIncomeRange;
   final String? occupation;
   final String? location;
+  final String? gender;
+  final String? casteCategory;
   final bool ownsLand;
   final Map<String, dynamic> preferences;
 
@@ -46,13 +51,15 @@ class UserProfile {
     this.familyMembers = const [],
     this.age,
     this.annualIncome,
+    this.annualIncomeRange,
     this.occupation,
     this.location,
+    this.gender,
+    this.casteCategory,
     this.ownsLand = false,
     this.preferences = const {'theme_mode': 'system', 'language': 'en'},
   });
 
-  // Guest user factory
   factory UserProfile.guest() {
     return UserProfile(
       name: 'Guest User',
@@ -62,7 +69,6 @@ class UserProfile {
     );
   }
 
-  // Registered user factory
   factory UserProfile.registered({
     required String name,
     required String email,
@@ -77,8 +83,11 @@ class UserProfile {
     List<FamilyMember>? familyMembers,
     int? age,
     double? annualIncome,
+    String? annualIncomeRange,
     String? occupation,
     String? location,
+    String? gender,
+    String? casteCategory,
     bool ownsLand = false,
   }) {
     return UserProfile(
@@ -97,8 +106,11 @@ class UserProfile {
       familyMembers: familyMembers ?? [],
       age: age,
       annualIncome: annualIncome,
+      annualIncomeRange: annualIncomeRange,
       occupation: occupation,
       location: location,
+      gender: gender,
+      casteCategory: casteCategory,
       ownsLand: ownsLand,
     );
   }
@@ -107,7 +119,6 @@ class UserProfile {
   bool get isRegistered =>
       userType == UserType.registered || userType == UserType.premium;
 
-  // Check if personalization data is set
   bool get isProfileComplete =>
       age != null && annualIncome != null && location != null;
 
@@ -123,8 +134,11 @@ class UserProfile {
     List<FamilyMember>? familyMembers,
     int? age,
     double? annualIncome,
+    String? annualIncomeRange,
     String? occupation,
     String? location,
+    String? gender,
+    String? casteCategory,
     bool? ownsLand,
     Map<String, dynamic>? preferences,
   }) {
@@ -152,8 +166,11 @@ class UserProfile {
       familyMembers: familyMembers ?? this.familyMembers,
       age: age ?? this.age,
       annualIncome: annualIncome ?? this.annualIncome,
+      annualIncomeRange: annualIncomeRange ?? this.annualIncomeRange,
       occupation: occupation ?? this.occupation,
       location: location ?? this.location,
+      gender: gender ?? this.gender,
+      casteCategory: casteCategory ?? this.casteCategory,
       ownsLand: ownsLand ?? this.ownsLand,
       preferences: preferences ?? this.preferences,
     );
@@ -161,6 +178,7 @@ class UserProfile {
 }
 
 class UserProvider extends ChangeNotifier {
+  final CitizenProfileService _citizenProfileService = CitizenProfileService();
   UserProfile _currentUser = UserProfile.guest();
 
   UserProfile get currentUser => _currentUser;
@@ -168,13 +186,11 @@ class UserProvider extends ChangeNotifier {
   bool get isLoggedIn => _currentUser.isRegistered;
   bool get isProfileComplete => _currentUser.isProfileComplete;
 
-  // Login as guest
   void loginAsGuest() {
     _currentUser = UserProfile.guest();
     notifyListeners();
   }
 
-  // Login with credentials
   void login({
     required String name,
     required String email,
@@ -183,8 +199,11 @@ class UserProvider extends ChangeNotifier {
     bool isVerified = false,
     int? age,
     double? annualIncome,
+    String? annualIncomeRange,
     String? occupation,
     String? location,
+    String? gender,
+    String? casteCategory,
     bool ownsLand = false,
     Map<String, dynamic>? preferences,
   }) {
@@ -194,15 +213,19 @@ class UserProvider extends ChangeNotifier {
       phone: phone,
       avatarUrl: avatarUrl,
       isVerified: isVerified,
-      applicationsCount: 0,
-      completedCount: 0,
-      pendingCount: 0,
-      documents: [],
-      applications: [],
+      applicationsCount: _currentUser.applicationsCount,
+      completedCount: _currentUser.completedCount,
+      pendingCount: _currentUser.pendingCount,
+      documents: _currentUser.documents,
+      applications: _currentUser.applications,
+      familyMembers: _currentUser.familyMembers,
       age: age,
       annualIncome: annualIncome,
+      annualIncomeRange: annualIncomeRange,
       occupation: occupation,
       location: location,
+      gender: gender,
+      casteCategory: casteCategory,
       ownsLand: ownsLand,
     );
     if (preferences != null) {
@@ -211,22 +234,40 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Fetch user profile from Data API
+  /// Synchronizes UserProvider state from a CitizenProfileModel instance.
+  void syncFromCitizenProfile(CitizenProfileModel profile) {
+    _currentUser = _currentUser.copyWith(
+      name: profile.fullName.isNotEmpty ? profile.fullName : _currentUser.name,
+      email: profile.email.isNotEmpty ? profile.email : _currentUser.email,
+      phone: profile.mobile.isNotEmpty ? profile.mobile : _currentUser.phone,
+      userType: UserType.registered,
+      isVerified: profile.isKycVerified,
+      age: profile.computedAge > 0 ? profile.computedAge : _currentUser.age,
+      annualIncome:
+          profile.income > 0 ? profile.income : _currentUser.annualIncome,
+      annualIncomeRange:
+          profile.annualIncomeRange ?? _currentUser.annualIncomeRange,
+      occupation: profile.occupation ?? _currentUser.occupation,
+      location:
+          profile.state.isNotEmpty ? profile.state : _currentUser.location,
+      gender: profile.gender ?? _currentUser.gender,
+      casteCategory: profile.casteCategory ?? _currentUser.casteCategory,
+    );
+    notifyListeners();
+  }
+
+  /// Fetch user profile from AppSync GraphQL (querying valid schema fields on User and CitizenProfile).
   Future<void> fetchUserProfile(String userId) async {
     try {
-      final query = '''
-        query GetUser(\$id: ID!) {
-          getUser(id: \$id) {
+      const query = r'''
+        query GetUser($id: ID!) {
+          getUser(id: $id) {
             id
             name
             email
-            phone
-            isVerified
-            age
-            annualIncome
-            location
-            occupation
-            ownsLand
+            mobile
+            language
+            isGuest
           }
         }
       ''';
@@ -235,33 +276,52 @@ class UserProvider extends ChangeNotifier {
         request: GraphQLRequest<String>(
           document: query,
           variables: {'id': userId},
+          authorizationMode: APIAuthorizationType.userPools,
         ),
       );
 
       final response = await operation.response;
+      Map<String, dynamic>? user;
       if (response.data != null) {
         final data = json.decode(response.data!) as Map<String, dynamic>;
-        final user = data['getUser'];
-        if (user != null) {
-          login(
-            name: user['name'] ?? 'User',
-            email: user['email'] ?? '',
-            phone: user['phone'] ?? '',
-            isVerified: user['isVerified'] ?? false,
-            age: user['age'] as int?,
-            annualIncome: (user['annualIncome'] as num?)?.toDouble(),
-            location: user['location'],
-            occupation: user['occupation'],
-            ownsLand: user['ownsLand'] ?? false,
-          );
-        }
+        user = data['getUser'] as Map<String, dynamic>?;
+      }
+
+      final citizenProfile = await _citizenProfileService.fetchProfile(userId);
+
+      if (citizenProfile != null) {
+        login(
+          name: citizenProfile.fullName.isNotEmpty
+              ? citizenProfile.fullName
+              : (user?['name'] as String? ?? 'Citizen'),
+          email: citizenProfile.email.isNotEmpty
+              ? citizenProfile.email
+              : (user?['email'] as String? ?? ''),
+          phone: citizenProfile.mobile.isNotEmpty
+              ? citizenProfile.mobile
+              : (user?['mobile'] as String? ?? ''),
+          isVerified: citizenProfile.isKycVerified,
+          age: citizenProfile.computedAge,
+          annualIncome: citizenProfile.income,
+          annualIncomeRange: citizenProfile.annualIncomeRange,
+          location: citizenProfile.state,
+          occupation: citizenProfile.occupation,
+          gender: citizenProfile.gender,
+          casteCategory: citizenProfile.casteCategory,
+        );
+      } else if (user != null) {
+        login(
+          name: user['name'] as String? ?? 'Citizen',
+          email: user['email'] as String? ?? '',
+          phone: user['mobile'] as String? ?? '',
+          isVerified: !(user['isGuest'] as bool? ?? false),
+        );
       }
     } catch (e) {
       debugPrint('Error fetching profile: $e');
     }
   }
 
-  // Add application
   void addApplication(UserApplication app) {
     final List<UserApplication> updatedApps =
         List.from(_currentUser.applications)..add(app);
@@ -269,7 +329,6 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Update application status
   void updateApplicationStatus(String id, ApplicationStatus status,
       {String? currentStep, String? nextStep, ApplicationEvent? newEvent}) {
     final List<UserApplication> updatedApps =
@@ -296,7 +355,6 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Update profile with demographic data
   void updateProfile({
     String? name,
     String? email,
@@ -304,8 +362,11 @@ class UserProvider extends ChangeNotifier {
     String? avatarUrl,
     int? age,
     double? annualIncome,
+    String? annualIncomeRange,
     String? occupation,
     String? location,
+    String? gender,
+    String? casteCategory,
     bool? ownsLand,
   }) {
     _currentUser = _currentUser.copyWith(
@@ -315,8 +376,11 @@ class UserProvider extends ChangeNotifier {
       avatarUrl: avatarUrl,
       age: age,
       annualIncome: annualIncome,
+      annualIncomeRange: annualIncomeRange,
       occupation: occupation,
       location: location,
+      gender: gender,
+      casteCategory: casteCategory,
       ownsLand: ownsLand,
     );
     notifyListeners();
@@ -326,9 +390,9 @@ class UserProvider extends ChangeNotifier {
   Future<void> _syncToAws() async {
     try {
       final authUser = await Amplify.Auth.getCurrentUser();
-      final mutation = '''
-        mutation UpdateUser(\$input: UpdateUserInput!) {
-          updateUser(input: \$input) {
+      const mutation = r'''
+        mutation UpdateUser($input: UpdateUserInput!) {
+          updateUser(input: $input) {
             id
           }
         }
@@ -338,12 +402,9 @@ class UserProvider extends ChangeNotifier {
         'id': authUser.userId,
         'name': _currentUser.name,
         'email': _currentUser.email,
-        'phone': _currentUser.phone,
-        'age': _currentUser.age,
-        'annualIncome': _currentUser.annualIncome,
-        'location': _currentUser.location,
-        'occupation': _currentUser.occupation,
-        'ownsLand': _currentUser.ownsLand,
+        'mobile': _currentUser.phone,
+        'language': _currentUser.preferences['language'] ?? 'en',
+        'isGuest': _currentUser.isGuest,
       };
 
       await Amplify.API
@@ -351,6 +412,7 @@ class UserProvider extends ChangeNotifier {
             request: GraphQLRequest<String>(
               document: mutation,
               variables: {'input': input},
+              authorizationMode: APIAuthorizationType.userPools,
             ),
           )
           .response;
@@ -367,7 +429,6 @@ class UserProvider extends ChangeNotifier {
     _syncToAws();
   }
 
-  // Add document
   void addDocument(UserDocument document) {
     final List<UserDocument> updatedDocs = List.from(_currentUser.documents)
       ..add(document);
@@ -375,7 +436,6 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Remove document
   void removeDocument(String id) {
     final List<UserDocument> updatedDocs =
         _currentUser.documents.where((doc) => doc.id != id).toList();
@@ -383,13 +443,11 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Logout
   void logout() {
     _currentUser = UserProfile.guest();
     notifyListeners();
   }
 
-  // Add family member
   void addFamilyMember(FamilyMember member) {
     final List<FamilyMember> updatedMembers =
         List.from(_currentUser.familyMembers)..add(member);
@@ -397,7 +455,6 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Remove family member
   void removeFamilyMember(String id) {
     final List<FamilyMember> updatedMembers =
         _currentUser.familyMembers.where((m) => m.id != id).toList();
@@ -405,7 +462,6 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Verify user
   void verifyUser() {
     if (_currentUser.isRegistered) {
       _currentUser = _currentUser.copyWith(isVerified: true);

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/constants/app_colors.dart';
+import 't_text.dart';
 
 enum CviButtonVariant { primary, secondary, gold }
 
@@ -79,7 +80,7 @@ class _CviButtonState extends State<CviButton>
             Icon(widget.icon, size: 18, color: _textColor),
             const SizedBox(width: 8),
           ],
-          Text(
+          TText(
             widget.text,
             style: GoogleFonts.poppins(
               fontSize: 14,

@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import '../../models/citizen_profile_model.dart';
 
 class CitizenProfileService {
-  // ─── GraphQL Query ────────────────────────────────────────────────────────
+  // GraphQL Queries
 
   static const String _getModelQuery = r'''
     query GetCitizenProfile($id: ID!) {
@@ -36,7 +36,39 @@ class CitizenProfileService {
     }
   ''';
 
-  // ─── GraphQL Mutations ────────────────────────────────────────────────────
+  static const String _listByMobileQuery = r'''
+    query ListCitizenProfilesByMobile($mobile: String!) {
+      listCitizenProfiles(filter: { mobile: { contains: $mobile } }, limit: 5) {
+        items {
+          id
+          full_name
+          mobile
+          email
+          state
+          district
+          pincode
+          date_of_birth
+          gender
+          marital_status
+          occupation
+          annual_income_range
+          caste_category
+          age
+          income
+          is_kyc_verified
+          linked_documents
+          applied_schemes
+          aadhaar_last_four
+          pan_masked
+          ration_card_number
+          is_disabled
+          disability_type
+        }
+      }
+    }
+  ''';
+
+  // GraphQL Mutations
 
   static const String _updateModelMutation = r'''
     mutation UpdateCitizenProfile($input: UpdateCitizenProfileInput!) {
@@ -54,13 +86,14 @@ class CitizenProfileService {
     }
   ''';
 
-  // ─── Public API ───────────────────────────────────────────────────────────
+  // Public API
 
   Future<CitizenProfileModel?> fetchProfile(String userId) async {
     try {
       final request = GraphQLRequest<String>(
         document: _getModelQuery,
         variables: {'id': userId},
+        authorizationMode: APIAuthorizationType.userPools,
       );
 
       final response = await Amplify.API.query(request: request).response;
@@ -83,6 +116,29 @@ class CitizenProfileService {
     }
   }
 
+  Future<CitizenProfileModel?> fetchProfileByMobile(String mobileDigits) async {
+    try {
+      final request = GraphQLRequest<String>(
+        document: _listByMobileQuery,
+        variables: {'mobile': mobileDigits},
+        authorizationMode: APIAuthorizationType.userPools,
+      );
+      final response = await Amplify.API.query(request: request).response;
+      if (response.data != null) {
+        final data = json.decode(response.data!);
+        final items = data['listCitizenProfiles']?['items'] as List?;
+        if (items != null && items.isNotEmpty && items.first != null) {
+          return CitizenProfileModel.fromJson(
+              Map<String, dynamic>.from(items.first as Map));
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint('[CitizenProfileService] fetchProfileByMobile error: $e');
+      return null;
+    }
+  }
+
   Future<bool> saveProfile(CitizenProfileModel profile) async {
     try {
       final input = _toGraphqlInput(profile);
@@ -91,6 +147,7 @@ class CitizenProfileService {
       final updateRequest = GraphQLRequest<String>(
         document: _updateModelMutation,
         variables: {'input': input},
+        authorizationMode: APIAuthorizationType.userPools,
       );
 
       final response =
@@ -99,10 +156,10 @@ class CitizenProfileService {
       if (response.errors.isNotEmpty) {
         debugPrint(
             '[CitizenProfileService] update errors, attempting create: ${response.errors}');
-        // Fallback: create the record
         final createRequest = GraphQLRequest<String>(
           document: _createModelMutation,
           variables: {'input': input},
+          authorizationMode: APIAuthorizationType.userPools,
         );
         final createResponse =
             await Amplify.API.mutate(request: createRequest).response;
@@ -119,25 +176,22 @@ class CitizenProfileService {
     }
   }
 
-  // ─── Helpers ──────────────────────────────────────────────────────────────
+  // Helpers
 
-  /// Converts CitizenProfileModel to a GraphQL-friendly map.
-  /// Uses snake_case keys matching the DynamoDB schema.
   Map<String, dynamic> _toGraphqlInput(CitizenProfileModel p) {
     final map = <String, dynamic>{
       'id': p.id,
-      'full_name': p.fullName,
+      'full_name': p.fullName.isNotEmpty ? p.fullName : 'Citizen',
       'mobile': p.mobile,
       'email': p.email,
-      'state': p.state,
-      'age': p.age,
+      'state': p.state.isNotEmpty ? p.state : 'Maharashtra',
+      'age': p.computedAge,
       'income': p.income,
       'is_kyc_verified': p.isKycVerified,
       'linked_documents': p.linkedDocuments,
       'applied_schemes': p.appliedSchemes,
       'is_disabled': p.isDisabled,
     };
-    // Only include optional fields if non-null to avoid overwriting with null
     if (p.district != null) map['district'] = p.district;
     if (p.pincode != null) map['pincode'] = p.pincode;
     if (p.dateOfBirth != null) {
