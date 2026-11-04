@@ -37,7 +37,7 @@ dependencies:
   glassmorphism: ^4.0.0
 
   # Design & Icons
-  google_fonts: ^8.0.2
+  google_fonts: ^9.0.0
   font_awesome_flutter: ^11.0.0
 
   # Charts & Data Viz
